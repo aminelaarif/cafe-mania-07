@@ -8,33 +8,47 @@ export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
-    { href: '/', label: 'Accueil' },
-    { href: '/menu', label: 'Menu' },
-    { href: '/histoire', label: 'Notre Histoire' },
-    { href: '/reservation', label: 'Réservation' },
-    { href: '/magasins', label: 'Nos Magasins' },
+    { href: '#accueil', label: 'Accueil' },
+    { href: '#menu', label: 'Menu' },
+    { href: '#histoire', label: 'Notre Histoire' },
+    { href: '#reservation', label: 'Réservation' },
+    { href: '#magasins', label: 'Nos Magasins' },
   ];
+
+  const handleNavClick = (href: string) => {
+    setIsOpen(false);
+    // Smooth scroll to section
+    const element = document.querySelector(href);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <nav className="bg-background border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link to="/" className="text-2xl font-bold text-foreground">
+            <a 
+              href="#accueil" 
+              className="text-2xl font-bold text-foreground"
+              onClick={() => handleNavClick('#accueil')}
+            >
               Coffee Shop
-            </Link>
+            </a>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <Link
+              <a
                 key={item.href}
-                to={item.href}
+                href={item.href}
                 className="text-foreground hover:text-primary transition-colors"
+                onClick={() => handleNavClick(item.href)}
               >
                 {item.label}
-              </Link>
+              </a>
             ))}
             <Link to="/admin">
               <Button variant="outline" size="sm">
@@ -60,14 +74,14 @@ export const Navbar = () => {
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-background border-t">
               {navItems.map((item) => (
-                <Link
+                <a
                   key={item.href}
-                  to={item.href}
+                  href={item.href}
                   className="block px-3 py-2 text-foreground hover:text-primary transition-colors"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => handleNavClick(item.href)}
                 >
                   {item.label}
-                </Link>
+                </a>
               ))}
               <Link to="/admin" onClick={() => setIsOpen(false)}>
                 <Button variant="outline" size="sm" className="mt-2 ml-3">

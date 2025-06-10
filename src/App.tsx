@@ -8,7 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 
 // Public Pages
-import { Home } from "@/pages/public/Home";
+import { SinglePageHome } from "@/pages/public/SinglePageHome";
 import { Menu } from "@/pages/public/Menu";
 import { History } from "@/pages/public/History";
 import { Reservation } from "@/pages/public/Reservation";
@@ -28,20 +28,12 @@ import { PresenceManagement } from "@/pages/admin/PresenceManagement";
 import { POSApp } from "@/pages/pos/POSApp";
 
 // Layout Components
-import { Navbar } from "@/components/layout/Navbar";
+import { PublicLayout } from "@/components/layout/PublicLayout";
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
-
-// Public Layout Component
-const PublicLayout = ({ children }: { children: React.ReactNode }) => (
-  <div className="min-h-screen bg-background">
-    <Navbar />
-    {children}
-  </div>
-);
 
 // Admin Layout Component
 const AdminLayout = ({ children }: { children: React.ReactNode }) => (
@@ -65,12 +57,14 @@ const App = () => (
               {/* POS Route */}
               <Route path="/pos" element={<POSApp />} />
 
-              {/* Public Routes */}
+              {/* Main Single Page Route */}
               <Route path="/" element={
                 <PublicLayout>
-                  <Home />
+                  <SinglePageHome />
                 </PublicLayout>
               } />
+
+              {/* Legacy Public Routes (for compatibility) */}
               <Route path="/menu" element={
                 <PublicLayout>
                   <Menu />
