@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Eye, EyeOff, Upload } from 'lucide-react';
 
-interface Image {
+interface ImageData {
   id: string;
   url: string;
   alt: string;
@@ -21,9 +21,9 @@ interface Image {
 interface ImageManagerProps {
   sectionId: string;
   sectionTitle: string;
-  images: Image[];
-  onImageAdd: (sectionId: string, image: Omit<Image, 'id' | 'sectionId'>) => void;
-  onImageUpdate: (imageId: string, updates: Partial<Image>) => void;
+  images: ImageData[];
+  onImageAdd: (sectionId: string, image: Omit<ImageData, 'id' | 'sectionId'>) => void;
+  onImageUpdate: (imageId: string, updates: Partial<ImageData>) => void;
   onImageDelete: (imageId: string) => void;
 }
 
@@ -37,7 +37,7 @@ export const ImageManager = ({
 }: ImageManagerProps) => {
   const { toast } = useToast();
   const [isAddingImage, setIsAddingImage] = useState(false);
-  const [editingImage, setEditingImage] = useState<Image | null>(null);
+  const [editingImage, setEditingImage] = useState<ImageData | null>(null);
   const [newImage, setNewImage] = useState({ url: '', alt: '', order: 0, hidden: false });
 
   const sectionImages = images
@@ -62,7 +62,7 @@ export const ImageManager = ({
     });
   };
 
-  const handleEditImage = (updates: Partial<Image>) => {
+  const handleEditImage = (updates: Partial<ImageData>) => {
     if (!editingImage) return;
     
     onImageUpdate(editingImage.id, updates);
@@ -73,7 +73,7 @@ export const ImageManager = ({
     });
   };
 
-  const toggleImageVisibility = (image: Image) => {
+  const toggleImageVisibility = (image: ImageData) => {
     onImageUpdate(image.id, { hidden: !image.hidden });
     toast({
       title: image.hidden ? "Image affichée" : "Image masquée",
@@ -165,7 +165,7 @@ export const ImageManager = ({
                   onError={(e) => {
                     const target = e.currentTarget as HTMLImageElement;
                     target.style.display = 'none';
-                    const sibling = target.nextElementSibling as HTMLElement;
+                    const sibling = target.nextElementSibling as HTMLDivElement;
                     if (sibling) {
                       sibling.style.display = 'flex';
                     }
