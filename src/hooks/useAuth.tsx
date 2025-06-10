@@ -39,13 +39,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return false;
   };
 
+  const loginWithPosId = async (posId: string): Promise<boolean> => {
+    setIsLoading(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const foundUser = mockUsers.find(u => u.posId === posId);
+    if (foundUser && foundUser.isActive) {
+      setUser(foundUser);
+      localStorage.setItem('user', JSON.stringify(foundUser));
+      setIsLoading(false);
+      return true;
+    }
+    setIsLoading(false);
+    return false;
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, loginWithPosId, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

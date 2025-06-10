@@ -33,6 +33,7 @@ export const AdminSidebar = () => {
           { href: '/admin/config', icon: Settings, label: 'Configuration Globale' },
         ];
       case 'store-manager':
+      case 'technical-manager':
         return [
           { href: '/admin/dashboard', icon: BarChart3, label: 'Dashboard' },
           { href: '/admin/sales', icon: BarChart3, label: 'Ventes' },

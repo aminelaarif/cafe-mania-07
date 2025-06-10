@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -54,6 +53,11 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
+              {/* POS Route */}
+              <Route path="/pos" element={
+                <POSApp />
+              } />
+
               {/* Public Routes */}
               <Route path="/" element={
                 <PublicLayout>
@@ -113,10 +117,7 @@ const App = () => (
               <Route path="/admin/users" element={
                 <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
                   <AdminLayout>
-                    <div className="p-6">
-                      <h1 className="text-3xl font-bold">Gestion des Utilisateurs</h1>
-                      <p className="text-muted-foreground mt-2">Fonctionnalité en développement</p>
-                    </div>
+                    <UserManagement />
                   </AdminLayout>
                 </ProtectedRoute>
               } />
@@ -131,32 +132,23 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/admin/sales" element={
-                <ProtectedRoute allowedRoles={['store-manager']}>
+                <ProtectedRoute allowedRoles={['store-manager', 'technical-manager']}>
                   <AdminLayout>
-                    <div className="p-6">
-                      <h1 className="text-3xl font-bold">Rapport de Ventes</h1>
-                      <p className="text-muted-foreground mt-2">Fonctionnalité en développement</p>
-                    </div>
+                    <SalesReport />
                   </AdminLayout>
                 </ProtectedRoute>
               } />
               <Route path="/admin/staff" element={
-                <ProtectedRoute allowedRoles={['store-manager']}>
+                <ProtectedRoute allowedRoles={['store-manager', 'technical-manager']}>
                   <AdminLayout>
-                    <div className="p-6">
-                      <h1 className="text-3xl font-bold">Gestion du Personnel</h1>
-                      <p className="text-muted-foreground mt-2">Fonctionnalité en développement</p>
-                    </div>
+                    <StaffManagement />
                   </AdminLayout>
                 </ProtectedRoute>
               } />
               <Route path="/admin/inventory" element={
-                <ProtectedRoute allowedRoles={['store-manager']}>
+                <ProtectedRoute allowedRoles={['store-manager', 'technical-manager']}>
                   <AdminLayout>
-                    <div className="p-6">
-                      <h1 className="text-3xl font-bold">Gestion des Stocks</h1>
-                      <p className="text-muted-foreground mt-2">Fonctionnalité en développement</p>
-                    </div>
+                    <InventoryManagement />
                   </AdminLayout>
                 </ProtectedRoute>
               } />
