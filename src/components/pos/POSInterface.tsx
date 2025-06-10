@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { mockMenu } from '@/db/mockdata';
-import { ShoppingCart, Plus, Minus, CreditCard, Banknote } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, CreditCard, Banknote, ArrowLeft } from 'lucide-react';
 
 interface CartItem {
   id: string;
@@ -14,7 +13,11 @@ interface CartItem {
   quantity: number;
 }
 
-export const POSInterface = () => {
+interface POSInterfaceProps {
+  onBack: () => void;
+}
+
+export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   const { user, logout } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -70,7 +73,13 @@ export const POSInterface = () => {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">POS - {user?.name}</h1>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Retour
+          </Button>
+          <h1 className="text-2xl font-bold">POS - {user?.name}</h1>
+        </div>
         <Button variant="outline" onClick={logout}>
           Déconnexion
         </Button>

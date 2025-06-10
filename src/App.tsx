@@ -22,6 +22,7 @@ import { UserManagement } from "@/pages/admin/UserManagement";
 import { SalesReport } from "@/pages/admin/SalesReport";
 import { StaffManagement } from "@/pages/admin/StaffManagement";
 import { InventoryManagement } from "@/pages/admin/InventoryManagement";
+import { PresenceManagement } from "@/pages/admin/PresenceManagement";
 
 // POS Pages
 import { POSApp } from "@/pages/pos/POSApp";
@@ -155,6 +156,13 @@ const App = () => (
                 <ProtectedRoute allowedRoles={['store-manager', 'technical-manager']}>
                   <AdminLayout>
                     <InventoryManagement />
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/presence" element={
+                <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
+                  <AdminLayout>
+                    <PresenceManagement />
                   </AdminLayout>
                 </ProtectedRoute>
               } />
