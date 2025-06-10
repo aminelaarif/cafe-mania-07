@@ -7,18 +7,155 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { mockHistoryContent, mockEvents, mockMenu } from '@/db/mockdata';
-import { Edit, Plus, Calendar, Menu as MenuIcon, History } from 'lucide-react';
+import { Edit, Plus, Calendar, Menu as MenuIcon, History, Trash2, Eye, EyeOff } from 'lucide-react';
 
 export const ContentManagement = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('menu');
+  const [menu, setMenu] = useState(mockMenu);
+  const [historyContent, setHistoryContent] = useState(mockHistoryContent);
+  const [events, setEvents] = useState(mockEvents);
+  const [isAddingMenuItem, setIsAddingMenuItem] = useState(false);
+  const [isAddingHistory, setIsAddingHistory] = useState(false);
+  const [isAddingEvent, setIsAddingEvent] = useState(false);
+  const [newItem, setNewItem] = useState({ name: '', description: '', price: 0, categoryId: '' });
+  const [newHistory, setNewHistory] = useState({ title: '', description: '', order: 0 });
+  const [newEvent, setNewEvent] = useState({ title: '', description: '', date: '', featured: false });
 
   const handleSave = (type: string) => {
     toast({
       title: "Contenu mis à jour",
       description: `Les modifications du ${type} ont été sauvegardées.`,
+    });
+  };
+
+  const toggleItemAvailability = (categoryId: string, itemId: string) => {
+    setMenu(menu.map(category => 
+      category.id === categoryId 
+        ? {
+            ...category,
+            items: category.items.map(item =>
+              item.id === itemId ? { ...item, available: !item.available } : item
+            )
+          }
+        : category
+    ));
+    toast({
+      title: "Disponibilité mise à jour",
+      description: "Le statut de l'article a été modifié.",
+    });
+  };
+
+  const deleteMenuItem = (categoryId: string, itemId: string) => {
+    setMenu(menu.map(category => 
+      category.id === categoryId 
+        ? {
+            ...category,
+            items: category.items.filter(item => item.id !== itemId)
+          }
+        : category
+    ));
+    toast({
+      title: "Article supprimé",
+      description: "L'article a été retiré du menu.",
+      variant: "destructive",
+    });
+  };
+
+  const addMenuItem = () => {
+    if (!newItem.name || !newItem.categoryId) return;
+    
+    const newId = Date.now().toString();
+    setMenu(menu.map(category => 
+      category.id === newItem.categoryId 
+        ? {
+            ...category,
+            items: [...category.items, {
+              id: newId,
+              name: newItem.name,
+              description: newItem.description,
+              price: newItem.price,
+              available: true
+            }]
+          }
+        : category
+    ));
+    
+    setNewItem({ name: '', description: '', price: 0, categoryId: '' });
+    setIsAddingMenuItem(false);
+    toast({
+      title: "Article ajouté",
+      description: "Le nouvel article a été ajouté au menu.",
+    });
+  };
+
+  const deleteHistorySection = (id: string) => {
+    setHistoryContent(historyContent.filter(content => content.id !== id));
+    toast({
+      title: "Section supprimée",
+      description: "La section d'histoire a été supprimée.",
+      variant: "destructive",
+    });
+  };
+
+  const addHistorySection = () => {
+    if (!newHistory.title) return;
+    
+    const newId = Date.now().toString();
+    setHistoryContent([...historyContent, {
+      id: newId,
+      title: newHistory.title,
+      description: newHistory.description,
+      order: newHistory.order || historyContent.length + 1
+    }]);
+    
+    setNewHistory({ title: '', description: '', order: 0 });
+    setIsAddingHistory(false);
+    toast({
+      title: "Section ajoutée",
+      description: "La nouvelle section d'histoire a été ajoutée.",
+    });
+  };
+
+  const toggleEventFeatured = (id: string) => {
+    setEvents(events.map(event =>
+      event.id === id ? { ...event, featured: !event.featured } : event
+    ));
+    toast({
+      title: "Événement mis à jour",
+      description: "Le statut de mise en vedette a été modifié.",
+    });
+  };
+
+  const deleteEvent = (id: string) => {
+    setEvents(events.filter(event => event.id !== id));
+    toast({
+      title: "Événement supprimé",
+      description: "L'événement a été supprimé.",
+      variant: "destructive",
+    });
+  };
+
+  const addEvent = () => {
+    if (!newEvent.title || !newEvent.date) return;
+    
+    const newId = Date.now().toString();
+    setEvents([...events, {
+      id: newId,
+      title: newEvent.title,
+      description: newEvent.description,
+      date: newEvent.date,
+      featured: newEvent.featured
+    }]);
+    
+    setNewEvent({ title: '', description: '', date: '', featured: false });
+    setIsAddingEvent(false);
+    toast({
+      title: "Événement créé",
+      description: "Le nouvel événement a été ajouté.",
     });
   };
 
@@ -50,14 +187,75 @@ export const ContentManagement = () => {
         <TabsContent value="menu" className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-semibold">Gestion du Menu</h2>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Ajouter un article
-            </Button>
+            <Dialog open={isAddingMenuItem} onOpenChange={setIsAddingMenuItem}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter un article
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Ajouter un nouvel article</DialogTitle>
+                  <DialogDescription>
+                    Créez un nouvel article pour le menu
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Catégorie</Label>
+                    <select 
+                      value={newItem.categoryId} 
+                      onChange={(e) => setNewItem({...newItem, categoryId: e.target.value})}
+                      className="w-full p-2 border rounded"
+                    >
+                      <option value="">Sélectionner une catégorie</option>
+                      {menu.map(category => (
+                        <option key={category.id} value={category.id}>{category.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <Label>Nom</Label>
+                    <Input 
+                      value={newItem.name} 
+                      onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+                      placeholder="Nom de l'article"
+                    />
+                  </div>
+                  <div>
+                    <Label>Description</Label>
+                    <Textarea 
+                      value={newItem.description} 
+                      onChange={(e) => setNewItem({...newItem, description: e.target.value})}
+                      placeholder="Description de l'article"
+                    />
+                  </div>
+                  <div>
+                    <Label>Prix (€)</Label>
+                    <Input 
+                      type="number" 
+                      step="0.01"
+                      value={newItem.price} 
+                      onChange={(e) => setNewItem({...newItem, price: parseFloat(e.target.value) || 0})}
+                      placeholder="Prix"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsAddingMenuItem(false)}>
+                    Annuler
+                  </Button>
+                  <Button onClick={addMenuItem}>
+                    Ajouter
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="grid gap-6">
-            {mockMenu.map((category) => (
+            {menu.map((category) => (
               <Card key={category.id}>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
@@ -82,10 +280,27 @@ export const ContentManagement = () => {
                           </div>
                         </div>
                         <p className="text-sm text-muted-foreground mb-3">{item.description}</p>
-                        <Button variant="outline" size="sm">
-                          <Edit className="h-3 w-3 mr-1" />
-                          Modifier
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm">
+                            <Edit className="h-3 w-3 mr-1" />
+                            Modifier
+                          </Button>
+                          <Button 
+                            variant="secondary" 
+                            size="sm"
+                            onClick={() => toggleItemAvailability(category.id, item.id)}
+                          >
+                            {item.available ? <EyeOff className="h-3 w-3 mr-1" /> : <Eye className="h-3 w-3 mr-1" />}
+                            {item.available ? "Masquer" : "Afficher"}
+                          </Button>
+                          <Button 
+                            variant="destructive" 
+                            size="sm"
+                            onClick={() => deleteMenuItem(category.id, item.id)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -98,24 +313,77 @@ export const ContentManagement = () => {
         <TabsContent value="history" className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-semibold">Histoire du Café</h2>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Ajouter une section
-            </Button>
+            <Dialog open={isAddingHistory} onOpenChange={setIsAddingHistory}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter une section
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Ajouter une section d'histoire</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Titre</Label>
+                    <Input 
+                      value={newHistory.title} 
+                      onChange={(e) => setNewHistory({...newHistory, title: e.target.value})}
+                      placeholder="Titre de la section"
+                    />
+                  </div>
+                  <div>
+                    <Label>Description</Label>
+                    <Textarea 
+                      value={newHistory.description} 
+                      onChange={(e) => setNewHistory({...newHistory, description: e.target.value})}
+                      placeholder="Description"
+                    />
+                  </div>
+                  <div>
+                    <Label>Ordre d'affichage</Label>
+                    <Input 
+                      type="number"
+                      value={newHistory.order} 
+                      onChange={(e) => setNewHistory({...newHistory, order: parseInt(e.target.value) || 0})}
+                      placeholder="Ordre"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsAddingHistory(false)}>
+                    Annuler
+                  </Button>
+                  <Button onClick={addHistorySection}>
+                    Ajouter
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="space-y-6">
-            {mockHistoryContent
+            {historyContent
               .sort((a, b) => a.order - b.order)
               .map((content) => (
                 <Card key={content.id}>
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       {content.title}
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4 mr-2" />
-                        Modifier
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4 mr-2" />
+                          Modifier
+                        </Button>
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={() => deleteHistorySection(content.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -156,14 +424,65 @@ export const ContentManagement = () => {
         <TabsContent value="events" className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-semibold">Événements</h2>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Créer un événement
-            </Button>
+            <Dialog open={isAddingEvent} onOpenChange={setIsAddingEvent}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Créer un événement
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Créer un nouvel événement</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Titre</Label>
+                    <Input 
+                      value={newEvent.title} 
+                      onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
+                      placeholder="Titre de l'événement"
+                    />
+                  </div>
+                  <div>
+                    <Label>Description</Label>
+                    <Textarea 
+                      value={newEvent.description} 
+                      onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
+                      placeholder="Description"
+                    />
+                  </div>
+                  <div>
+                    <Label>Date</Label>
+                    <Input 
+                      type="date"
+                      value={newEvent.date} 
+                      onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="checkbox"
+                      checked={newEvent.featured}
+                      onChange={(e) => setNewEvent({...newEvent, featured: e.target.checked})}
+                    />
+                    <Label>Mettre en vedette</Label>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsAddingEvent(false)}>
+                    Annuler
+                  </Button>
+                  <Button onClick={addEvent}>
+                    Créer
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="grid gap-6">
-            {mockEvents.map((event) => (
+            {events.map((event) => (
               <Card key={event.id}>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
@@ -175,6 +494,20 @@ export const ContentManagement = () => {
                       <Button variant="outline" size="sm">
                         <Edit className="h-4 w-4 mr-2" />
                         Modifier
+                      </Button>
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
+                        onClick={() => toggleEventFeatured(event.id)}
+                      >
+                        {event.featured ? "Retirer vedette" : "Mettre en vedette"}
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => deleteEvent(event.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </CardTitle>
