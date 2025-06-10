@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -125,9 +126,25 @@ export const SinglePageHome = () => {
         </div>
       </section>
 
+      {/* Menu Section */}
+      <section id="menu" className="py-20 px-4 bg-muted/50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+              Notre Menu
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              Découvrez nos cafés artisanaux et nos délicieuses pâtisseries
+            </p>
+          </div>
+
+          <MenuBook />
+        </div>
+      </section>
+
       {/* Events Section */}
       {featuredEvents.length > 0 && (
-        <section className="py-20 px-4 bg-muted/50">
+        <section className="py-20 px-4">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-4xl font-bold text-center text-foreground mb-12">
               Événements à Venir
@@ -151,22 +168,6 @@ export const SinglePageHome = () => {
           </div>
         </section>
       )}
-
-      {/* Menu Section */}
-      <section id="menu" className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Notre Menu
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Découvrez nos cafés artisanaux et nos délicieuses pâtisseries
-            </p>
-          </div>
-
-          <MenuBook />
-        </div>
-      </section>
 
       {/* Histoire Section */}
       <section id="histoire" className="py-20 px-4 bg-muted/50">
