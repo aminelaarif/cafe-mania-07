@@ -2,10 +2,20 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { mockMenu, mockHistoryContent, mockEvents } from '@/db/mockdata';
 
+interface Image {
+  id: string;
+  url: string;
+  alt: string;
+  sectionId: string;
+  order: number;
+  hidden?: boolean;
+}
+
 interface ContentContextType {
   menu: typeof mockMenu;
   historyContent: typeof mockHistoryContent;
   events: typeof mockEvents;
+  images: Image[];
   updateMenu: (newMenu: typeof mockMenu) => void;
   updateHistoryContent: (newHistory: typeof mockHistoryContent) => void;
   updateEvents: (newEvents: typeof mockEvents) => void;
@@ -18,6 +28,9 @@ interface ContentContextType {
   addEvent: (event: any) => void;
   updateEvent: (eventId: string, updates: any) => void;
   deleteEvent: (eventId: string) => void;
+  addImage: (image: Omit<Image, 'id'>) => void;
+  updateImage: (imageId: string, updates: Partial<Image>) => void;
+  deleteImage: (imageId: string) => void;
 }
 
 const ContentContext = createContext<ContentContextType | undefined>(undefined);
@@ -26,16 +39,19 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [menu, setMenu] = useState(mockMenu);
   const [historyContent, setHistoryContent] = useState(mockHistoryContent);
   const [events, setEvents] = useState(mockEvents);
+  const [images, setImages] = useState<Image[]>([]);
 
   // Simuler la persistance en localStorage
   useEffect(() => {
     const savedMenu = localStorage.getItem('coffee-shop-menu');
     const savedHistory = localStorage.getItem('coffee-shop-history');
     const savedEvents = localStorage.getItem('coffee-shop-events');
+    const savedImages = localStorage.getItem('coffee-shop-images');
 
     if (savedMenu) setMenu(JSON.parse(savedMenu));
     if (savedHistory) setHistoryContent(JSON.parse(savedHistory));
     if (savedEvents) setEvents(JSON.parse(savedEvents));
+    if (savedImages) setImages(JSON.parse(savedImages));
   }, []);
 
   const updateMenu = (newMenu: typeof mockMenu) => {
@@ -51,6 +67,11 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const updateEvents = (newEvents: typeof mockEvents) => {
     setEvents(newEvents);
     localStorage.setItem('coffee-shop-events', JSON.stringify(newEvents));
+  };
+
+  const updateImages = (newImages: Image[]) => {
+    setImages(newImages);
+    localStorage.setItem('coffee-shop-images', JSON.stringify(newImages));
   };
 
   const addMenuItem = (categoryId: string, item: any) => {
@@ -100,6 +121,9 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const deleteHistorySection = (sectionId: string) => {
     const newHistory = historyContent.filter(section => section.id !== sectionId);
     updateHistoryContent(newHistory);
+    // Supprimer aussi les images associées
+    const newImages = images.filter(image => image.sectionId !== sectionId);
+    updateImages(newImages);
   };
 
   const addEvent = (event: any) => {
@@ -119,11 +143,30 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     updateEvents(newEvents);
   };
 
+  const addImage = (image: Omit<Image, 'id'>) => {
+    const newImage = { ...image, id: Date.now().toString() };
+    const newImages = [...images, newImage];
+    updateImages(newImages);
+  };
+
+  const updateImage = (imageId: string, updates: Partial<Image>) => {
+    const newImages = images.map(image =>
+      image.id === imageId ? { ...image, ...updates } : image
+    );
+    updateImages(newImages);
+  };
+
+  const deleteImage = (imageId: string) => {
+    const newImages = images.filter(image => image.id !== imageId);
+    updateImages(newImages);
+  };
+
   return (
     <ContentContext.Provider value={{
       menu,
       historyContent,
       events,
+      images,
       updateMenu,
       updateHistoryContent,
       updateEvents,
@@ -135,7 +178,10 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       deleteHistorySection,
       addEvent,
       updateEvent,
-      deleteEvent
+      deleteEvent,
+      addImage,
+      updateImage,
+      deleteImage
     }}>
       {children}
     </ContentContext.Provider>

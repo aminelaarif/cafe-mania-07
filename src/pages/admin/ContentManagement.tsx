@@ -9,7 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useContent } from '@/contexts/ContentContext';
-import { Edit, Plus, Calendar, Menu as MenuIcon, History, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Edit, Plus, Calendar, Menu as MenuIcon, History, Trash2, Eye, EyeOff, Image as ImageIcon } from 'lucide-react';
+import { EditMenuItemDialog } from '@/components/admin/EditMenuItemDialog';
+import { EditHistorySectionDialog } from '@/components/admin/EditHistorySectionDialog';
+import { ImageManager } from '@/components/admin/ImageManager';
 
 export const ContentManagement = () => {
   const { toast } = useToast();
@@ -18,29 +21,33 @@ export const ContentManagement = () => {
     menu,
     historyContent,
     events,
+    images,
     updateMenuItem,
     deleteMenuItem,
     addMenuItem,
+    updateHistorySection,
     deleteHistorySection,
     addHistorySection,
     addEvent,
     updateEvent,
-    deleteEvent
+    deleteEvent,
+    addImage,
+    updateImage,
+    deleteImage
   } = useContent();
 
+  // États pour les dialogues
   const [isAddingMenuItem, setIsAddingMenuItem] = useState(false);
   const [isAddingHistory, setIsAddingHistory] = useState(false);
   const [isAddingEvent, setIsAddingEvent] = useState(false);
+  const [editingMenuItem, setEditingMenuItem] = useState<{categoryId: string, item: any} | null>(null);
+  const [editingHistorySection, setEditingHistorySection] = useState<any>(null);
+  const [showImagesFor, setShowImagesFor] = useState<string | null>(null);
+
+  // États pour nouveaux éléments
   const [newItem, setNewItem] = useState({ name: '', description: '', price: 0, categoryId: '' });
   const [newHistory, setNewHistory] = useState({ title: '', description: '', order: 0 });
   const [newEvent, setNewEvent] = useState({ title: '', description: '', date: '', featured: false });
-
-  const handleSave = (type: string) => {
-    toast({
-      title: "Contenu mis à jour",
-      description: `Les modifications du ${type} ont été sauvegardées et sont maintenant visibles sur la page vitrine.`,
-    });
-  };
 
   const toggleItemAvailability = (categoryId: string, itemId: string) => {
     const category = menu.find(cat => cat.id === categoryId);
@@ -49,7 +56,7 @@ export const ContentManagement = () => {
       updateMenuItem(categoryId, itemId, { available: !item.available });
       toast({
         title: "Disponibilité mise à jour",
-        description: "Le statut de l'article a été modifié sur la page vitrine.",
+        description: "Le statut de l'article a été modifié. Sauvegardez pour appliquer sur la vitrine.",
       });
     }
   };
@@ -58,8 +65,16 @@ export const ContentManagement = () => {
     deleteMenuItem(categoryId, itemId);
     toast({
       title: "Article supprimé",
-      description: "L'article a été retiré du menu et de la page vitrine.",
+      description: "L'article a été retiré du menu. Sauvegardez pour appliquer sur la vitrine.",
       variant: "destructive",
+    });
+  };
+
+  const handleEditMenuItem = (categoryId: string, itemId: string, updates: any) => {
+    updateMenuItem(categoryId, itemId, updates);
+    toast({
+      title: "Article modifié",
+      description: "Les modifications ont été appliquées. Sauvegardez pour mettre à jour la vitrine.",
     });
   };
 
@@ -78,7 +93,15 @@ export const ContentManagement = () => {
     setIsAddingMenuItem(false);
     toast({
       title: "Article ajouté",
-      description: "Le nouvel article a été ajouté au menu et est visible sur la page vitrine.",
+      description: "Le nouvel article a été ajouté au menu. Sauvegardez pour mettre à jour la vitrine.",
+    });
+  };
+
+  const handleEditHistorySection = (sectionId: string, updates: any) => {
+    updateHistorySection(sectionId, updates);
+    toast({
+      title: "Section modifiée",
+      description: "Les modifications ont été appliquées. Sauvegardez pour mettre à jour la vitrine.",
     });
   };
 
@@ -86,7 +109,7 @@ export const ContentManagement = () => {
     deleteHistorySection(id);
     toast({
       title: "Section supprimée",
-      description: "La section d'histoire a été supprimée de la page vitrine.",
+      description: "La section d'histoire a été supprimée. Sauvegardez pour mettre à jour la vitrine.",
       variant: "destructive",
     });
   };
@@ -98,14 +121,15 @@ export const ContentManagement = () => {
       title: newHistory.title,
       description: newHistory.description,
       image: '/placeholder.svg',
-      order: newHistory.order || historyContent.length + 1
+      order: newHistory.order || historyContent.length + 1,
+      hidden: false
     });
     
     setNewHistory({ title: '', description: '', order: 0 });
     setIsAddingHistory(false);
     toast({
       title: "Section ajoutée",
-      description: "La nouvelle section d'histoire a été ajoutée et est visible sur la page vitrine.",
+      description: "La nouvelle section d'histoire a été ajoutée. Sauvegardez pour mettre à jour la vitrine.",
     });
   };
 
@@ -115,7 +139,7 @@ export const ContentManagement = () => {
       updateEvent(id, { featured: !event.featured });
       toast({
         title: "Événement mis à jour",
-        description: "Le statut de mise en vedette a été modifié sur la page vitrine.",
+        description: "Le statut de mise en vedette a été modifié. Sauvegardez pour mettre à jour la vitrine.",
       });
     }
   };
@@ -124,7 +148,7 @@ export const ContentManagement = () => {
     deleteEvent(id);
     toast({
       title: "Événement supprimé",
-      description: "L'événement a été supprimé de la page vitrine.",
+      description: "L'événement a été supprimé. Sauvegardez pour mettre à jour la vitrine.",
       variant: "destructive",
     });
   };
@@ -143,17 +167,32 @@ export const ContentManagement = () => {
     setIsAddingEvent(false);
     toast({
       title: "Événement créé",
-      description: "Le nouvel événement a été ajouté et est visible sur la page vitrine.",
+      description: "Le nouvel événement a été ajouté. Sauvegardez pour mettre à jour la vitrine.",
+    });
+  };
+
+  const handleSaveAllChanges = () => {
+    toast({
+      title: "Modifications sauvegardées",
+      description: "Toutes les modifications ont été appliquées et sont maintenant visibles sur la vitrine.",
+      duration: 3000,
     });
   };
 
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Gestion du Contenu</h1>
-        <p className="text-muted-foreground">
-          Gérez le contenu de la vitrine publique - Les modifications sont automatiquement synchronisées
-        </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Gestion du Contenu</h1>
+            <p className="text-muted-foreground">
+              Gérez le contenu de la vitrine publique - Sauvegardez pour synchroniser les modifications
+            </p>
+          </div>
+          <Button onClick={handleSaveAllChanges} size="lg" className="bg-green-600 hover:bg-green-700">
+            Sauvegarder toutes les modifications
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -248,10 +287,6 @@ export const ContentManagement = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     {category.name}
-                    <Button variant="outline" size="sm">
-                      <Edit className="h-4 w-4 mr-2" />
-                      Modifier
-                    </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -269,7 +304,11 @@ export const ContentManagement = () => {
                         </div>
                         <p className="text-sm text-muted-foreground mb-3">{item.description}</p>
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setEditingMenuItem({categoryId: category.id, item})}
+                          >
                             <Edit className="h-3 w-3 mr-1" />
                             Modifier
                           </Button>
@@ -355,56 +394,62 @@ export const ContentManagement = () => {
             {historyContent
               .sort((a, b) => a.order - b.order)
               .map((content) => (
-                <Card key={content.id}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      {content.title}
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          <Edit className="h-4 w-4 mr-2" />
-                          Modifier
-                        </Button>
-                        <Button 
-                          variant="destructive" 
-                          size="sm"
-                          onClick={() => handleDeleteHistorySection(content.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                <div key={content.id} className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {content.title}
+                          {content.hidden && (
+                            <Badge variant="destructive">Masqué</Badge>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setEditingHistorySection(content)}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Modifier
+                          </Button>
+                          <Button 
+                            variant="secondary" 
+                            size="sm"
+                            onClick={() => setShowImagesFor(showImagesFor === content.id ? null : content.id)}
+                          >
+                            <ImageIcon className="h-4 w-4 mr-2" />
+                            Images
+                          </Button>
+                          <Button 
+                            variant="destructive" 
+                            size="sm"
+                            onClick={() => handleDeleteHistorySection(content.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground">{content.description}</p>
+                      <div className="mt-2">
+                        <Badge variant="outline">Ordre: {content.order}</Badge>
                       </div>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <Label htmlFor={`title-${content.id}`}>Titre</Label>
-                        <Input id={`title-${content.id}`} defaultValue={content.title} />
-                      </div>
-                      <div>
-                        <Label htmlFor={`order-${content.id}`}>Ordre d'affichage</Label>
-                        <Input 
-                          id={`order-${content.id}`} 
-                          type="number" 
-                          defaultValue={content.order} 
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <Label htmlFor={`description-${content.id}`}>Description</Label>
-                        <Textarea 
-                          id={`description-${content.id}`} 
-                          defaultValue={content.description}
-                          rows={3}
-                        />
-                      </div>
-                    </div>
-                    <Button 
-                      className="mt-4" 
-                      onClick={() => handleSave('section histoire')}
-                    >
-                      Sauvegarder
-                    </Button>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+
+                  {showImagesFor === content.id && (
+                    <ImageManager
+                      sectionId={content.id}
+                      sectionTitle={content.title}
+                      images={images}
+                      onImageAdd={addImage}
+                      onImageUpdate={updateImage}
+                      onImageDelete={deleteImage}
+                    />
+                  )}
+                </div>
               ))}
           </div>
         </TabsContent>
@@ -504,40 +549,38 @@ export const ContentManagement = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor={`event-title-${event.id}`}>Titre</Label>
-                      <Input id={`event-title-${event.id}`} defaultValue={event.title} />
-                    </div>
-                    <div>
-                      <Label htmlFor={`event-date-${event.id}`}>Date</Label>
-                      <Input 
-                        id={`event-date-${event.id}`} 
-                        type="date" 
-                        defaultValue={event.date} 
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <Label htmlFor={`event-description-${event.id}`}>Description</Label>
-                      <Textarea 
-                        id={`event-description-${event.id}`} 
-                        defaultValue={event.description}
-                        rows={2}
-                      />
-                    </div>
-                  </div>
-                  <Button 
-                    className="mt-4" 
-                    onClick={() => handleSave('événement')}
-                  >
-                    Sauvegarder
-                  </Button>
+                  <p className="text-muted-foreground">{event.description}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Dialogues d'édition */}
+      <EditMenuItemDialog
+        isOpen={!!editingMenuItem}
+        onClose={() => setEditingMenuItem(null)}
+        item={editingMenuItem?.item || null}
+        onSave={(updates) => {
+          if (editingMenuItem) {
+            handleEditMenuItem(editingMenuItem.categoryId, editingMenuItem.item.id, updates);
+            setEditingMenuItem(null);
+          }
+        }}
+      />
+
+      <EditHistorySectionDialog
+        isOpen={!!editingHistorySection}
+        onClose={() => setEditingHistorySection(null)}
+        section={editingHistorySection}
+        onSave={(updates) => {
+          if (editingHistorySection) {
+            handleEditHistorySection(editingHistorySection.id, updates);
+            setEditingHistorySection(null);
+          }
+        }}
+      />
     </div>
   );
 };
