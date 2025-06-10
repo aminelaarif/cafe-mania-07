@@ -1,25 +1,182 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import { AuthProvider } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/hooks/useTheme";
+
+// Public Pages
+import { Home } from "@/pages/public/Home";
+import { Menu } from "@/pages/public/Menu";
+import { History } from "@/pages/public/History";
+import { Reservation } from "@/pages/public/Reservation";
+import { Locations } from "@/pages/public/Locations";
+
+// Admin Pages
+import { Dashboard } from "@/pages/admin/Dashboard";
+import { GlobalConfig } from "@/pages/admin/GlobalConfig";
+import { ContentManagement } from "@/pages/admin/ContentManagement";
+
+// Layout Components
+import { Navbar } from "@/components/layout/Navbar";
+import { AdminSidebar } from "@/components/layout/AdminSidebar";
+import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Public Layout Component
+const PublicLayout = ({ children }: { children: React.ReactNode }) => (
+  <div className="min-h-screen bg-background">
+    <Navbar />
+    {children}
+  </div>
+);
+
+// Admin Layout Component
+const AdminLayout = ({ children }: { children: React.ReactNode }) => (
+  <div className="min-h-screen flex bg-background">
+    <AdminSidebar />
+    <main className="flex-1 overflow-auto">
+      {children}
+    </main>
+  </div>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <ThemeProvider>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={
+                <PublicLayout>
+                  <Home />
+                </PublicLayout>
+              } />
+              <Route path="/menu" element={
+                <PublicLayout>
+                  <Menu />
+                </PublicLayout>
+              } />
+              <Route path="/histoire" element={
+                <PublicLayout>
+                  <History />
+                </PublicLayout>
+              } />
+              <Route path="/reservation" element={
+                <PublicLayout>
+                  <Reservation />
+                </PublicLayout>
+              } />
+              <Route path="/magasins" element={
+                <PublicLayout>
+                  <Locations />
+                </PublicLayout>
+              } />
+
+              {/* Admin Routes */}
+              <Route path="/admin" element={
+                <ProtectedRoute>
+                  <AdminLayout>
+                    <Dashboard />
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/dashboard" element={
+                <ProtectedRoute>
+                  <AdminLayout>
+                    <Dashboard />
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/config" element={
+                <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
+                  <AdminLayout>
+                    <GlobalConfig />
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/content" element={
+                <ProtectedRoute allowedRoles={['marketing-manager']}>
+                  <AdminLayout>
+                    <ContentManagement />
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/users" element={
+                <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
+                  <AdminLayout>
+                    <div className="p-6">
+                      <h1 className="text-3xl font-bold">Gestion des Utilisateurs</h1>
+                      <p className="text-muted-foreground mt-2">Fonctionnalité en développement</p>
+                    </div>
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/stores" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminLayout>
+                    <div className="p-6">
+                      <h1 className="text-3xl font-bold">Gestion des Magasins</h1>
+                      <p className="text-muted-foreground mt-2">Fonctionnalité en développement</p>
+                    </div>
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/sales" element={
+                <ProtectedRoute allowedRoles={['store-manager']}>
+                  <AdminLayout>
+                    <div className="p-6">
+                      <h1 className="text-3xl font-bold">Rapport de Ventes</h1>
+                      <p className="text-muted-foreground mt-2">Fonctionnalité en développement</p>
+                    </div>
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/staff" element={
+                <ProtectedRoute allowedRoles={['store-manager']}>
+                  <AdminLayout>
+                    <div className="p-6">
+                      <h1 className="text-3xl font-bold">Gestion du Personnel</h1>
+                      <p className="text-muted-foreground mt-2">Fonctionnalité en développement</p>
+                    </div>
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/inventory" element={
+                <ProtectedRoute allowedRoles={['store-manager']}>
+                  <AdminLayout>
+                    <div className="p-6">
+                      <h1 className="text-3xl font-bold">Gestion des Stocks</h1>
+                      <p className="text-muted-foreground mt-2">Fonctionnalité en développement</p>
+                    </div>
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/promotions" element={
+                <ProtectedRoute allowedRoles={['marketing-manager']}>
+                  <AdminLayout>
+                    <div className="p-6">
+                      <h1 className="text-3xl font-bold">Gestion des Promotions</h1>
+                      <p className="text-muted-foreground mt-2">Fonctionnalité en développement</p>
+                    </div>
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+
+              {/* Catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </ThemeProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
