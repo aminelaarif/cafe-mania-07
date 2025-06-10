@@ -7,5 +7,5 @@ export * from './content';
 // Re-export specific items for easier imports
 export { mockUsers, type User } from './users';
 export { mockStores, type Store } from './stores';
-export { mockMenuItems, type MenuItem } from './menu';
-export { mockContent, type ContentSection } from './content';
+export { mockMenu, type MenuItem, type MenuCategory } from './menu';
+export { mockHistoryContent, mockEvents, type HistoryContent, type Event } from './content';
