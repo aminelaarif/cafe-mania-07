@@ -2,6 +2,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BarChart3, TrendingUp, DollarSign, ShoppingCart, Download, Filter, Calendar, RefreshCw } from 'lucide-react';
+import { SyncStatus } from '@/components/admin/SyncStatus';
+import { ActionButtons } from '@/components/admin/ActionButtons';
+import { ItemActions } from '@/components/admin/ItemActions';
 
 export const SalesReport = () => {
   const salesData = [
@@ -14,24 +17,15 @@ export const SalesReport = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Rapport de Ventes</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Filtrer
-          </Button>
-          <Button variant="outline" size="sm">
-            <Calendar className="h-4 w-4 mr-2" />
-            Période
-          </Button>
-          <Button variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualiser
-          </Button>
-          <Button size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Exporter
-          </Button>
+        <div>
+          <h1 className="text-3xl font-bold">Rapport de Ventes</h1>
+          <p className="text-muted-foreground">
+            Analysez les performances de ventes en temps réel
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <SyncStatus />
+          <ActionButtons variant="sales" />
         </div>
       </div>
 
@@ -127,14 +121,7 @@ export const SalesReport = () => {
                   <p className="text-lg font-bold">€{data.sales.toLocaleString()}</p>
                   <p className="text-sm text-muted-foreground">Moy: €{data.avg}</p>
                 </div>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="sm">
-                    Détails
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Comparer
-                  </Button>
-                </div>
+                <ItemActions itemType="report" itemId={data.period} />
               </div>
             ))}
           </div>

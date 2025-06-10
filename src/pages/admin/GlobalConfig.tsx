@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,8 @@ import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/hooks/use-toast';
 import { defaultTheme, magentaTheme, darkTheme } from '@/lib/theme';
 import { Palette, Monitor, Smartphone } from 'lucide-react';
+import { SyncStatus } from '@/components/admin/SyncStatus';
+import { ActionButtons } from '@/components/admin/ActionButtons';
 
 export const GlobalConfig = () => {
   const { theme, setTheme } = useTheme();
@@ -53,10 +54,18 @@ export const GlobalConfig = () => {
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Configuration Globale</h1>
-        <p className="text-muted-foreground">
-          Gérez l'apparence et les paramètres de l'application
-        </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Configuration Globale</h1>
+            <p className="text-muted-foreground">
+              Gérez l'apparence et les paramètres de l'application
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <SyncStatus />
+            <ActionButtons variant="config" />
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

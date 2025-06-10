@@ -1,8 +1,10 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { BarChart3, Users, Store, Package, Calendar, TrendingUp, RefreshCw, Download, Settings, Plus } from 'lucide-react';
+import { SyncStatus } from '@/components/admin/SyncStatus';
+import { ActionButtons } from '@/components/admin/ActionButtons';
+import { ItemActions } from '@/components/admin/ItemActions';
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -54,19 +56,9 @@ export const Dashboard = () => {
               Bienvenue, {user?.name} ({user?.role})
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Actualiser
-            </Button>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Exporter
-            </Button>
-            <Button size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Paramètres
-            </Button>
+          <div className="flex items-center gap-4">
+            <SyncStatus />
+            <ActionButtons variant="dashboard" />
           </div>
         </div>
       </div>
@@ -185,14 +177,7 @@ export const Dashboard = () => {
               </div>
             </div>
             <div className="mt-4 pt-4 border-t">
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1">
-                  Analyser
-                </Button>
-                <Button size="sm" className="flex-1">
-                  Optimiser
-                </Button>
-              </div>
+              <ItemActions itemType="report" />
             </div>
           </CardContent>
         </Card>
