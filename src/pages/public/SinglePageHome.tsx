@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { mockMenu, mockHistoryContent, mockEvents, mockStores } from '@/db/mockdata';
+import { useContent } from '@/contexts/ContentContext';
+import { mockStores } from '@/db/mockdata';
 import { Phone, MapPin, Clock } from 'lucide-react';
 
 export const SinglePageHome = () => {
@@ -23,8 +23,9 @@ export const SinglePageHome = () => {
     store: ''
   });
   const { toast } = useToast();
+  const { menu, historyContent, events } = useContent();
 
-  const featuredEvents = mockEvents.filter(event => event.featured);
+  const featuredEvents = events.filter(event => event.featured);
   const regions = ['all', ...new Set(mockStores.map(store => store.region))];
   const filteredStores = selectedRegion === 'all' 
     ? mockStores 
@@ -96,38 +97,23 @@ export const SinglePageHome = () => {
             Nos Spécialités
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="w-full h-48 bg-muted rounded-lg mb-4"></div>
-                <h3 className="text-xl font-semibold mb-2">Espresso Artisanal</h3>
-                <p className="text-muted-foreground mb-4">
-                  Notre blend signature, torréfié à la perfection
-                </p>
-                <p className="text-2xl font-bold text-primary">2,50 €</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="w-full h-48 bg-muted rounded-lg mb-4"></div>
-                <h3 className="text-xl font-semibold mb-2">Cappuccino</h3>
-                <p className="text-muted-foreground mb-4">
-                  Espresso avec une mousse de lait soyeuse
-                </p>
-                <p className="text-2xl font-bold text-primary">3,50 €</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="w-full h-48 bg-muted rounded-lg mb-4"></div>
-                <h3 className="text-xl font-semibold mb-2">Pâtisseries Fraîches</h3>
-                <p className="text-muted-foreground mb-4">
-                  Croissants et muffins préparés chaque matin
-                </p>
-                <p className="text-2xl font-bold text-primary">2,20 €</p>
-              </CardContent>
-            </Card>
+            {menu.length > 0 && menu[0].items.slice(0, 3).map((item) => (
+              <Card key={item.id} className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="w-full h-48 bg-muted rounded-lg mb-4"></div>
+                  <h3 className="text-xl font-semibold mb-2">{item.name}</h3>
+                  <p className="text-muted-foreground mb-4">
+                    {item.description}
+                  </p>
+                  <p className="text-2xl font-bold text-primary">{item.price.toFixed(2)} €</p>
+                  {!item.available && (
+                    <Badge variant="destructive" className="mt-2">
+                      Indisponible
+                    </Badge>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
           </div>
           
           <div className="text-center mt-12">
@@ -178,14 +164,14 @@ export const SinglePageHome = () => {
           </div>
 
           <div className="space-y-12">
-            {mockMenu.map((category) => (
+            {menu.map((category) => (
               <div key={category.id}>
                 <h3 className="text-3xl font-bold text-foreground mb-8 text-center">
                   {category.name}
                 </h3>
                 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {category.items.map((item) => (
+                  {category.items.filter(item => item.available).map((item) => (
                     <Card key={item.id} className="hover:shadow-lg transition-shadow">
                       <CardHeader>
                         <div className="flex justify-between items-start">
@@ -194,11 +180,6 @@ export const SinglePageHome = () => {
                             <p className="text-2xl font-bold text-primary">
                               {item.price.toFixed(2)} €
                             </p>
-                            {!item.available && (
-                              <Badge variant="destructive" className="mt-1">
-                                Indisponible
-                              </Badge>
-                            )}
                           </div>
                         </div>
                       </CardHeader>
@@ -228,7 +209,7 @@ export const SinglePageHome = () => {
           </div>
 
           <div className="space-y-16">
-            {mockHistoryContent
+            {historyContent
               .sort((a, b) => a.order - b.order)
               .map((content, index) => (
                 <div 

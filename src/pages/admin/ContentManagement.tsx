@@ -8,15 +8,26 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { mockHistoryContent, mockEvents, mockMenu } from '@/db/mockdata';
+import { useContent } from '@/contexts/ContentContext';
 import { Edit, Plus, Calendar, Menu as MenuIcon, History, Trash2, Eye, EyeOff } from 'lucide-react';
 
 export const ContentManagement = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('menu');
-  const [menu, setMenu] = useState(mockMenu);
-  const [historyContent, setHistoryContent] = useState(mockHistoryContent);
-  const [events, setEvents] = useState(mockEvents);
+  const {
+    menu,
+    historyContent,
+    events,
+    updateMenuItem,
+    deleteMenuItem,
+    addMenuItem,
+    deleteHistorySection,
+    addHistorySection,
+    addEvent,
+    updateEvent,
+    deleteEvent
+  } = useContent();
+
   const [isAddingMenuItem, setIsAddingMenuItem] = useState(false);
   const [isAddingHistory, setIsAddingHistory] = useState(false);
   const [isAddingEvent, setIsAddingEvent] = useState(false);
@@ -27,136 +38,112 @@ export const ContentManagement = () => {
   const handleSave = (type: string) => {
     toast({
       title: "Contenu mis à jour",
-      description: `Les modifications du ${type} ont été sauvegardées.`,
+      description: `Les modifications du ${type} ont été sauvegardées et sont maintenant visibles sur la page vitrine.`,
     });
   };
 
   const toggleItemAvailability = (categoryId: string, itemId: string) => {
-    setMenu(menu.map(category => 
-      category.id === categoryId 
-        ? {
-            ...category,
-            items: category.items.map(item =>
-              item.id === itemId ? { ...item, available: !item.available } : item
-            )
-          }
-        : category
-    ));
-    toast({
-      title: "Disponibilité mise à jour",
-      description: "Le statut de l'article a été modifié.",
-    });
+    const category = menu.find(cat => cat.id === categoryId);
+    const item = category?.items.find(itm => itm.id === itemId);
+    if (item) {
+      updateMenuItem(categoryId, itemId, { available: !item.available });
+      toast({
+        title: "Disponibilité mise à jour",
+        description: "Le statut de l'article a été modifié sur la page vitrine.",
+      });
+    }
   };
 
-  const deleteMenuItem = (categoryId: string, itemId: string) => {
-    setMenu(menu.map(category => 
-      category.id === categoryId 
-        ? {
-            ...category,
-            items: category.items.filter(item => item.id !== itemId)
-          }
-        : category
-    ));
+  const handleDeleteMenuItem = (categoryId: string, itemId: string) => {
+    deleteMenuItem(categoryId, itemId);
     toast({
       title: "Article supprimé",
-      description: "L'article a été retiré du menu.",
+      description: "L'article a été retiré du menu et de la page vitrine.",
       variant: "destructive",
     });
   };
 
-  const addMenuItem = () => {
+  const handleAddMenuItem = () => {
     if (!newItem.name || !newItem.categoryId) return;
     
-    const newId = Date.now().toString();
-    setMenu(menu.map(category => 
-      category.id === newItem.categoryId 
-        ? {
-            ...category,
-            items: [...category.items, {
-              id: newId,
-              name: newItem.name,
-              description: newItem.description,
-              price: newItem.price,
-              category: newItem.categoryId,
-              available: true
-            }]
-          }
-        : category
-    ));
+    addMenuItem(newItem.categoryId, {
+      name: newItem.name,
+      description: newItem.description,
+      price: newItem.price,
+      category: newItem.categoryId,
+      available: true
+    });
     
     setNewItem({ name: '', description: '', price: 0, categoryId: '' });
     setIsAddingMenuItem(false);
     toast({
       title: "Article ajouté",
-      description: "Le nouvel article a été ajouté au menu.",
+      description: "Le nouvel article a été ajouté au menu et est visible sur la page vitrine.",
     });
   };
 
-  const deleteHistorySection = (id: string) => {
-    setHistoryContent(historyContent.filter(content => content.id !== id));
+  const handleDeleteHistorySection = (id: string) => {
+    deleteHistorySection(id);
     toast({
       title: "Section supprimée",
-      description: "La section d'histoire a été supprimée.",
+      description: "La section d'histoire a été supprimée de la page vitrine.",
       variant: "destructive",
     });
   };
 
-  const addHistorySection = () => {
+  const handleAddHistorySection = () => {
     if (!newHistory.title) return;
     
-    const newId = Date.now().toString();
-    setHistoryContent([...historyContent, {
-      id: newId,
+    addHistorySection({
       title: newHistory.title,
       description: newHistory.description,
       image: '/placeholder.svg',
       order: newHistory.order || historyContent.length + 1
-    }]);
+    });
     
     setNewHistory({ title: '', description: '', order: 0 });
     setIsAddingHistory(false);
     toast({
       title: "Section ajoutée",
-      description: "La nouvelle section d'histoire a été ajoutée.",
+      description: "La nouvelle section d'histoire a été ajoutée et est visible sur la page vitrine.",
     });
   };
 
   const toggleEventFeatured = (id: string) => {
-    setEvents(events.map(event =>
-      event.id === id ? { ...event, featured: !event.featured } : event
-    ));
-    toast({
-      title: "Événement mis à jour",
-      description: "Le statut de mise en vedette a été modifié.",
-    });
+    const event = events.find(evt => evt.id === id);
+    if (event) {
+      updateEvent(id, { featured: !event.featured });
+      toast({
+        title: "Événement mis à jour",
+        description: "Le statut de mise en vedette a été modifié sur la page vitrine.",
+      });
+    }
   };
 
-  const deleteEvent = (id: string) => {
-    setEvents(events.filter(event => event.id !== id));
+  const handleDeleteEvent = (id: string) => {
+    deleteEvent(id);
     toast({
       title: "Événement supprimé",
-      description: "L'événement a été supprimé.",
+      description: "L'événement a été supprimé de la page vitrine.",
       variant: "destructive",
     });
   };
 
-  const addEvent = () => {
+  const handleAddEvent = () => {
     if (!newEvent.title || !newEvent.date) return;
     
-    const newId = Date.now().toString();
-    setEvents([...events, {
-      id: newId,
+    addEvent({
       title: newEvent.title,
       description: newEvent.description,
       date: newEvent.date,
       featured: newEvent.featured
-    }]);
+    });
     
     setNewEvent({ title: '', description: '', date: '', featured: false });
     setIsAddingEvent(false);
     toast({
       title: "Événement créé",
-      description: "Le nouvel événement a été ajouté.",
+      description: "Le nouvel événement a été ajouté et est visible sur la page vitrine.",
     });
   };
 
@@ -165,7 +152,7 @@ export const ContentManagement = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Gestion du Contenu</h1>
         <p className="text-muted-foreground">
-          Gérez le contenu de la vitrine publique
+          Gérez le contenu de la vitrine publique - Les modifications sont automatiquement synchronisées
         </p>
       </div>
 
@@ -247,7 +234,7 @@ export const ContentManagement = () => {
                   <Button variant="outline" onClick={() => setIsAddingMenuItem(false)}>
                     Annuler
                   </Button>
-                  <Button onClick={addMenuItem}>
+                  <Button onClick={handleAddMenuItem}>
                     Ajouter
                   </Button>
                 </DialogFooter>
@@ -297,7 +284,7 @@ export const ContentManagement = () => {
                           <Button 
                             variant="destructive" 
                             size="sm"
-                            onClick={() => deleteMenuItem(category.id, item.id)}
+                            onClick={() => handleDeleteMenuItem(category.id, item.id)}
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
@@ -356,7 +343,7 @@ export const ContentManagement = () => {
                   <Button variant="outline" onClick={() => setIsAddingHistory(false)}>
                     Annuler
                   </Button>
-                  <Button onClick={addHistorySection}>
+                  <Button onClick={handleAddHistorySection}>
                     Ajouter
                   </Button>
                 </DialogFooter>
@@ -380,7 +367,7 @@ export const ContentManagement = () => {
                         <Button 
                           variant="destructive" 
                           size="sm"
-                          onClick={() => deleteHistorySection(content.id)}
+                          onClick={() => handleDeleteHistorySection(content.id)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -474,7 +461,7 @@ export const ContentManagement = () => {
                   <Button variant="outline" onClick={() => setIsAddingEvent(false)}>
                     Annuler
                   </Button>
-                  <Button onClick={addEvent}>
+                  <Button onClick={handleAddEvent}>
                     Créer
                   </Button>
                 </DialogFooter>
@@ -506,7 +493,7 @@ export const ContentManagement = () => {
                       <Button 
                         variant="destructive" 
                         size="sm"
-                        onClick={() => deleteEvent(event.id)}
+                        onClick={() => handleDeleteEvent(event.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
