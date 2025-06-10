@@ -1,10 +1,12 @@
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft } from 'lucide-react';
 
 export const POSLogin = () => {
   const [posId, setPosId] = useState('');
@@ -44,7 +46,7 @@ export const POSLogin = () => {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Connexion POS</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Input
@@ -61,6 +63,15 @@ export const POSLogin = () => {
               {isLoading ? 'Connexion...' : 'Se connecter'}
             </Button>
           </form>
+          
+          <div className="pt-4 border-t">
+            <Link to="/">
+              <Button variant="outline" className="w-full">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Retour au site vitrine
+              </Button>
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
