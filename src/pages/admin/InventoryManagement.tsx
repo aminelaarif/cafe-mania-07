@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Package, AlertTriangle, TrendingDown, Plus } from 'lucide-react';
+import { Package, AlertTriangle, TrendingDown, Plus, Filter, Download, Settings, Edit, ShoppingCart, Archive } from 'lucide-react';
 
 export const InventoryManagement = () => {
   const inventoryItems = [
@@ -32,10 +32,24 @@ export const InventoryManagement = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Gestion des Stocks</h1>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Commander
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <Filter className="h-4 w-4 mr-2" />
+            Filtrer
+          </Button>
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Exporter
+          </Button>
+          <Button variant="secondary" size="sm">
+            <Settings className="h-4 w-4 mr-2" />
+            Configuration
+          </Button>
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Ajouter Article
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -47,6 +61,11 @@ export const InventoryManagement = () => {
           <CardContent>
             <div className="text-2xl font-bold">24</div>
             <p className="text-xs text-muted-foreground">Articles différents</p>
+            <div className="mt-3">
+              <Button variant="ghost" size="sm" className="p-0 h-auto text-xs">
+                Voir catalogue
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -58,6 +77,11 @@ export const InventoryManagement = () => {
           <CardContent>
             <div className="text-2xl font-bold text-red-600">3</div>
             <p className="text-xs text-muted-foreground">À réapprovisionner</p>
+            <div className="mt-3">
+              <Button variant="destructive" size="sm" className="text-xs">
+                Commander urgent
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -69,13 +93,29 @@ export const InventoryManagement = () => {
           <CardContent>
             <div className="text-2xl font-bold">€2,847</div>
             <p className="text-xs text-muted-foreground">Estimation actuelle</p>
+            <div className="mt-3">
+              <Button variant="ghost" size="sm" className="p-0 h-auto text-xs">
+                Analyser coûts
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Inventaire Détaillé</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>Inventaire Détaillé</CardTitle>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm">
+                <Archive className="h-4 w-4 mr-2" />
+                Archiver
+              </Button>
+              <Button variant="secondary" size="sm">
+                Inventaire complet
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -92,12 +132,35 @@ export const InventoryManagement = () => {
                       {getStatusText(item.status)}
                     </span>
                   </div>
-                  <Button variant="outline" size="sm">
-                    Commander
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <ShoppingCart className="h-4 w-4" />
+                    </Button>
+                    {item.status !== 'ok' && (
+                      <Button variant="destructive" size="sm">
+                        Commander
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
+          </div>
+          <div className="mt-6 pt-4 border-t flex justify-between">
+            <Button variant="outline">
+              Importer inventaire
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="destructive">
+                Commande urgente
+              </Button>
+              <Button>
+                Planifier réapprovisionnement
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

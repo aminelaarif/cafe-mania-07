@@ -1,7 +1,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { BarChart3, Users, Store, Package, Calendar, TrendingUp } from 'lucide-react';
+import { BarChart3, Users, Store, Package, Calendar, TrendingUp, RefreshCw, Download, Settings, Plus } from 'lucide-react';
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -46,10 +47,28 @@ export const Dashboard = () => {
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Bienvenue, {user?.name} ({user?.role})
-        </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-muted-foreground">
+              Bienvenue, {user?.name} ({user?.role})
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Actualiser
+            </Button>
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Exporter
+            </Button>
+            <Button size="sm">
+              <Settings className="h-4 w-4 mr-2" />
+              Paramètres
+            </Button>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -77,10 +96,17 @@ export const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Activité Récente</CardTitle>
-            <CardDescription>
-              Dernières actions sur la plateforme
-            </CardDescription>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Activité Récente</CardTitle>
+                <CardDescription>
+                  Dernières actions sur la plateforme
+                </CardDescription>
+              </div>
+              <Button variant="ghost" size="sm">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -106,15 +132,27 @@ export const Dashboard = () => {
                 </div>
               </div>
             </div>
+            <div className="mt-4 pt-4 border-t">
+              <Button variant="outline" className="w-full">
+                Voir toutes les activités
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Performance</CardTitle>
-            <CardDescription>
-              Indicateurs clés de performance
-            </CardDescription>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Performance</CardTitle>
+                <CardDescription>
+                  Indicateurs clés de performance
+                </CardDescription>
+              </div>
+              <Button variant="secondary" size="sm">
+                Détails
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -144,6 +182,16 @@ export const Dashboard = () => {
                 <div className="w-full bg-secondary rounded-full h-2">
                   <div className="bg-primary h-2 rounded-full" style={{width: '87%'}}></div>
                 </div>
+              </div>
+            </div>
+            <div className="mt-4 pt-4 border-t">
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1">
+                  Analyser
+                </Button>
+                <Button size="sm" className="flex-1">
+                  Optimiser
+                </Button>
               </div>
             </div>
           </CardContent>

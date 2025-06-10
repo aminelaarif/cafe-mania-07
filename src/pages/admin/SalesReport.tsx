@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart3, TrendingUp, DollarSign, ShoppingCart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { BarChart3, TrendingUp, DollarSign, ShoppingCart, Download, Filter, Calendar, RefreshCw } from 'lucide-react';
 
 export const SalesReport = () => {
   const salesData = [
@@ -12,7 +13,27 @@ export const SalesReport = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Rapport de Ventes</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Rapport de Ventes</h1>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <Filter className="h-4 w-4 mr-2" />
+            Filtrer
+          </Button>
+          <Button variant="outline" size="sm">
+            <Calendar className="h-4 w-4 mr-2" />
+            Période
+          </Button>
+          <Button variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Actualiser
+          </Button>
+          <Button size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Exporter
+          </Button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card>
@@ -23,6 +44,11 @@ export const SalesReport = () => {
           <CardContent>
             <div className="text-2xl font-bold">€2,430</div>
             <p className="text-xs text-muted-foreground">+15% vs hier</p>
+            <div className="mt-3">
+              <Button variant="ghost" size="sm" className="p-0 h-auto text-xs">
+                Voir détails
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -34,6 +60,11 @@ export const SalesReport = () => {
           <CardContent>
             <div className="text-2xl font-bold">147</div>
             <p className="text-xs text-muted-foreground">+8% vs hier</p>
+            <div className="mt-3">
+              <Button variant="ghost" size="sm" className="p-0 h-auto text-xs">
+                Analyser
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -45,6 +76,11 @@ export const SalesReport = () => {
           <CardContent>
             <div className="text-2xl font-bold">€16.53</div>
             <p className="text-xs text-muted-foreground">+2% vs hier</p>
+            <div className="mt-3">
+              <Button variant="ghost" size="sm" className="p-0 h-auto text-xs">
+                Optimiser
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -56,13 +92,28 @@ export const SalesReport = () => {
           <CardContent>
             <div className="text-2xl font-bold">94%</div>
             <p className="text-xs text-muted-foreground">Objectif mensuel</p>
+            <div className="mt-3">
+              <Button variant="ghost" size="sm" className="p-0 h-auto text-xs">
+                Rapport
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Évolution des Ventes</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>Évolution des Ventes</CardTitle>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm">
+                Graphique
+              </Button>
+              <Button variant="secondary" size="sm">
+                Tableau
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -76,8 +127,29 @@ export const SalesReport = () => {
                   <p className="text-lg font-bold">€{data.sales.toLocaleString()}</p>
                   <p className="text-sm text-muted-foreground">Moy: €{data.avg}</p>
                 </div>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm">
+                    Détails
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    Comparer
+                  </Button>
+                </div>
               </div>
             ))}
+          </div>
+          <div className="mt-6 pt-4 border-t flex justify-between">
+            <Button variant="outline">
+              Voir plus de données
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="destructive">
+                Réinitialiser
+              </Button>
+              <Button>
+                Générer rapport
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
