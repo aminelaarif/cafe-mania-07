@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { mockMenu, mockHistoryContent, mockEvents } from '@/db/mockdata';
 
@@ -8,7 +7,7 @@ interface Image {
   alt: string;
   sectionId: string;
   order: number;
-  hidden?: boolean;
+  hidden: boolean;
 }
 
 interface ContentContextType {
@@ -28,7 +27,7 @@ interface ContentContextType {
   addEvent: (event: any) => void;
   updateEvent: (eventId: string, updates: any) => void;
   deleteEvent: (eventId: string) => void;
-  addImage: (image: Omit<Image, 'id'>) => void;
+  addImage: (sectionId: string, image: Omit<Image, 'id' | 'sectionId'>) => void;
   updateImage: (imageId: string, updates: Partial<Image>) => void;
   deleteImage: (imageId: string) => void;
 }
@@ -143,8 +142,13 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     updateEvents(newEvents);
   };
 
-  const addImage = (image: Omit<Image, 'id'>) => {
-    const newImage = { ...image, id: Date.now().toString() };
+  const addImage = (sectionId: string, image: Omit<Image, 'id' | 'sectionId'>) => {
+    const newImage = { 
+      ...image, 
+      id: Date.now().toString(),
+      sectionId,
+      hidden: image.hidden ?? false
+    };
     const newImages = [...images, newImage];
     updateImages(newImages);
   };
@@ -195,3 +199,5 @@ export const useContent = () => {
   }
   return context;
 };
+
+export default ContentProvider;
