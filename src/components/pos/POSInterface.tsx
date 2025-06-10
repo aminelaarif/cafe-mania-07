@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
-import { mockMenuItems } from '@/db/mockdata';
+import { mockMenu } from '@/db/mockdata';
 import { ShoppingCart, Plus, Minus, CreditCard, Banknote } from 'lucide-react';
 
 interface CartItem {
@@ -64,7 +64,8 @@ export const POSInterface = () => {
     clearCart();
   };
 
-  const menuCategories = ['Cafés', 'Pâtisseries', 'Sandwichs'];
+  // Flatten all menu items from all categories
+  const allMenuItems = mockMenu.flatMap(category => category.items);
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -79,7 +80,7 @@ export const POSInterface = () => {
         {/* Menu Items */}
         <div className="lg:col-span-2">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {mockMenuItems.map((item) => (
+            {allMenuItems.map((item) => (
               <Card key={item.id} className="cursor-pointer hover:shadow-lg transition-shadow"
                     onClick={() => addToCart(item)}>
                 <CardHeader className="pb-2">
