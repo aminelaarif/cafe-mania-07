@@ -13,55 +13,62 @@ export const POSModeSelector = ({ onModeSelect }: POSModeSelectorProps) => {
   const { user, logout } = useAuth();
 
   const getPOSAccessInfo = () => {
-    switch (user?.role) {
+    if (!user) {
+      return { 
+        code: '999999', 
+        description: 'Utilisateur non trouvé' 
+      };
+    }
+
+    switch (user.role) {
       case 'admin':
         return { 
-          code: '000000', 
+          code: user.posId, 
           description: 'Accès administrateur - Toutes fonctionnalités POS + Gestion complète' 
         };
       case 'brand-manager':
         return { 
-          code: '111111', 
+          code: user.posId, 
           description: 'Accès Brand Manager - Supervision POS + Rapports' 
         };
       case 'store-manager':
         return { 
-          code: '222222', 
+          code: user.posId, 
           description: 'Accès Store Manager - Gestion POS magasin + Personnel' 
         };
       case 'technical-manager':
         return { 
-          code: '333333', 
+          code: user.posId, 
           description: 'Accès Chef de Point - POS + Équipe locale' 
         };
       case 'marketing-manager':
         return { 
-          code: '444444', 
+          code: user.posId, 
           description: 'Accès Marketing - Consultation POS + Promotions' 
         };
       case 'operations-staff':
         return { 
-          code: '555555', 
+          code: user.posId, 
           description: 'Accès Opérationnel - POS standard + Commandes' 
         };
       case 'production-staff':
         return { 
-          code: '666666', 
+          code: user.posId, 
           description: 'Accès Production - Commandes cuisine + Stock' 
         };
       case 'cleaning-staff':
         return { 
-          code: '777777', 
+          code: user.posId, 
           description: 'Accès Nettoyage - Pointage + Tâches' 
         };
       case 'maintenance-staff':
         return { 
-          code: '888888', 
+          code: user.posId, 
           description: 'Accès Maintenance - Pointage + Interventions' 
         };
       default:
         return { 
-          code: '999999', 
+          code: user.posId, 
           description: 'Accès standard' 
         };
     }
