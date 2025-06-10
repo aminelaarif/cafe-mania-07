@@ -5,6 +5,7 @@ export interface HistoryContent {
   description: string;
   image: string;
   order: number;
+  hidden?: boolean;
 }
 
 export interface Event {
@@ -22,21 +23,24 @@ export const mockHistoryContent: HistoryContent[] = [
     title: 'Notre Histoire',
     description: 'Depuis 1995, nous torréfions nos grains avec passion pour vous offrir le meilleur café.',
     image: '/placeholder.svg',
-    order: 1
+    order: 1,
+    hidden: false
   },
   {
     id: '2',
     title: 'Artisanat Local',
     description: 'Chaque tasse est préparée avec soin par nos baristas expérimentés.',
     image: '/placeholder.svg',
-    order: 2
+    order: 2,
+    hidden: false
   },
   {
     id: '3',
     title: 'Café Responsable',
     description: 'Nous nous approvisionnons directement auprès des producteurs pour un commerce équitable.',
     image: '/placeholder.svg',
-    order: 3
+    order: 3,
+    hidden: false
   }
 ];
 

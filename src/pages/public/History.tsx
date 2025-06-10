@@ -48,8 +48,12 @@ export const History = () => {
                               alt={sectionImages[0].alt}
                               className="w-full h-full object-cover"
                               onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                                e.currentTarget.nextElementSibling!.style.display = 'flex';
+                                const target = e.currentTarget as HTMLImageElement;
+                                target.style.display = 'none';
+                                const sibling = target.nextElementSibling as HTMLElement;
+                                if (sibling) {
+                                  sibling.style.display = 'flex';
+                                }
                               }}
                             />
                             <div className="hidden w-full h-96 bg-muted items-center justify-center">
@@ -73,8 +77,12 @@ export const History = () => {
                               alt={image.alt}
                               className="w-full h-full object-cover"
                               onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                                e.currentTarget.nextElementSibling!.style.display = 'flex';
+                                const target = e.currentTarget as HTMLImageElement;
+                                target.style.display = 'none';
+                                const sibling = target.nextElementSibling as HTMLElement;
+                                if (sibling) {
+                                  sibling.style.display = 'flex';
+                                }
                               }}
                             />
                             <div className="hidden w-full h-full bg-muted items-center justify-center text-xs">
