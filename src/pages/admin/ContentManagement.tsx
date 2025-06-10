@@ -12,6 +12,7 @@ import { useContent } from '@/contexts/ContentContext';
 import { Edit, Plus, Calendar, Menu as MenuIcon, History, Trash2, Eye, EyeOff, Image as ImageIcon } from 'lucide-react';
 import { EditMenuItemDialog } from '@/components/admin/EditMenuItemDialog';
 import { EditHistorySectionDialog } from '@/components/admin/EditHistorySectionDialog';
+import { EditEventDialog } from '@/components/admin/EditEventDialog';
 import { ImageManager } from '@/components/admin/ImageManager';
 
 export const ContentManagement = () => {
@@ -42,6 +43,7 @@ export const ContentManagement = () => {
   const [isAddingEvent, setIsAddingEvent] = useState(false);
   const [editingMenuItem, setEditingMenuItem] = useState<{categoryId: string, item: any} | null>(null);
   const [editingHistorySection, setEditingHistorySection] = useState<any>(null);
+  const [editingEvent, setEditingEvent] = useState<any>(null);
   const [showImagesFor, setShowImagesFor] = useState<string | null>(null);
 
   // États pour nouveaux éléments
@@ -142,6 +144,14 @@ export const ContentManagement = () => {
         description: "Le statut de mise en vedette a été modifié. Sauvegardez pour mettre à jour la vitrine.",
       });
     }
+  };
+
+  const handleEditEvent = (eventId: string, updates: any) => {
+    updateEvent(eventId, updates);
+    toast({
+      title: "Événement modifié",
+      description: "Les modifications ont été appliquées. Sauvegardez pour mettre à jour la vitrine.",
+    });
   };
 
   const handleDeleteEvent = (id: string) => {
@@ -524,7 +534,11 @@ export const ContentManagement = () => {
                       <Badge variant={event.featured ? "default" : "secondary"}>
                         {event.featured ? "En vedette" : "Standard"}
                       </Badge>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setEditingEvent(event)}
+                      >
                         <Edit className="h-4 w-4 mr-2" />
                         Modifier
                       </Button>
@@ -550,6 +564,11 @@ export const ContentManagement = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">{event.description}</p>
+                  {event.image && (
+                    <div className="mt-4">
+                      <p className="text-sm text-muted-foreground">Image: {event.image}</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -578,6 +597,18 @@ export const ContentManagement = () => {
           if (editingHistorySection) {
             handleEditHistorySection(editingHistorySection.id, updates);
             setEditingHistorySection(null);
+          }
+        }}
+      />
+
+      <EditEventDialog
+        isOpen={!!editingEvent}
+        onClose={() => setEditingEvent(null)}
+        event={editingEvent}
+        onSave={(updates) => {
+          if (editingEvent) {
+            handleEditEvent(editingEvent.id, updates);
+            setEditingEvent(null);
           }
         }}
       />

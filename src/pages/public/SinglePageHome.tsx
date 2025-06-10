@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useContent } from '@/contexts/ContentContext';
 import { mockStores } from '@/db/mockdata';
 import { Phone, MapPin, Clock } from 'lucide-react';
+import { MenuBook } from '@/components/public/MenuBook';
 
 export const SinglePageHome = () => {
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
@@ -163,36 +164,7 @@ export const SinglePageHome = () => {
             </p>
           </div>
 
-          <div className="space-y-12">
-            {menu.map((category) => (
-              <div key={category.id}>
-                <h3 className="text-3xl font-bold text-foreground mb-8 text-center">
-                  {category.name}
-                </h3>
-                
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {category.items.filter(item => item.available).map((item) => (
-                    <Card key={item.id} className="hover:shadow-lg transition-shadow">
-                      <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <CardTitle className="text-xl">{item.name}</CardTitle>
-                          <div className="text-right">
-                            <p className="text-2xl font-bold text-primary">
-                              {item.price.toFixed(2)} €
-                            </p>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="w-full h-32 bg-muted rounded-lg mb-4"></div>
-                        <p className="text-muted-foreground">{item.description}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+          <MenuBook />
         </div>
       </section>
 
