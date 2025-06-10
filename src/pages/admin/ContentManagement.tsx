@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -78,6 +77,7 @@ export const ContentManagement = () => {
               name: newItem.name,
               description: newItem.description,
               price: newItem.price,
+              category: newItem.categoryId,
               available: true
             }]
           }
@@ -109,6 +109,7 @@ export const ContentManagement = () => {
       id: newId,
       title: newHistory.title,
       description: newHistory.description,
+      image: '/placeholder.svg',
       order: newHistory.order || historyContent.length + 1
     }]);
     
