@@ -24,7 +24,7 @@ export const MenuBook = () => {
             className={`px-6 py-3 text-lg font-medium transition-all duration-300 ${
               activeCategory === category.id 
                 ? 'bg-primary text-primary-foreground shadow-lg transform scale-105' 
-                : 'hover:bg-muted hover:scale-105'
+                : 'hover:bg-muted hover:scale-105 text-foreground'
             }`}
           >
             {category.name}
