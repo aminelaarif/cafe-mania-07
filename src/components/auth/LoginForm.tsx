@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { BypassAuth } from './BypassAuth';
 
 interface LoginFormProps {
   onSuccess: () => void;
@@ -135,20 +136,7 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
             </TabsContent>
           </Tabs>
           
-          <div className="mt-6 text-sm text-muted-foreground">
-            <p className="font-semibold mb-2">Comptes de test :</p>
-            <div className="space-y-1">
-              <p><strong>Admin:</strong> admin@coffeeshop.com / Admin123!@#</p>
-              <p><strong>Brand Manager:</strong> brand@coffeeshop.com / Brand123!@#</p>
-              <p><strong>Store Manager:</strong> store@coffeeshop.com / Store123!@#</p>
-              <p><strong>Marketing:</strong> marketing@coffeeshop.com / Marketing123!@#</p>
-              <p><strong>Chef de Point:</strong> tech@coffeeshop.com / Tech123!@#</p>
-              <p><strong>Barista:</strong> barista@coffeeshop.com / Barista123!@#</p>
-              <p><strong>Cuisine:</strong> kitchen@coffeeshop.com / Kitchen123!@#</p>
-              <p><strong>Ménage:</strong> cleaning@coffeeshop.com / Clean123!@#</p>
-              <p><strong>Maintenance:</strong> maintenance@coffeeshop.com / Maintenance123!@#</p>
-            </div>
-          </div>
+          <BypassAuth onSuccess={onSuccess} />
         </CardContent>
       </Card>
     </div>
