@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +18,13 @@ import { Locations } from "@/pages/public/Locations";
 import { Dashboard } from "@/pages/admin/Dashboard";
 import { GlobalConfig } from "@/pages/admin/GlobalConfig";
 import { ContentManagement } from "@/pages/admin/ContentManagement";
+import { UserManagement } from "@/pages/admin/UserManagement";
+import { SalesReport } from "@/pages/admin/SalesReport";
+import { StaffManagement } from "@/pages/admin/StaffManagement";
+import { InventoryManagement } from "@/pages/admin/InventoryManagement";
+
+// POS Pages
+import { POSApp } from "@/pages/pos/POSApp";
 
 // Layout Components
 import { Navbar } from "@/components/layout/Navbar";
@@ -54,9 +62,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               {/* POS Route */}
-              <Route path="/pos" element={
-                <POSApp />
-              } />
+              <Route path="/pos" element={<POSApp />} />
 
               {/* Public Routes */}
               <Route path="/" element={

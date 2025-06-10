@@ -5,6 +5,7 @@ import { User, mockUsers } from '@/db/mockdata';
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
+  loginWithPosId: (posId: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
 }
