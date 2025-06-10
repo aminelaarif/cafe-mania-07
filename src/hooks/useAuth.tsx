@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   loginWithPosId: (posId: string) => Promise<boolean>;
+  loginWithWebIdentifier: (webIdentifier: string, password: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -26,11 +27,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
-    // Simulate API call
+    // Simulation d'appel API
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    const foundUser = mockUsers.find(u => u.email === email);
-    if (foundUser) {
+    const foundUser = mockUsers.find(u => u.email === email && u.password === password);
+    if (foundUser && foundUser.isActive) {
       setUser(foundUser);
       localStorage.setItem('user', JSON.stringify(foundUser));
       setIsLoading(false);
@@ -42,10 +43,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const loginWithPosId = async (posId: string): Promise<boolean> => {
     setIsLoading(true);
-    // Simulate API call
+    // Simulation d'appel API
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     const foundUser = mockUsers.find(u => u.posId === posId);
+    if (foundUser && foundUser.isActive) {
+      setUser(foundUser);
+      localStorage.setItem('user', JSON.stringify(foundUser));
+      setIsLoading(false);
+      return true;
+    }
+    setIsLoading(false);
+    return false;
+  };
+
+  const loginWithWebIdentifier = async (webIdentifier: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
+    // Simulation d'appel API
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const foundUser = mockUsers.find(u => u.webIdentifier === webIdentifier && u.password === password);
     if (foundUser && foundUser.isActive) {
       setUser(foundUser);
       localStorage.setItem('user', JSON.stringify(foundUser));
@@ -62,7 +79,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, loginWithPosId, logout, isLoading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      login, 
+      loginWithPosId, 
+      loginWithWebIdentifier, 
+      logout, 
+      isLoading 
+    }}>
       {children}
     </AuthContext.Provider>
   );
