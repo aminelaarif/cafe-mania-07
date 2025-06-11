@@ -20,9 +20,18 @@ export const POSLayoutSettings = ({
   onLayoutUpdate,
   canEdit
 }: POSLayoutSettingsProps) => {
+  console.log('POSLayoutSettings - layoutConfig reçu:', layoutConfig);
+  console.log('POSLayoutSettings - canEdit:', canEdit);
+
   const handleLayoutUpdate = (key: string, value: any) => {
-    if (!canEdit) return;
-    onLayoutUpdate({ ...layoutConfig, [key]: value });
+    console.log('POSLayoutSettings - mise à jour:', key, value, 'canEdit:', canEdit);
+    if (!canEdit) {
+      console.log('POSLayoutSettings - modification refusée, canEdit=false');
+      return;
+    }
+    const newConfig = { ...layoutConfig, [key]: value };
+    console.log('POSLayoutSettings - nouveau config:', newConfig);
+    onLayoutUpdate(newConfig);
   };
 
   return (
@@ -78,7 +87,10 @@ export const POSLayoutSettings = ({
             </div>
             <Switch
               checked={layoutConfig.showImages}
-              onCheckedChange={(checked) => handleLayoutUpdate('showImages', checked)}
+              onCheckedChange={(checked) => {
+                console.log('Switch images clicked:', checked);
+                handleLayoutUpdate('showImages', checked);
+              }}
               disabled={!canEdit}
             />
           </div>
@@ -92,7 +104,10 @@ export const POSLayoutSettings = ({
             </div>
             <Switch
               checked={layoutConfig.compactMode}
-              onCheckedChange={(checked) => handleLayoutUpdate('compactMode', checked)}
+              onCheckedChange={(checked) => {
+                console.log('Switch compact clicked:', checked);
+                handleLayoutUpdate('compactMode', checked);
+              }}
               disabled={!canEdit}
             />
           </div>

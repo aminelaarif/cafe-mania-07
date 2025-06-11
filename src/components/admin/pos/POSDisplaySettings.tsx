@@ -18,9 +18,18 @@ export const POSDisplaySettings = ({
   onDisplayUpdate,
   canEdit
 }: POSDisplaySettingsProps) => {
+  console.log('POSDisplaySettings - config reçu:', config);
+  console.log('POSDisplaySettings - canEdit:', canEdit);
+
   const handleDisplayUpdate = (key: string, value: any) => {
-    if (!canEdit) return;
-    onDisplayUpdate({ ...config, [key]: value });
+    console.log('POSDisplaySettings - mise à jour:', key, value, 'canEdit:', canEdit);
+    if (!canEdit) {
+      console.log('POSDisplaySettings - modification refusée, canEdit=false');
+      return;
+    }
+    const newConfig = { ...config, [key]: value };
+    console.log('POSDisplaySettings - nouveau config:', newConfig);
+    onDisplayUpdate(newConfig);
   };
 
   return (
@@ -42,7 +51,10 @@ export const POSDisplaySettings = ({
             </div>
             <Switch
               checked={config.showDescriptions}
-              onCheckedChange={(checked) => handleDisplayUpdate('showDescriptions', checked)}
+              onCheckedChange={(checked) => {
+                console.log('Switch descriptions clicked:', checked);
+                handleDisplayUpdate('showDescriptions', checked);
+              }}
               disabled={!canEdit}
             />
           </div>
@@ -56,7 +68,10 @@ export const POSDisplaySettings = ({
             </div>
             <Switch
               checked={config.showPrices}
-              onCheckedChange={(checked) => handleDisplayUpdate('showPrices', checked)}
+              onCheckedChange={(checked) => {
+                console.log('Switch prix clicked:', checked);
+                handleDisplayUpdate('showPrices', checked);
+              }}
               disabled={!canEdit}
             />
           </div>
@@ -70,7 +85,10 @@ export const POSDisplaySettings = ({
             </div>
             <Switch
               checked={config.showCardPayment}
-              onCheckedChange={(checked) => handleDisplayUpdate('showCardPayment', checked)}
+              onCheckedChange={(checked) => {
+                console.log('Switch paiement carte clicked:', checked);
+                handleDisplayUpdate('showCardPayment', checked);
+              }}
               disabled={!canEdit}
             />
           </div>
