@@ -25,20 +25,54 @@ export const MenuListManager = ({ category, onLoadList }: MenuListManagerProps) 
     const lines = content.split('\n').filter(line => line.trim());
     const items: MenuItem[] = [];
     
-    lines.forEach((line, index) => {
-      const parts = line.split('|').map(part => part.trim());
-      if (parts.length >= 4) {
-        const [name, price, description, availability] = parts;
-        items.push({
-          id: `imported-${Date.now()}-${index}`,
-          name,
-          description,
-          price: parseFloat(price) || 0,
-          category: category.id,
-          available: availability.toLowerCase() === 'true' || availability.toLowerCase() === 'disponible'
-        });
-      }
-    });
+    // Ignorer les lignes de titre et de séparateur markdown
+    const dataLines = lines.filter(line => 
+      !line.startsWith('#') && 
+      !line.startsWith('|') && 
+      !line.includes('---') &&
+      line.trim() !== ''
+    );
+    
+    // Si pas de lignes de données, essayer de parser les lignes de tableau markdown
+    if (dataLines.length === 0) {
+      const tableLines = lines.filter(line => 
+        line.startsWith('|') && 
+        !line.includes('---') &&
+        !line.includes('**Boisson**') &&
+        line.trim() !== ''
+      );
+      
+      tableLines.forEach((line, index) => {
+        const parts = line.split('|').map(part => part.trim()).filter(part => part !== '');
+        if (parts.length >= 4) {
+          const [name, price, description, availability] = parts;
+          items.push({
+            id: `imported-${Date.now()}-${index}`,
+            name: name.trim(),
+            description: description.trim(),
+            price: parseFloat(price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0,
+            category: category.id,
+            available: availability.toLowerCase().includes('disponible')
+          });
+        }
+      });
+    } else {
+      // Parser l'ancien format
+      dataLines.forEach((line, index) => {
+        const parts = line.split('|').map(part => part.trim());
+        if (parts.length >= 4) {
+          const [name, price, description, availability] = parts;
+          items.push({
+            id: `imported-${Date.now()}-${index}`,
+            name,
+            description,
+            price: parseFloat(price) || 0,
+            category: category.id,
+            available: availability.toLowerCase() === 'true' || availability.toLowerCase() === 'disponible'
+          });
+        }
+      });
+    }
     
     return items;
   };
@@ -96,15 +130,17 @@ export const MenuListManager = ({ category, onLoadList }: MenuListManagerProps) 
 
   const generateListContent = (items: MenuItem[], isBackup = false): string => {
     const date = new Date().toLocaleDateString('fr-FR');
-    const header = isBackup 
-      ? `# Liste de sauvegarde - ${category.name} - Arrêtée le ${date}\n`
-      : `# Liste actuelle - ${category.name} - ${date}\n`;
+    const title = isBackup 
+      ? `# Liste de sauvegarde - ${category.name} - Arrêtée le ${date}`
+      : `# Liste actuelle - ${category.name} - ${date}`;
+    
+    const header = `${title}\n| **Produit** | **Prix (€)** | **Description** | **Disponibilité** |\n| ----------- | ------------ | --------------- | ----------------- |`;
     
     const content = items.map(item => 
-      `${item.name} | ${item.price.toFixed(2)} | ${item.description} | ${item.available ? 'Disponible' : 'Indisponible'}`
+      `| ${item.name} | ${item.price.toFixed(2)} | ${item.description} | ${item.available ? 'Disponible' : 'Indisponible'} |`
     ).join('\n');
     
-    return header + content;
+    return header + '\n' + content;
   };
 
   const downloadList = (type: 'current' | 'backup') => {
@@ -166,7 +202,7 @@ export const MenuListManager = ({ category, onLoadList }: MenuListManagerProps) 
           <DialogHeader>
             <DialogTitle>Charger une liste - {category.name}</DialogTitle>
             <DialogDescription>
-              Sélectionnez un fichier .txt avec le format : Nom | Prix | Description | Disponibilité (une ligne par article)
+              Sélectionnez un fichier .txt avec le format tableau markdown
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -187,8 +223,12 @@ export const MenuListManager = ({ category, onLoadList }: MenuListManagerProps) 
             )}
             <div className="bg-muted p-3 rounded text-sm">
               <strong>Format attendu :</strong><br />
-              Nom du produit | Prix | Description | Disponible<br />
-              <em>Exemple : Espresso | 2.50 | Café italien traditionnel | Disponible</em>
+              <code>
+                # Liste - Catégorie - Date<br />
+                | **Produit** | **Prix (€)** | **Description** | **Disponibilité** |<br />
+                | ----------- | ------------ | --------------- | ----------------- |<br />
+                | Espresso | 2.50 | Café italien traditionnel | Disponible |
+              </code>
             </div>
           </div>
           <DialogFooter>
