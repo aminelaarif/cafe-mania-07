@@ -13,23 +13,32 @@ import { POSDisplayConfig } from '@/components/admin/pos/POSDisplayConfig';
 import { POSMenuSync } from '@/components/admin/pos/POSMenuSync';
 import { UnsavedChangesAlert } from '@/components/admin/UnsavedChangesAlert';
 import { Monitor, Palette, Calculator, Eye, RefreshCcw, Save } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 export const POSManagement = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const { getCurrentConfig, updateConfiguration, resetToDefaults, isLoading, canEdit } = usePOSConfig();
   const [activeTab, setActiveTab] = useState('menu');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showUnsavedAlert, setShowUnsavedAlert] = useState(false);
   const [pendingChanges, setPendingChanges] = useState<any>({});
+  const [previewConfig, setPreviewConfig] = useState<any>(null);
 
   const currentConfig = getCurrentConfig();
   const storeId = user?.storeId || 'store-1';
 
-  // Corriger la logique pour inclure marketing-manager dans les rôles autorisés à voir la page
   const canView = user && ['admin', 'brand-manager', 'store-manager', 'technical-manager', 'marketing-manager'].includes(user.role);
   const canEditConfig = user?.role === 'marketing-manager';
 
-  // Gérer l'alerte avant de quitter la page
+  // Initialiser la configuration d'aperçu avec la configuration actuelle
+  useEffect(() => {
+    if (currentConfig) {
+      setPreviewConfig(currentConfig);
+    }
+  }, [currentConfig]);
+
+  // Gérer l'alerte avant de quitter la page (pas les onglets)
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
@@ -38,12 +47,21 @@ export const POSManagement = () => {
       }
     };
 
+    // Gérer la navigation avec React Router
+    const handlePopstate = () => {
+      if (hasUnsavedChanges && location.pathname === '/admin/pos') {
+        setShowUnsavedAlert(true);
+      }
+    };
+
     window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopstate);
     
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopstate);
     };
-  }, [hasUnsavedChanges]);
+  }, [hasUnsavedChanges, location.pathname]);
 
   if (!canView) {
     return (
@@ -58,11 +76,19 @@ export const POSManagement = () => {
     );
   }
 
-  const handleConfigUpdate = (updates: any) => {
+  const handleConfigUpdate = (section: string, updates: any) => {
     if (!canEditConfig) return;
     
-    setPendingChanges(prev => ({ ...prev, ...updates }));
+    const newPendingChanges = { ...pendingChanges, [section]: updates };
+    setPendingChanges(newPendingChanges);
     setHasUnsavedChanges(true);
+    
+    // Mettre à jour l'aperçu en temps réel
+    const newPreviewConfig = {
+      ...previewConfig,
+      [section]: updates
+    };
+    setPreviewConfig(newPreviewConfig);
   };
 
   const handleSaveChanges = async () => {
@@ -72,6 +98,10 @@ export const POSManagement = () => {
     if (success) {
       setHasUnsavedChanges(false);
       setPendingChanges({});
+      // Réinitialiser l'aperçu avec la nouvelle configuration synchronisée
+      if (currentConfig) {
+        setPreviewConfig({ ...currentConfig, ...pendingChanges });
+      }
     }
   };
 
@@ -87,14 +117,16 @@ export const POSManagement = () => {
     if (success) {
       setHasUnsavedChanges(false);
       setPendingChanges({});
+      // Réinitialiser l'aperçu
+      const resetConfig = getCurrentConfig();
+      if (resetConfig) {
+        setPreviewConfig(resetConfig);
+      }
     }
   };
 
+  // Suppression de la logique qui bloquait le changement d'onglet
   const handleTabChange = (newTab: string) => {
-    if (hasUnsavedChanges) {
-      setShowUnsavedAlert(true);
-      return;
-    }
     setActiveTab(newTab);
   };
 
@@ -102,6 +134,10 @@ export const POSManagement = () => {
     setHasUnsavedChanges(false);
     setPendingChanges({});
     setShowUnsavedAlert(false);
+    // Restaurer l'aperçu à la configuration actuelle
+    if (currentConfig) {
+      setPreviewConfig(currentConfig);
+    }
   };
 
   const handleSaveAndContinue = async () => {
@@ -199,32 +235,32 @@ export const POSManagement = () => {
 
           <TabsContent value="layout" className="space-y-6">
             <POSLayoutConfig 
-              config={currentConfig.layout}
-              onUpdate={(layout) => handleConfigUpdate({ layout })}
+              config={previewConfig?.layout || currentConfig.layout}
+              onUpdate={(layout) => handleConfigUpdate('layout', layout)}
               canEdit={canEditConfig}
             />
           </TabsContent>
 
           <TabsContent value="colors" className="space-y-6">
             <POSColorConfig 
-              config={currentConfig.colors}
-              onUpdate={(colors) => handleConfigUpdate({ colors })}
+              config={previewConfig?.colors || currentConfig.colors}
+              onUpdate={(colors) => handleConfigUpdate('colors', colors)}
               canEdit={canEditConfig}
             />
           </TabsContent>
 
           <TabsContent value="taxes" className="space-y-6">
             <POSTaxConfig 
-              config={currentConfig.taxes}
-              onUpdate={(taxes) => handleConfigUpdate({ taxes })}
+              config={previewConfig?.taxes || currentConfig.taxes}
+              onUpdate={(taxes) => handleConfigUpdate('taxes', taxes)}
               canEdit={canEditConfig}
             />
           </TabsContent>
 
           <TabsContent value="display" className="space-y-6">
             <POSDisplayConfig 
-              config={currentConfig.display}
-              onUpdate={(display) => handleConfigUpdate({ display })}
+              config={previewConfig?.display || currentConfig.display}
+              onUpdate={(display) => handleConfigUpdate('display', display)}
               canEdit={canEditConfig}
             />
           </TabsContent>
