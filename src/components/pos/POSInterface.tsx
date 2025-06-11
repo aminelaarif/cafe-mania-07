@@ -234,6 +234,8 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
         onClose={() => setShowCashDrawer(false)}
         total={totalWithTax}
         onComplete={processCashPayment}
+        currency={config?.display?.currency || '€'}
+        currencyPosition={config?.display?.currencyPosition || 'after'}
       />
     </>
   );

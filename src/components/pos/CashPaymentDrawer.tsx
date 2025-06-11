@@ -11,14 +11,31 @@ interface CashPaymentDrawerProps {
   onClose: () => void;
   total: number;
   onComplete: () => void;
+  currency?: string;
+  currencyPosition?: 'before' | 'after';
 }
 
-export const CashPaymentDrawer = ({ isOpen, onClose, total, onComplete }: CashPaymentDrawerProps) => {
+export const CashPaymentDrawer = ({ 
+  isOpen, 
+  onClose, 
+  total, 
+  onComplete,
+  currency = '€',
+  currencyPosition = 'after'
+}: CashPaymentDrawerProps) => {
   const [receivedAmount, setReceivedAmount] = useState<string>('');
   
   // Si aucun montant n'est saisi, on utilise le total par défaut
   const received = receivedAmount === '' ? total : (parseFloat(receivedAmount) || 0);
   const change = received - total;
+
+  // Fonction pour formater les prix selon la configuration
+  const formatPrice = (price: number) => {
+    const formattedPrice = price.toFixed(2);
+    return currencyPosition === 'before' 
+      ? `${currency} ${formattedPrice}`
+      : `${formattedPrice} ${currency}`;
+  };
 
   const handleComplete = () => {
     onComplete();
@@ -44,7 +61,7 @@ export const CashPaymentDrawer = ({ isOpen, onClose, total, onComplete }: CashPa
         <div className="px-2 pb-4 space-y-6">
           <div className="text-center">
             <p className="text-base text-muted-foreground">Montant à payer</p>
-            <p className="text-4xl font-bold text-primary">{total.toFixed(2)}€</p>
+            <p className="text-4xl font-bold text-primary">{formatPrice(total)}</p>
           </div>
 
           <div className="space-y-3">
@@ -65,12 +82,12 @@ export const CashPaymentDrawer = ({ isOpen, onClose, total, onComplete }: CashPa
           <div className="p-5 bg-muted rounded-lg space-y-3">
             <div className="flex justify-between items-center text-base">
               <span className="font-medium">Montant reçu:</span>
-              <span className="text-lg">{received.toFixed(2)}€</span>
+              <span className="text-lg">{formatPrice(received)}</span>
             </div>
             <div className="flex justify-between items-center text-base">
               <span className="font-medium">Monnaie à rendre:</span>
               <span className={`font-bold text-lg ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {change.toFixed(2)}€
+                {formatPrice(change)}
               </span>
             </div>
           </div>
@@ -78,7 +95,7 @@ export const CashPaymentDrawer = ({ isOpen, onClose, total, onComplete }: CashPa
           {change < 0 && (
             <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
               <p className="text-sm text-orange-700 text-center">
-                Montant insuffisant (manque {Math.abs(change).toFixed(2)}€)
+                Montant insuffisant (manque {formatPrice(Math.abs(change))})
               </p>
             </div>
           )}
