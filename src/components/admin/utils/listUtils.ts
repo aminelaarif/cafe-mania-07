@@ -1,119 +1,109 @@
 
 import { MenuItem } from '@/db/mockdata/menu';
+import { mockGlobalConfiguration } from '@/db/mockdata/globalConfig';
 
-export const parseListFile = (content: string, categoryId: string): MenuItem[] => {
-  const lines = content.split('\n').filter(line => line.trim());
-  const items: MenuItem[] = [];
+const getGlobalConfig = () => {
+  try {
+    const stored = localStorage.getItem('global-configuration');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (error) {
+    console.error('Erreur lors du chargement de la configuration:', error);
+  }
+  return mockGlobalConfiguration;
+};
+
+const formatPriceForList = (price: number): string => {
+  const config = getGlobalConfig();
+  const formattedPrice = price.toFixed(2);
+  return config.currency.position === 'before' 
+    ? `${config.currency.symbol}${formattedPrice}`
+    : `${formattedPrice}${config.currency.symbol}`;
+};
+
+export const generateListContent = (items: MenuItem[], categoryName: string, includeAvailability: boolean = false): string => {
+  const config = getGlobalConfig();
+  const currencySymbol = config.currency.symbol;
   
-  // Ignorer les lignes de titre et de séparateur markdown
-  const dataLines = lines.filter(line => 
-    !line.startsWith('#') && 
-    !line.startsWith('|') && 
-    !line.includes('---') &&
-    line.trim() !== ''
-  );
+  let content = `# Liste - ${categoryName} - Date\n`;
+  content += `| **Produit** | **Prix ${currencySymbol}** | **Description** |\n`;
   
-  // Si pas de lignes de données, essayer de parser les lignes de tableau markdown
-  if (dataLines.length === 0) {
-    const tableLines = lines.filter(line => 
-      line.startsWith('|') && 
-      !line.includes('---') &&
-      !line.includes('**Produit**') &&
-      !line.includes('**Boisson**') &&
-      line.trim() !== ''
-    );
+  if (includeAvailability) {
+    content = `# Liste - ${categoryName} - Date\n`;
+    content += `| **Produit** | **Prix ${currencySymbol}** | **Description** | **Disponibilité** |\n`;
+    content += `| ----------- | ------------ | --------------- | ---------------- |\n`;
     
-    tableLines.forEach((line, index) => {
-      const parts = line.split('|').map(part => part.trim()).filter(part => part !== '');
-      if (parts.length >= 4) {
-        const [name, price, description, availability] = parts;
-        items.push({
-          id: `imported-${Date.now()}-${index}`,
-          name: name.trim(),
-          description: description.trim(),
-          price: parseFloat(price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0,
-          category: categoryId,
-          available: availability.toLowerCase().includes('disponible')
-        });
-      }
+    items.forEach(item => {
+      const price = formatPriceForList(item.price);
+      const availability = item.available ? 'Disponible' : 'Indisponible';
+      content += `| ${item.name} | ${price} | ${item.description || ''} | ${availability} |\n`;
     });
   } else {
-    // Parser l'ancien format
-    dataLines.forEach((line, index) => {
-      const parts = line.split('|').map(part => part.trim());
-      if (parts.length >= 4) {
-        const [name, price, description, availability] = parts;
-        items.push({
-          id: `imported-${Date.now()}-${index}`,
-          name,
-          description,
-          price: parseFloat(price) || 0,
-          category: categoryId,
-          available: availability.toLowerCase() === 'true' || availability.toLowerCase() === 'disponible'
-        });
-      }
+    content += `| ----------- | ------------ | --------------- |\n`;
+    
+    items.forEach(item => {
+      const price = formatPriceForList(item.price);
+      content += `| ${item.name} | ${price} | ${item.description || ''} |\n`;
     });
   }
   
-  return items;
+  return content;
 };
 
-export const checkForDuplicates = (items: MenuItem[]): { hasDuplicates: boolean; duplicateLines: string[] } => {
-  const nameCount: { [key: string]: number } = {};
-  const duplicates: string[] = [];
+export const parseListContent = (content: string): { items: MenuItem[]; duplicateLines: string[] } => {
+  const lines = content.split('\n').filter(line => line.trim());
+  const items: MenuItem[] = [];
+  const duplicateLines: string[] = [];
+  const existingNames = new Set<string>();
   
-  items.forEach(item => {
-    const name = item.name.trim().toLowerCase();
-    nameCount[name] = (nameCount[name] || 0) + 1;
-  });
+  let isInTable = false;
   
-  items.forEach(item => {
-    const name = item.name.trim().toLowerCase();
-    if (nameCount[name] > 1) {
-      const duplicateLine = `| ${item.name} | ${item.price.toFixed(2)} | ${item.description} | ${item.available ? 'Disponible' : 'Indisponible'} |`;
-      if (!duplicates.includes(duplicateLine)) {
-        duplicates.push(duplicateLine);
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    
+    // Détecter le début du tableau
+    if (trimmedLine.includes('|') && trimmedLine.includes('**Produit**')) {
+      isInTable = true;
+      continue;
+    }
+    
+    // Ignorer la ligne de séparation du tableau
+    if (trimmedLine.match(/^\|[\s\-|]+\|$/)) {
+      continue;
+    }
+    
+    // Parser les lignes de données
+    if (isInTable && trimmedLine.startsWith('|') && trimmedLine.endsWith('|')) {
+      const parts = trimmedLine.split('|').map(part => part.trim()).filter(part => part);
+      
+      if (parts.length >= 3) {
+        const name = parts[0];
+        const priceStr = parts[1];
+        const description = parts[2];
+        const availability = parts.length > 3 ? parts[3] : 'Disponible';
+        
+        // Nettoyer le prix (enlever les symboles de devise)
+        const price = parseFloat(priceStr.replace(/[^\d.,]/g, '').replace(',', '.'));
+        
+        if (name && !isNaN(price)) {
+          if (existingNames.has(name.toLowerCase())) {
+            duplicateLines.push(trimmedLine);
+          } else {
+            existingNames.add(name.toLowerCase());
+            items.push({
+              id: `item-${Date.now()}-${Math.random()}`,
+              name,
+              description,
+              price,
+              category: '',
+              available: availability.toLowerCase().includes('disponible')
+            });
+          }
+        }
       }
     }
-  });
+  }
   
-  return {
-    hasDuplicates: duplicates.length > 0,
-    duplicateLines: duplicates
-  };
-};
-
-export const generateListContent = (items: MenuItem[], categoryName: string, isBackup = false): string => {
-  const date = new Date().toLocaleDateString('fr-FR');
-  const title = isBackup 
-    ? `# Liste de sauvegarde - ${categoryName} - Arrêtée le ${date}`
-    : `# Liste actuelle - ${categoryName} - ${date}`;
-  
-  const header = `${title}\n| **Produit** | **Prix (€)** | **Description** | **Disponibilité** |\n| ----------- | ------------ | --------------- | ----------------- |`;
-  
-  const content = items.map(item => 
-    `| ${item.name} | ${item.price.toFixed(2)} | ${item.description} | ${item.available ? 'Disponible' : 'Indisponible'} |`
-  ).join('\n');
-  
-  return header + '\n' + content;
-};
-
-export const generateTemplate = (categoryName: string): string => {
-  return `# Modèle de liste - ${categoryName} - ${new Date().toLocaleDateString('fr-FR')}
-| **Produit** | **Prix (€)** | **Description** | **Disponibilité** |
-| ----------- | ------------ | --------------- | ----------------- |
-| Exemple Produit 1 | 3.50 | Description du produit exemple | Disponible |
-| Exemple Produit 2 | 4.20 | Autre description d'exemple | Indisponible |`;
-};
-
-export const downloadFile = (content: string, filename: string) => {
-  const blob = new Blob([content], { type: 'text/plain' });
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  window.URL.revokeObjectURL(url);
+  return { items, duplicateLines };
 };

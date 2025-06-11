@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useContent } from '@/contexts/ContentContext';
+import { useGlobalConfig } from '@/hooks/useGlobalConfig';
 import { Edit, Plus, Calendar, Menu as MenuIcon, History, Trash2, Eye, EyeOff, Image as ImageIcon } from 'lucide-react';
 import { EditMenuItemDialog } from '@/components/admin/EditMenuItemDialog';
 import { EditHistorySectionDialog } from '@/components/admin/EditHistorySectionDialog';
@@ -20,6 +21,7 @@ import { MenuItem } from '@/db/mockdata/menu';
 
 export const ContentManagement = () => {
   const { toast } = useToast();
+  const { formatPrice } = useGlobalConfig();
   const [activeTab, setActiveTab] = useState('menu');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showUnsavedAlert, setShowUnsavedAlert] = useState(false);
@@ -347,7 +349,7 @@ export const ContentManagement = () => {
                     />
                   </div>
                   <div>
-                    <Label>Prix (€)</Label>
+                    <Label>Prix</Label>
                     <Input 
                       type="number" 
                       step="0.01"
@@ -388,7 +390,7 @@ export const ContentManagement = () => {
                         <div className="flex justify-between items-start mb-2">
                           <h4 className="font-medium">{item.name}</h4>
                           <div className="text-right">
-                            <p className="font-bold text-primary">{item.price.toFixed(2)} €</p>
+                            <p className="font-bold text-primary">{formatPrice(item.price)}</p>
                             <Badge variant={item.available ? "default" : "destructive"} className="mt-1">
                               {item.available ? "Disponible" : "Indisponible"}
                             </Badge>
@@ -708,3 +710,5 @@ export const ContentManagement = () => {
 };
 
 export default ContentManagement;
+
+</edits_to_apply>

@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useGlobalConfig } from '@/hooks/useGlobalConfig';
 import { MenuCategory, MenuItem } from '@/db/mockdata/menu';
 import { LoadListDialog } from './dialogs/LoadListDialog';
 import { DownloadListDialog } from './dialogs/DownloadListDialog';
@@ -14,6 +15,7 @@ interface MenuListManagerProps {
 
 export const MenuListManager = ({ category, onLoadList }: MenuListManagerProps) => {
   const { toast } = useToast();
+  const { getGlobalConfig } = useGlobalConfig();
   const [isDuplicateAlertOpen, setIsDuplicateAlertOpen] = useState(false);
   const [pendingItems, setPendingItems] = useState<MenuItem[]>([]);
   const [duplicateLines, setDuplicateLines] = useState<string[]>([]);
