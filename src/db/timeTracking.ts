@@ -38,7 +38,7 @@ export class TimeTrackingDB {
   static calculateDaySummary(entries: TimeEntry[]): DaySummary {
     let totalWorkTime = 0;
     let totalBreakTime = 0;
-    let currentStatus: 'logged-out' | 'logged-in' | 'on-break' = 'logged-out';
+    let currentStatus: DaySummary['currentStatus'] = 'logged-out';
     
     const sortedEntries = [...entries].sort((a, b) => 
       new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
