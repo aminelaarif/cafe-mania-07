@@ -1,13 +1,13 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { MenuCategory, MenuItem } from '@/db/mockdata/menu';
-import { Upload, Download, FileText } from 'lucide-react';
+import { Upload, Download, FileText, AlertTriangle } from 'lucide-react';
 
 interface MenuListManagerProps {
   category: MenuCategory;
@@ -18,8 +18,11 @@ export const MenuListManager = ({ category, onLoadList }: MenuListManagerProps) 
   const { toast } = useToast();
   const [isLoadDialogOpen, setIsLoadDialogOpen] = useState(false);
   const [isDownloadDialogOpen, setIsDownloadDialogOpen] = useState(false);
+  const [isDuplicateAlertOpen, setIsDuplicateAlertOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [downloadType, setDownloadType] = useState<'current' | 'backup'>('current');
+  const [pendingItems, setPendingItems] = useState<MenuItem[]>([]);
+  const [duplicateLines, setDuplicateLines] = useState<string[]>([]);
 
   const parseListFile = (content: string): MenuItem[] => {
     const lines = content.split('\n').filter(line => line.trim());
@@ -78,6 +81,31 @@ export const MenuListManager = ({ category, onLoadList }: MenuListManagerProps) 
     return items;
   };
 
+  const checkForDuplicates = (items: MenuItem[]): { hasDuplicates: boolean; duplicateLines: string[] } => {
+    const nameCount: { [key: string]: number } = {};
+    const duplicates: string[] = [];
+    
+    items.forEach(item => {
+      const name = item.name.trim().toLowerCase();
+      nameCount[name] = (nameCount[name] || 0) + 1;
+    });
+    
+    items.forEach(item => {
+      const name = item.name.trim().toLowerCase();
+      if (nameCount[name] > 1) {
+        const duplicateLine = `| ${item.name} | ${item.price.toFixed(2)} | ${item.description} | ${item.available ? 'Disponible' : 'Indisponible'} |`;
+        if (!duplicates.includes(duplicateLine)) {
+          duplicates.push(duplicateLine);
+        }
+      }
+    });
+    
+    return {
+      hasDuplicates: duplicates.length > 0,
+      duplicateLines: duplicates
+    };
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type === 'text/plain') {
@@ -107,19 +135,18 @@ export const MenuListManager = ({ category, onLoadList }: MenuListManagerProps) 
         return;
       }
 
-      // Sauvegarder l'ancienne liste comme backup
-      const backupContent = generateListContent(category.items, true);
-      localStorage.setItem(`backup-${category.id}`, backupContent);
-      localStorage.setItem(`backup-${category.id}-date`, new Date().toISOString());
+      // Vérifier les doublons
+      const { hasDuplicates, duplicateLines } = checkForDuplicates(newItems);
       
-      onLoadList(category.id, newItems);
-      setIsLoadDialogOpen(false);
-      setSelectedFile(null);
-      
-      toast({
-        title: "Liste chargée avec succès",
-        description: `${newItems.length} articles importés. L'ancienne liste a été sauvegardée.`,
-      });
+      if (hasDuplicates) {
+        setPendingItems(newItems);
+        setDuplicateLines(duplicateLines);
+        setIsDuplicateAlertOpen(true);
+        return;
+      }
+
+      // Pas de doublons, continuer normalement
+      proceedWithLoad(newItems);
     } catch (error) {
       toast({
         title: "Erreur lors du chargement",
@@ -127,6 +154,39 @@ export const MenuListManager = ({ category, onLoadList }: MenuListManagerProps) 
         variant: "destructive",
       });
     }
+  };
+
+  const proceedWithLoad = (items: MenuItem[]) => {
+    // Sauvegarder l'ancienne liste comme backup
+    const backupContent = generateListContent(category.items, true);
+    localStorage.setItem(`backup-${category.id}`, backupContent);
+    localStorage.setItem(`backup-${category.id}-date`, new Date().toISOString());
+    
+    onLoadList(category.id, items);
+    setIsLoadDialogOpen(false);
+    setSelectedFile(null);
+    setPendingItems([]);
+    setDuplicateLines([]);
+    
+    toast({
+      title: "Liste chargée avec succès",
+      description: `${items.length} articles importés. L'ancienne liste a été sauvegardée.`,
+    });
+  };
+
+  const handleContinueWithDuplicates = () => {
+    setIsDuplicateAlertOpen(false);
+    proceedWithLoad(pendingItems);
+  };
+
+  const handleModifyList = () => {
+    setIsDuplicateAlertOpen(false);
+    // Garder la boîte de dialogue de chargement ouverte pour permettre la modification
+    toast({
+      title: "Modification nécessaire",
+      description: "Veuillez corriger les doublons dans votre fichier et le recharger",
+      variant: "destructive",
+    });
   };
 
   const generateListContent = (items: MenuItem[], isBackup = false): string => {
@@ -271,6 +331,41 @@ export const MenuListManager = ({ category, onLoadList }: MenuListManagerProps) 
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Alerte de doublons */}
+      <AlertDialog open={isDuplicateAlertOpen} onOpenChange={setIsDuplicateAlertOpen}>
+        <AlertDialogContent className="max-w-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              Doublons détectés
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Des produits avec des noms identiques ont été trouvés dans votre liste. 
+              Voici les lignes concernées :
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="max-h-60 overflow-y-auto bg-muted p-3 rounded">
+            <div className="text-sm font-mono">
+              {duplicateLines.map((line, index) => (
+                <div key={index} className="mb-1 text-red-600">
+                  {line}
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleModifyList}>
+              Modifier la liste
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleContinueWithDuplicates}>
+              Continuer malgré les doublons
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Bouton Télécharger liste */}
       <Dialog open={isDownloadDialogOpen} onOpenChange={setIsDownloadDialogOpen}>
