@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,10 +14,17 @@ import { EditMenuItemDialog } from '@/components/admin/EditMenuItemDialog';
 import { EditHistorySectionDialog } from '@/components/admin/EditHistorySectionDialog';
 import { EditEventDialog } from '@/components/admin/EditEventDialog';
 import { ImageManager } from '@/components/admin/ImageManager';
+import { MenuListManager } from '@/components/admin/MenuListManager';
+import { UnsavedChangesAlert } from '@/components/admin/UnsavedChangesAlert';
+import { MenuItem } from '@/db/mockdata/menu';
 
 export const ContentManagement = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('menu');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showUnsavedAlert, setShowUnsavedAlert] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
+  
   const {
     menu,
     historyContent,
@@ -34,7 +41,8 @@ export const ContentManagement = () => {
     deleteEvent,
     addImage,
     updateImage,
-    deleteImage
+    deleteImage,
+    updateMenu
   } = useContent();
 
   // États pour les dialogues
@@ -51,11 +59,29 @@ export const ContentManagement = () => {
   const [newHistory, setNewHistory] = useState({ title: '', description: '', order: 0 });
   const [newEvent, setNewEvent] = useState({ title: '', description: '', date: '', featured: false });
 
+  // Marquer les modifications non sauvegardées
+  const markAsChanged = () => {
+    if (!hasUnsavedChanges) {
+      setHasUnsavedChanges(true);
+    }
+  };
+
+  // Intercepter les changements d'onglets
+  const handleTabChange = (newTab: string) => {
+    if (hasUnsavedChanges) {
+      setPendingNavigation(() => () => setActiveTab(newTab));
+      setShowUnsavedAlert(true);
+    } else {
+      setActiveTab(newTab);
+    }
+  };
+
   const toggleItemAvailability = (categoryId: string, itemId: string) => {
     const category = menu.find(cat => cat.id === categoryId);
     const item = category?.items.find(itm => itm.id === itemId);
     if (item) {
       updateMenuItem(categoryId, itemId, { available: !item.available });
+      markAsChanged();
       toast({
         title: "Disponibilité mise à jour",
         description: "Le statut de l'article a été modifié. Sauvegardez pour appliquer sur la vitrine.",
@@ -65,6 +91,7 @@ export const ContentManagement = () => {
 
   const handleDeleteMenuItem = (categoryId: string, itemId: string) => {
     deleteMenuItem(categoryId, itemId);
+    markAsChanged();
     toast({
       title: "Article supprimé",
       description: "L'article a été retiré du menu. Sauvegardez pour appliquer sur la vitrine.",
@@ -74,6 +101,7 @@ export const ContentManagement = () => {
 
   const handleEditMenuItem = (categoryId: string, itemId: string, updates: any) => {
     updateMenuItem(categoryId, itemId, updates);
+    markAsChanged();
     toast({
       title: "Article modifié",
       description: "Les modifications ont été appliquées. Sauvegardez pour mettre à jour la vitrine.",
@@ -93,14 +121,26 @@ export const ContentManagement = () => {
     
     setNewItem({ name: '', description: '', price: 0, categoryId: '' });
     setIsAddingMenuItem(false);
+    markAsChanged();
     toast({
       title: "Article ajouté",
       description: "Le nouvel article a été ajouté au menu. Sauvegardez pour mettre à jour la vitrine.",
     });
   };
 
+  const handleLoadList = (categoryId: string, items: MenuItem[]) => {
+    const newMenu = menu.map(category => 
+      category.id === categoryId 
+        ? { ...category, items }
+        : category
+    );
+    updateMenu(newMenu);
+    markAsChanged();
+  };
+
   const handleEditHistorySection = (sectionId: string, updates: any) => {
     updateHistorySection(sectionId, updates);
+    markAsChanged();
     toast({
       title: "Section modifiée",
       description: "Les modifications ont été appliquées. Sauvegardez pour mettre à jour la vitrine.",
@@ -109,6 +149,7 @@ export const ContentManagement = () => {
 
   const handleDeleteHistorySection = (id: string) => {
     deleteHistorySection(id);
+    markAsChanged();
     toast({
       title: "Section supprimée",
       description: "La section d'histoire a été supprimée. Sauvegardez pour mettre à jour la vitrine.",
@@ -129,6 +170,7 @@ export const ContentManagement = () => {
     
     setNewHistory({ title: '', description: '', order: 0 });
     setIsAddingHistory(false);
+    markAsChanged();
     toast({
       title: "Section ajoutée",
       description: "La nouvelle section d'histoire a été ajoutée. Sauvegardez pour mettre à jour la vitrine.",
@@ -139,6 +181,7 @@ export const ContentManagement = () => {
     const event = events.find(evt => evt.id === id);
     if (event) {
       updateEvent(id, { featured: !event.featured });
+      markAsChanged();
       toast({
         title: "Événement mis à jour",
         description: "Le statut de mise en vedette a été modifié. Sauvegardez pour mettre à jour la vitrine.",
@@ -148,6 +191,7 @@ export const ContentManagement = () => {
 
   const handleEditEvent = (eventId: string, updates: any) => {
     updateEvent(eventId, updates);
+    markAsChanged();
     toast({
       title: "Événement modifié",
       description: "Les modifications ont été appliquées. Sauvegardez pour mettre à jour la vitrine.",
@@ -156,6 +200,7 @@ export const ContentManagement = () => {
 
   const handleDeleteEvent = (id: string) => {
     deleteEvent(id);
+    markAsChanged();
     toast({
       title: "Événement supprimé",
       description: "L'événement a été supprimé. Sauvegardez pour mettre à jour la vitrine.",
@@ -175,6 +220,7 @@ export const ContentManagement = () => {
     
     setNewEvent({ title: '', description: '', date: '', featured: false });
     setIsAddingEvent(false);
+    markAsChanged();
     toast({
       title: "Événement créé",
       description: "Le nouvel événement a été ajouté. Sauvegardez pour mettre à jour la vitrine.",
@@ -182,11 +228,35 @@ export const ContentManagement = () => {
   };
 
   const handleSaveAllChanges = () => {
+    setHasUnsavedChanges(false);
     toast({
       title: "Modifications sauvegardées",
       description: "Toutes les modifications ont été appliquées et sont maintenant visibles sur la vitrine.",
       duration: 3000,
     });
+  };
+
+  const handleUnsavedAlertSave = () => {
+    handleSaveAllChanges();
+    setShowUnsavedAlert(false);
+    if (pendingNavigation) {
+      pendingNavigation();
+      setPendingNavigation(null);
+    }
+  };
+
+  const handleUnsavedAlertDiscard = () => {
+    setHasUnsavedChanges(false);
+    setShowUnsavedAlert(false);
+    if (pendingNavigation) {
+      pendingNavigation();
+      setPendingNavigation(null);
+    }
+  };
+
+  const handleUnsavedAlertClose = () => {
+    setShowUnsavedAlert(false);
+    setPendingNavigation(null);
   };
 
   return (
@@ -199,13 +269,21 @@ export const ContentManagement = () => {
               Gérez le contenu de la vitrine publique - Sauvegardez pour synchroniser les modifications
             </p>
           </div>
-          <Button onClick={handleSaveAllChanges} size="lg" className="bg-green-600 hover:bg-green-700">
+          <Button 
+            onClick={handleSaveAllChanges} 
+            size="lg" 
+            className={hasUnsavedChanges 
+              ? "bg-red-600 hover:bg-red-700 text-white" 
+              : "bg-green-600 hover:bg-green-700"
+            }
+          >
             Sauvegarder toutes les modifications
+            {hasUnsavedChanges && <span className="ml-2">●</span>}
           </Button>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="menu" className="flex items-center gap-2">
             <MenuIcon className="h-4 w-4" />
@@ -296,7 +374,11 @@ export const ContentManagement = () => {
               <Card key={category.id}>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    {category.name}
+                    <span>{category.name}</span>
+                    <MenuListManager 
+                      category={category} 
+                      onLoadList={handleLoadList}
+                    />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -611,6 +693,15 @@ export const ContentManagement = () => {
             setEditingEvent(null);
           }
         }}
+      />
+
+      {/* Alerte pour les modifications non sauvegardées */}
+      <UnsavedChangesAlert
+        hasUnsavedChanges={hasUnsavedChanges}
+        isOpen={showUnsavedAlert}
+        onClose={handleUnsavedAlertClose}
+        onSave={handleUnsavedAlertSave}
+        onDiscard={handleUnsavedAlertDiscard}
       />
     </div>
   );
