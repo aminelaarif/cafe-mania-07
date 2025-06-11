@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,7 +11,8 @@ import {
   LogOut,
   Home,
   Clock,
-  History
+  History,
+  Monitor
 } from 'lucide-react';
 
 export const AdminSidebar = () => {
@@ -26,6 +26,7 @@ export const AdminSidebar = () => {
           { href: '/admin/dashboard', icon: BarChart3, label: 'Dashboard' },
           { href: '/admin/users', icon: Users, label: 'Utilisateurs' },
           { href: '/admin/stores', icon: Store, label: 'Magasins' },
+          { href: '/admin/pos', icon: Monitor, label: 'Gestion POS' },
           { href: '/admin/presence', icon: Clock, label: 'Présences' },
           { href: '/admin/personnel-history', icon: History, label: 'Historique Personnel' },
           { href: '/admin/config', icon: Settings, label: 'Configuration' },
@@ -34,6 +35,7 @@ export const AdminSidebar = () => {
         return [
           { href: '/admin/dashboard', icon: BarChart3, label: 'Dashboard' },
           { href: '/admin/users', icon: Users, label: 'Utilisateurs' },
+          { href: '/admin/pos', icon: Monitor, label: 'Gestion POS' },
           { href: '/admin/presence', icon: Clock, label: 'Présences' },
           { href: '/admin/personnel-history', icon: History, label: 'Historique Personnel' },
           { href: '/admin/config', icon: Settings, label: 'Configuration Globale' },
@@ -44,6 +46,7 @@ export const AdminSidebar = () => {
           { href: '/admin/dashboard', icon: BarChart3, label: 'Dashboard' },
           { href: '/admin/sales', icon: BarChart3, label: 'Ventes' },
           { href: '/admin/staff', icon: Users, label: 'Personnel' },
+          { href: '/admin/pos', icon: Monitor, label: 'Gestion POS' },
           { href: '/admin/presence', icon: Clock, label: 'Présences' },
           { href: '/admin/personnel-history', icon: History, label: 'Historique Personnel' },
           { href: '/admin/inventory', icon: Package, label: 'Inventaire' },
@@ -52,6 +55,7 @@ export const AdminSidebar = () => {
         return [
           { href: '/admin/dashboard', icon: BarChart3, label: 'Dashboard' },
           { href: '/admin/content', icon: Calendar, label: 'Contenu' },
+          { href: '/admin/pos', icon: Monitor, label: 'Gestion POS' },
           { href: '/admin/promotions', icon: Calendar, label: 'Promotions' },
         ];
       default:

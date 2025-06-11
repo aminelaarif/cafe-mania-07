@@ -7,6 +7,8 @@ export interface MenuItem {
   category: string;
   image?: string;
   available: boolean;
+  posVisible?: boolean;
+  taxRate?: number;
 }
 
 export interface MenuCategory {
@@ -26,7 +28,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Café italien traditionnel, intense et aromatique',
         price: 2.50,
         category: 'hot-drinks',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'americano',
@@ -34,7 +37,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Espresso allongé à l\'eau chaude, doux et équilibré',
         price: 3.00,
         category: 'hot-drinks',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'cappuccino',
@@ -42,7 +46,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Espresso avec mousse de lait onctueux et cannelle',
         price: 3.50,
         category: 'hot-drinks',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'latte',
@@ -50,7 +55,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Espresso avec lait chaud et mousse légère, crémeux',
         price: 4.00,
         category: 'hot-drinks',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'mocha',
@@ -58,7 +64,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Café, chocolat et lait chaud, un délice gourmand',
         price: 4.50,
         category: 'hot-drinks',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'hot-chocolate',
@@ -66,7 +73,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Chocolat artisanal fondu avec lait chaud et chantilly',
         price: 3.80,
         category: 'hot-drinks',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'tea-earl-grey',
@@ -74,7 +82,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Thé noir bergamote, classique et raffiné',
         price: 2.80,
         category: 'hot-drinks',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'chai-latte',
@@ -82,7 +91,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Thé épicé avec lait chaud et mousse onctueuse',
         price: 4.20,
         category: 'hot-drinks',
-        available: true
+        available: true,
+        posVisible: true
       }
     ]
   },
@@ -96,7 +106,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Café froid servi avec glaçons et lait frais',
         price: 3.50,
         category: 'cold-drinks',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'cold-brew',
@@ -104,7 +115,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Café infusé à froid pendant 12h, doux et corsé',
         price: 4.00,
         category: 'cold-drinks',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'iced-latte',
@@ -112,7 +124,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Espresso, lait froid et glaçons, rafraîchissant',
         price: 4.20,
         category: 'cold-drinks',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'frappuccino',
@@ -120,7 +133,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Café mixé avec glace et chantilly, onctueux',
         price: 5.00,
         category: 'cold-drinks',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'iced-tea',
@@ -128,7 +142,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Thé noir infusé, arôme pêche et glaçons',
         price: 3.20,
         category: 'cold-drinks',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'smoothie-berry',
@@ -136,7 +151,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Fraises, framboises, myrtilles et yaourt grec',
         price: 5.50,
         category: 'cold-drinks',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'lemonade',
@@ -144,7 +160,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Citrons frais, eau pétillante et menthe',
         price: 3.80,
         category: 'cold-drinks',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'orange-juice',
@@ -152,7 +169,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Oranges fraîches pressées du jour',
         price: 4.50,
         category: 'cold-drinks',
-        available: true
+        available: true,
+        posVisible: true
       }
     ]
   },
@@ -166,7 +184,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Croissant traditionnel français, feuilleté et doré',
         price: 2.20,
         category: 'pastries',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'pain-chocolat',
@@ -174,7 +193,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Viennoiserie avec deux barres de chocolat noir',
         price: 2.50,
         category: 'pastries',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'muffin-blueberry',
@@ -182,7 +202,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Muffin moelleux aux myrtilles fraîches et streusel',
         price: 3.20,
         category: 'pastries',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'eclair-chocolate',
@@ -190,7 +211,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Pâte à choux garnie de crème pâtissière et glaçage chocolat',
         price: 4.00,
         category: 'pastries',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'macaron-set',
@@ -198,7 +220,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Selection de 6 macarons aux saveurs variées',
         price: 12.00,
         category: 'pastries',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'tarte-citron',
@@ -206,7 +229,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Pâte sablée, crème citron et meringue italienne',
         price: 4.80,
         category: 'pastries',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'cookies-chocolate',
@@ -214,7 +238,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Cookies maison aux pépites de chocolat noir (x3)',
         price: 3.50,
         category: 'pastries',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'chouquette',
@@ -222,7 +247,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Petits choux à la crème avec grains de sucre (x6)',
         price: 2.80,
         category: 'pastries',
-        available: true
+        available: true,
+        posVisible: true
       }
     ]
   },
@@ -236,7 +262,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Baguette fraîche, jambon de Paris et beurre doux',
         price: 5.50,
         category: 'food',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'croque-monsieur',
@@ -244,7 +271,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Pain de mie, jambon, fromage gratiné au four',
         price: 7.20,
         category: 'food',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'quiche-lorraine',
@@ -252,7 +280,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Pâte brisée, lardons, œufs et crème fraîche',
         price: 6.80,
         category: 'food',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'salade-cesar',
@@ -260,7 +289,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Salade verte, poulet grillé, parmesan et croutons',
         price: 9.50,
         category: 'food',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'wrap-poulet',
@@ -268,7 +298,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Tortilla, poulet mariné, avocat, tomates et roquette',
         price: 8.20,
         category: 'food',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'bagel-saumon',
@@ -276,7 +307,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Bagel toasté, saumon fumé, cream cheese et aneth',
         price: 9.80,
         category: 'food',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'soup-day',
@@ -284,7 +316,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Soupe fraîche préparée quotidiennement, servie avec pain',
         price: 5.20,
         category: 'food',
-        available: true
+        available: true,
+        posVisible: true
       },
       {
         id: 'tartine-avocat',
@@ -292,7 +325,8 @@ export const mockMenu: MenuCategory[] = [
         description: 'Pain complet, avocat écrasé, œuf poché et graines',
         price: 7.50,
         category: 'food',
-        available: true
+        available: true,
+        posVisible: true
       }
     ]
   }
