@@ -12,7 +12,7 @@ export interface DaySummary {
   totalWorkTime: number;
   totalBreakTime: number;
   entries: TimeEntry[];
-  currentStatus: 'logged-out' | 'logged' | 'break';
+  currentStatus: 'out' | 'logged' | 'break';
 }
 
 export class TimeTrackingDB {
@@ -38,7 +38,7 @@ export class TimeTrackingDB {
   static calculateDaySummary(entries: TimeEntry[]): DaySummary {
     let totalWorkTime = 0;
     let totalBreakTime = 0;
-    let currentStatus: 'logged-out' | 'logged' | 'break' = 'logged-out';
+    let currentStatus: 'out' | 'logged' | 'break' = 'out';
     
     const sortedEntries = [...entries].sort((a, b) => 
       new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
@@ -61,7 +61,7 @@ export class TimeTrackingDB {
             totalWorkTime += (timestamp.getTime() - lastLoginTime.getTime()) / (1000 * 60);
             lastLoginTime = null;
           }
-          currentStatus = 'logged-out';
+          currentStatus = 'out';
           break;
           
         case 'break-start':
@@ -98,10 +98,10 @@ export class TimeTrackingDB {
 
   static canPerformAction(
     action: 'login' | 'logout' | 'break-start' | 'break-end',
-    currentStatus: 'logged-out' | 'logged' | 'break'
+    currentStatus: 'out' | 'logged' | 'break'
   ): boolean {
     const stateTransitions: Record<string, Record<string, boolean>> = {
-      'logged-out': {
+      'out': {
         'login': true,
         'logout': false,
         'break-start': false,
