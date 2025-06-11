@@ -5,6 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { POSPreview } from './POSPreview';
+import { useGlobalConfig } from '@/hooks/useGlobalConfig';
+import { useEffect } from 'react';
 
 interface POSDisplayConfigProps {
   config: {
@@ -34,8 +36,37 @@ export const POSDisplayConfig = ({
   canEdit, 
   previewConfig 
 }: POSDisplayConfigProps) => {
+  const { getGlobalConfig, updateConfiguration: updateGlobalConfig } = useGlobalConfig();
+
+  // Synchroniser avec la configuration globale au montage
+  useEffect(() => {
+    const globalConfig = getGlobalConfig();
+    if (config.currency !== globalConfig.currency.symbol || 
+        config.currencyPosition !== globalConfig.currency.position) {
+      onDisplayUpdate({
+        ...config,
+        currency: globalConfig.currency.symbol,
+        currencyPosition: globalConfig.currency.position
+      });
+    }
+  }, []);
+
   const handleDisplayUpdate = (key: string, value: any) => {
     if (!canEdit) return;
+    
+    // Si on change la devise ou sa position, mettre à jour la configuration globale
+    if (key === 'currency' || key === 'currencyPosition') {
+      const globalConfig = getGlobalConfig();
+      const newCurrencyConfig = {
+        ...globalConfig.currency,
+        [key === 'currency' ? 'symbol' : 'position']: value
+      };
+      
+      updateGlobalConfig({
+        currency: newCurrencyConfig
+      });
+    }
+    
     onDisplayUpdate({ ...config, [key]: value });
   };
 
@@ -203,6 +234,9 @@ export const POSDisplayConfig = ({
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">
+                  Cette devise sera appliquée à toute l'application
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -220,6 +254,9 @@ export const POSDisplayConfig = ({
                     <SelectItem value="after">Après le prix</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">
+                  Position appliquée à toute l'application
+                </p>
               </div>
             </div>
 

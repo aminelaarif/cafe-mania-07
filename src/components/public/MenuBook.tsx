@@ -1,19 +1,35 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useContent } from '@/contexts/ContentContext';
+import { useGlobalConfig } from '@/hooks/useGlobalConfig';
 
 export const MenuBook = () => {
   const { menu } = useContent();
+  const { formatPrice, getGlobalConfig } = useGlobalConfig();
   const [activeCategory, setActiveCategory] = useState(menu[0]?.id || '');
+  const [configVersion, setConfigVersion] = useState(0);
+
+  // Écouter les changements de configuration globale
+  useEffect(() => {
+    const handleGlobalConfigUpdate = () => {
+      console.log('Configuration globale mise à jour - rechargement du menu');
+      setConfigVersion(prev => prev + 1);
+    };
+
+    window.addEventListener('global-config-updated', handleGlobalConfigUpdate);
+    return () => {
+      window.removeEventListener('global-config-updated', handleGlobalConfigUpdate);
+    };
+  }, []);
 
   const activeItems = menu.find(cat => cat.id === activeCategory)?.items.filter(item => item.available) || [];
   const activeCategoryName = menu.find(cat => cat.id === activeCategory)?.name || '';
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto" key={configVersion}>
       {/* Onglets du livre */}
       <div className="flex flex-wrap justify-center gap-2 mb-8">
         {menu.map((category) => (
@@ -56,7 +72,7 @@ export const MenuBook = () => {
                 </div>
                 <div className="ml-4 text-right">
                   <p className="text-2xl font-bold text-primary">
-                    {item.price.toFixed(2)} €
+                    {formatPrice(item.price)}
                   </p>
                   {!item.available && (
                     <Badge variant="destructive" className="mt-1">

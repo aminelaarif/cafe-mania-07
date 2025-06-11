@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useContent } from '@/contexts/ContentContext';
+import { useGlobalConfig } from '@/hooks/useGlobalConfig';
 import { mockStores } from '@/db/mockdata';
 import { Phone, MapPin, Clock } from 'lucide-react';
 import { MenuBook } from '@/components/public/MenuBook';
@@ -26,6 +26,21 @@ export const SinglePageHome = () => {
   });
   const { toast } = useToast();
   const { menu, historyContent, events } = useContent();
+  const { formatPrice } = useGlobalConfig();
+  const [configVersion, setConfigVersion] = useState(0);
+
+  // Écouter les changements de configuration globale
+  useEffect(() => {
+    const handleGlobalConfigUpdate = () => {
+      console.log('Configuration globale mise à jour - rechargement de la page d\'accueil');
+      setConfigVersion(prev => prev + 1);
+    };
+
+    window.addEventListener('global-config-updated', handleGlobalConfigUpdate);
+    return () => {
+      window.removeEventListener('global-config-updated', handleGlobalConfigUpdate);
+    };
+  }, []);
 
   const featuredEvents = events.filter(event => event.featured);
   const regions = ['all', ...new Set(mockStores.map(store => store.region))];
@@ -67,7 +82,7 @@ export const SinglePageHome = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" key={configVersion}>
       {/* Hero Section */}
       <section id="accueil" className="relative h-screen flex items-center justify-center bg-gradient-to-r from-primary/20 to-secondary/20">
         <div className="text-center max-w-4xl mx-auto px-4">
@@ -107,7 +122,7 @@ export const SinglePageHome = () => {
                   <p className="text-muted-foreground mb-4">
                     {item.description}
                   </p>
-                  <p className="text-2xl font-bold text-primary">{item.price.toFixed(2)} €</p>
+                  <p className="text-2xl font-bold text-primary">{formatPrice(item.price)}</p>
                   {!item.available && (
                     <Badge variant="destructive" className="mt-2">
                       Indisponible

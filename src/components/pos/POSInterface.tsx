@@ -7,6 +7,7 @@ import { POSHeader } from './POSHeader';
 import { CategorySelector } from './CategorySelector';
 import { ProductGrid } from './ProductGrid';
 import { CartSection } from './CartSection';
+import { useGlobalConfig } from '@/hooks/useGlobalConfig';
 
 interface CartItem {
   id: string;
@@ -23,6 +24,7 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   const { user, logout } = useAuth();
   const { menu } = useContent();
   const { getCurrentConfig } = usePOSConfig();
+  const { formatPrice: globalFormatPrice, getGlobalConfig } = useGlobalConfig();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [total, setTotal] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -83,6 +85,19 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
     };
   }, []);
 
+  // Écouter les changements de configuration globale
+  useEffect(() => {
+    const handleGlobalConfigUpdate = () => {
+      console.log('Configuration globale mise à jour - rechargement POS');
+      reloadConfig();
+    };
+
+    window.addEventListener('global-config-updated', handleGlobalConfigUpdate);
+    return () => {
+      window.removeEventListener('global-config-updated', handleGlobalConfigUpdate);
+    };
+  }, []);
+
   const addToCart = (item: any) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);
     
@@ -137,15 +152,9 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
     return categoryItems.filter(item => item.available && item.posVisible !== false);
   };
 
-  // Fonction pour formater les prix selon la configuration
+  // Utiliser le formatage global des prix
   const formatPrice = (price: number) => {
-    const currency = config?.display?.currency || '€';
-    const position = config?.display?.currencyPosition || 'after';
-    const formattedPrice = price.toFixed(2);
-    
-    return position === 'before' 
-      ? `${currency} ${formattedPrice}`
-      : `${formattedPrice} ${currency}`;
+    return globalFormatPrice(price);
   };
 
   // Calculs des taxes
@@ -234,8 +243,8 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
         onClose={() => setShowCashDrawer(false)}
         total={totalWithTax}
         onComplete={processCashPayment}
-        currency={config?.display?.currency || '€'}
-        currencyPosition={config?.display?.currencyPosition || 'after'}
+        currency={getGlobalConfig().currency.symbol}
+        currencyPosition={getGlobalConfig().currency.position}
       />
     </>
   );
