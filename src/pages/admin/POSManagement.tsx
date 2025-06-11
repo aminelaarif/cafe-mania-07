@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +21,8 @@ export const POSManagement = () => {
   const currentConfig = getCurrentConfig();
   const storeId = user?.storeId || 'store-1';
 
-  const canView = user && ['admin', 'brand-manager', 'store-manager', 'technical-manager'].includes(user.role);
+  // Corriger la logique pour inclure marketing-manager dans les rôles autorisés à voir la page
+  const canView = user && ['admin', 'brand-manager', 'store-manager', 'technical-manager', 'marketing-manager'].includes(user.role);
   const canEditConfig = user?.role === 'marketing-manager';
 
   if (!canView) {
