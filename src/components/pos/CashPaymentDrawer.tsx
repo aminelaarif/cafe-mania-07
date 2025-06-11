@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from '@/components/ui/drawer';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Banknote, Calculator } from 'lucide-react';
 
 interface CashPaymentDrawerProps {
@@ -32,16 +32,16 @@ export const CashPaymentDrawer = ({ isOpen, onClose, total, onComplete }: CashPa
   };
 
   return (
-    <Drawer open={isOpen} onOpenChange={handleClose}>
-      <DrawerContent className="max-w-2xl mx-auto">
-        <DrawerHeader className="pb-6">
-          <DrawerTitle className="flex items-center justify-center gap-3 text-2xl">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader className="pb-6">
+          <DialogTitle className="flex items-center justify-center gap-3 text-2xl">
             <Banknote className="h-7 w-7" />
             Paiement Espèces
-          </DrawerTitle>
-        </DrawerHeader>
+          </DialogTitle>
+        </DialogHeader>
         
-        <div className="px-8 pb-4 space-y-6">
+        <div className="px-2 pb-4 space-y-6">
           <div className="text-center">
             <p className="text-base text-muted-foreground">Montant à payer</p>
             <p className="text-4xl font-bold text-primary">{total.toFixed(2)}€</p>
@@ -84,8 +84,8 @@ export const CashPaymentDrawer = ({ isOpen, onClose, total, onComplete }: CashPa
           )}
         </div>
 
-        <DrawerFooter className="pt-6">
-          <div className="grid grid-cols-2 gap-4">
+        <DialogFooter className="pt-6">
+          <div className="grid grid-cols-2 gap-4 w-full">
             <Button variant="outline" onClick={handleClose} className="h-14 text-base">
               Annuler
             </Button>
@@ -97,8 +97,8 @@ export const CashPaymentDrawer = ({ isOpen, onClose, total, onComplete }: CashPa
               Valider le paiement
             </Button>
           </div>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
