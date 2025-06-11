@@ -4,14 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Calendar, Clock, Users, Download, Filter, Search } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { mockUsers } from '@/db/mockdata';
 import { TimeTrackingDB, TimeEntry } from '@/db/timeTracking';
+import { PresenceFilters } from '@/components/admin/PresenceFilters';
+import { PresenceSummary } from '@/components/admin/PresenceSummary';
 
 export const PresenceManagement = () => {
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedStore, setSelectedStore] = useState('all');
+  const [filters, setFilters] = useState({
+    status: [] as string[],
+    shift: 'all',
+    department: 'all',
+    timeRange: 'all'
+  });
 
   useEffect(() => {
     loadTimeEntries();
@@ -22,16 +31,85 @@ export const PresenceManagement = () => {
     setTimeEntries(entries);
   };
 
-  const getTodayEntries = () => {
-    const today = new Date().toISOString().split('T')[0];
-    return timeEntries.filter(entry => entry.date === today);
+  const getFilteredEntries = () => {
+    let filteredEntries = timeEntries.filter(entry => entry.date === selectedDate);
+    
+    // Filtre par point de vente
+    if (selectedStore !== 'all') {
+      const storeUserIds = mockUsers
+        .filter(user => user.storeId === selectedStore)
+        .map(user => user.id);
+      filteredEntries = filteredEntries.filter(entry => 
+        storeUserIds.includes(entry.userId)
+      );
+    }
+
+    // Filtre par recherche
+    if (searchTerm) {
+      filteredEntries = filteredEntries.filter(entry =>
+        entry.userName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filteredEntries;
   };
 
-  const getSelectedDateEntries = () => {
-    return timeEntries.filter(entry => 
-      entry.date === selectedDate &&
-      (searchTerm === '' || entry.userName.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+  const getFilteredUsers = () => {
+    const filteredEntries = getFilteredEntries();
+    const uniqueUserIds = new Set(filteredEntries.map(e => e.userId));
+    
+    // Ajouter les utilisateurs qui n'ont pas pointé si on ne filtre pas par statut
+    let users = Array.from(uniqueUserIds).map(userId => 
+      mockUsers.find(u => u.id === userId)
+    ).filter(Boolean);
+
+    // Si aucun filtre de statut, inclure tous les utilisateurs du point de vente
+    if (filters.status.length === 0) {
+      const storeUsers = selectedStore === 'all' 
+        ? mockUsers 
+        : mockUsers.filter(user => user.storeId === selectedStore);
+      
+      storeUsers.forEach(user => {
+        if (!users.some(u => u?.id === user.id)) {
+          users.push(user);
+        }
+      });
+    } else {
+      // Filtrer par statut
+      users = users.filter(user => {
+        if (!user) return false;
+        const userStatus = getUserStatus(user.id);
+        return filters.status.includes(userStatus);
+      });
+    }
+
+    // Filtre par nom
+    if (searchTerm) {
+      users = users.filter(user => 
+        user?.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return users.filter(Boolean);
+  };
+
+  const getUserStatus = (userId: string) => {
+    const userEntries = timeEntries
+      .filter(entry => entry.userId === userId && entry.date === selectedDate)
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    if (userEntries.length === 0) return 'not-started';
+
+    let currentStatus = 'out';
+    for (const entry of userEntries) {
+      if (entry.action === 'login') {
+        currentStatus = 'logged';
+      } else if (entry.action === 'logout') {
+        currentStatus = 'out';
+      }
+    }
+
+    return currentStatus;
   };
 
   const getUserDaySummary = (userId: string, date: string) => {
@@ -49,15 +127,17 @@ export const PresenceManagement = () => {
   };
 
   const getStatusBadge = (userId: string, date: string) => {
-    const summary = getUserDaySummary(userId, date);
-    switch (summary.currentStatus) {
+    const status = getUserStatus(userId);
+    switch (status) {
       case 'logged':
         return <Badge className="bg-green-100 text-green-800">En service</Badge>;
       case 'out':
-        const hasWorked = summary.totalWorkTime > 0;
+        const hasWorked = getUserDaySummary(userId, date).totalWorkTime > 0;
         return hasWorked 
           ? <Badge className="bg-gray-100 text-gray-800">Terminé</Badge>
           : <Badge variant="outline">Non pointé</Badge>;
+      case 'not-started':
+        return <Badge variant="outline">Non pointé</Badge>;
       default:
         return <Badge variant="outline">Non pointé</Badge>;
     }
@@ -83,26 +163,26 @@ export const PresenceManagement = () => {
       : 'En cours';
   };
 
-  const exportData = () => {
-    const selectedEntries = getSelectedDateEntries();
-    const userSummaries = new Map();
-    
-    // Group entries by user
-    selectedEntries.forEach(entry => {
-      if (!userSummaries.has(entry.userId)) {
-        userSummaries.set(entry.userId, {
-          userName: entry.userName,
-          userId: entry.userId
-        });
-      }
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilters({
+      status: [],
+      shift: 'all',
+      department: 'all',
+      timeRange: 'all'
     });
+  };
+
+  const exportData = () => {
+    const filteredUsers = getFilteredUsers();
     
-    const csvContent = Array.from(userSummaries.values()).map(user => {
-      const firstLogin = getFirstLogin(user.userId, selectedDate);
-      const lastLogout = getLastLogout(user.userId, selectedDate);
-      const workingHours = calculateWorkingHours(user.userId, selectedDate);
+    const csvContent = filteredUsers.map(user => {
+      if (!user) return '';
+      const firstLogin = getFirstLogin(user.id, selectedDate);
+      const lastLogout = getLastLogout(user.id, selectedDate);
+      const workingHours = calculateWorkingHours(user.id, selectedDate);
       
-      return `${user.userName},${selectedDate},${firstLogin},${lastLogout},${workingHours}`;
+      return `${user.name},${selectedDate},${firstLogin},${lastLogout},${workingHours}`;
     }).join('\n');
     
     const blob = new Blob([`Nom,Date,Arrivée,Départ,Heures\n${csvContent}`], { type: 'text/csv' });
@@ -113,99 +193,47 @@ export const PresenceManagement = () => {
     a.click();
   };
 
-  const todayEntries = getTodayEntries();
-  const uniqueUsersToday = new Set(todayEntries.map(e => e.userId));
-  const presentToday = Array.from(uniqueUsersToday).filter(userId => {
-    const summary = getUserDaySummary(userId, new Date().toISOString().split('T')[0]);
-    return summary.currentStatus === 'logged';
-  }).length;
-  const totalStaff = mockUsers.filter(u => u.storeId === 'store-1').length;
-
-  const uniqueUsersSelected = new Set(getSelectedDateEntries().map(e => e.userId));
+  const filteredUsers = getFilteredUsers();
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Gestion des Présences</h1>
           <p className="text-muted-foreground">
             Suivi des pointages et gestion du temps de travail
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={exportData}>
-            <Download className="h-4 w-4 mr-2" />
-            Exporter
-          </Button>
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Filtrer
-          </Button>
-        </div>
+        <Button variant="outline" size="sm" onClick={exportData}>
+          <Download className="h-4 w-4 mr-2" />
+          Exporter
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Présents Aujourd'hui</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{presentToday}/{totalStaff}</div>
-            <p className="text-xs text-muted-foreground">
-              {Math.round((presentToday / totalStaff) * 100)}% de présence
-            </p>
-          </CardContent>
-        </Card>
+      {/* Récapitulatif des présences */}
+      <PresenceSummary 
+        timeEntries={timeEntries}
+        selectedStore={selectedStore}
+        selectedDate={selectedDate}
+      />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Retards</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">2</div>
-            <p className="text-xs text-muted-foreground">Arrivées après 9h</p>
-          </CardContent>
-        </Card>
+      {/* Filtres */}
+      <PresenceFilters
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        selectedStore={selectedStore}
+        onStoreChange={setSelectedStore}
+        filters={filters}
+        onFiltersChange={setFilters}
+        onClearFilters={clearFilters}
+      />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Heures Totales</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">156h</div>
-            <p className="text-xs text-muted-foreground">Cette semaine</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Moyennes</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">7.8h</div>
-            <p className="text-xs text-muted-foreground">Par jour/personne</p>
-          </CardContent>
-        </Card>
-      </div>
-
+      {/* Section des pointages */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Pointages du Personnel</CardTitle>
-            <div className="flex gap-4 items-center">
-              <div className="flex items-center gap-2">
-                <Search className="h-4 w-4" />
-                <Input
-                  placeholder="Rechercher un employé..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-64"
-                />
-              </div>
+            <div className="flex items-center gap-2">
               <Input
                 type="date"
                 value={selectedDate}
@@ -217,17 +245,16 @@ export const PresenceManagement = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {uniqueUsersSelected.size === 0 ? (
+            {filteredUsers.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
-                Aucun pointage trouvé pour cette date
+                Aucun employé trouvé avec les filtres appliqués
               </p>
             ) : (
-              Array.from(uniqueUsersSelected).map((userId) => {
-                const user = mockUsers.find(u => u.id === userId);
+              filteredUsers.map((user) => {
                 if (!user) return null;
                 
                 return (
-                  <div key={userId} className="flex justify-between items-center p-4 border rounded-lg">
+                  <div key={user.id} className="flex justify-between items-center p-4 border rounded-lg">
                     <div>
                       <h3 className="font-semibold">{user.name}</h3>
                       <p className="text-sm text-muted-foreground">
@@ -236,18 +263,18 @@ export const PresenceManagement = () => {
                     </div>
                     <div className="text-center">
                       <p className="text-sm">
-                        <span className="font-medium">Arrivée:</span> {getFirstLogin(userId, selectedDate)}
+                        <span className="font-medium">Arrivée:</span> {getFirstLogin(user.id, selectedDate)}
                       </p>
                       <p className="text-sm">
-                        <span className="font-medium">Départ:</span> {getLastLogout(userId, selectedDate)}
+                        <span className="font-medium">Départ:</span> {getLastLogout(user.id, selectedDate)}
                       </p>
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-medium">{calculateWorkingHours(userId, selectedDate)}</p>
+                      <p className="text-sm font-medium">{calculateWorkingHours(user.id, selectedDate)}</p>
                       <p className="text-xs text-muted-foreground">Temps de travail</p>
                     </div>
                     <div>
-                      {getStatusBadge(userId, selectedDate)}
+                      {getStatusBadge(user.id, selectedDate)}
                     </div>
                   </div>
                 );
