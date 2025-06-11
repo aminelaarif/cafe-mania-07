@@ -21,7 +21,8 @@ export const usePOSConfigChanges = () => {
   // Initialiser la configuration d'aperçu avec la configuration actuelle
   useEffect(() => {
     if (currentConfig) {
-      setPreviewConfig(currentConfig);
+      console.log('Initialisation de la configuration d\'aperçu:', currentConfig);
+      setPreviewConfig({ ...currentConfig });
     }
   }, [currentConfig]);
 
@@ -53,6 +54,8 @@ export const usePOSConfigChanges = () => {
   const handleConfigUpdate = (section: string, updates: any) => {
     if (!canEditConfig) return;
     
+    console.log('Mise à jour de la section:', section, 'avec:', updates);
+    
     const newPendingChanges = { ...pendingChanges, [section]: updates };
     setPendingChanges(newPendingChanges);
     setHasUnsavedChanges(true);
@@ -63,19 +66,18 @@ export const usePOSConfigChanges = () => {
       [section]: updates
     };
     setPreviewConfig(newPreviewConfig);
+    console.log('Nouvelle configuration d\'aperçu:', newPreviewConfig);
   };
 
   const handleSaveChanges = async () => {
     if (!canEditConfig || Object.keys(pendingChanges).length === 0) return;
     
+    console.log('Sauvegarde des modifications en cours:', pendingChanges);
     const success = await updateConfiguration(storeId, pendingChanges);
     if (success) {
       setHasUnsavedChanges(false);
       setPendingChanges({});
-      // Réinitialiser l'aperçu avec la nouvelle configuration synchronisée
-      if (currentConfig) {
-        setPreviewConfig({ ...currentConfig, ...pendingChanges });
-      }
+      console.log('Modifications sauvegardées avec succès');
     }
   };
 
@@ -94,18 +96,19 @@ export const usePOSConfigChanges = () => {
       // Réinitialiser l'aperçu
       const resetConfig = getCurrentConfig();
       if (resetConfig) {
-        setPreviewConfig(resetConfig);
+        setPreviewConfig({ ...resetConfig });
       }
     }
   };
 
   const handleDiscardChanges = () => {
+    console.log('Annulation des modifications');
     setHasUnsavedChanges(false);
     setPendingChanges({});
     setShowUnsavedAlert(false);
     // Restaurer l'aperçu à la configuration actuelle
     if (currentConfig) {
-      setPreviewConfig(currentConfig);
+      setPreviewConfig({ ...currentConfig });
     }
   };
 

@@ -34,7 +34,7 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   const reloadConfig = () => {
     const newConfig = getCurrentConfig();
     setConfig(newConfig);
-    console.log('Configuration POS rechargée:', newConfig);
+    console.log('Configuration POS rechargée dans interface:', newConfig);
   };
 
   // Initialiser la première catégorie
@@ -44,14 +44,20 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
     }
   }, [menu, selectedCategory]);
 
+  // Recharger la configuration au montage du composant
+  useEffect(() => {
+    console.log('Montage de POSInterface - rechargement de la configuration');
+    reloadConfig();
+  }, []);
+
   // Écouter les événements de synchronisation POS et recharger la configuration
   useEffect(() => {
-    const handlePOSSync = () => {
-      console.log('Configuration POS synchronisée - rechargement...');
+    const handlePOSSync = (event: any) => {
+      console.log('Événement de synchronisation reçu:', event.type, event.detail);
       // Recharger la configuration au lieu de recharger toute la page
       setTimeout(() => {
         reloadConfig();
-      }, 100);
+      }, 200);
     };
 
     window.addEventListener('menu-synced-to-pos', handlePOSSync);
@@ -148,7 +154,7 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   const selectedCategoryData = menu.find(category => category.id === selectedCategory);
   const visibleItems = selectedCategoryData ? getVisibleItems(selectedCategoryData.items) : [];
 
-  console.log('Configuration POS actuelle:', config);
+  console.log('Configuration POS actuelle dans interface:', config);
   console.log('Afficher les prix:', config?.display?.showPrices);
   console.log('Afficher les descriptions:', config?.display?.showDescriptions);
   console.log('Afficher les images:', config?.layout?.showImages);

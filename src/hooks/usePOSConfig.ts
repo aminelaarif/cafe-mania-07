@@ -13,7 +13,9 @@ export const usePOSConfig = () => {
 
   const getCurrentConfig = (storeId?: string): POSConfiguration | undefined => {
     const targetStoreId = storeId || user?.storeId || 'store-1';
-    return configurations.find(config => config.storeId === targetStoreId);
+    const config = configurations.find(config => config.storeId === targetStoreId);
+    console.log('Configuration récupérée pour', targetStoreId, ':', config);
+    return config;
   };
 
   const updateConfiguration = async (storeId: string, updates: Partial<POSConfiguration>) => {
@@ -27,10 +29,14 @@ export const usePOSConfig = () => {
     }
 
     setIsLoading(true);
+    console.log('Mise à jour de la configuration avec:', updates);
     
     try {
       // Simulation d'appel API
       await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const updatedConfig = { ...configurations.find(c => c.storeId === storeId), ...updates };
+      console.log('Configuration mise à jour:', updatedConfig);
       
       setConfigurations(prev => prev.map(config => 
         config.storeId === storeId 
@@ -43,10 +49,13 @@ export const usePOSConfig = () => {
           : config
       ));
 
-      // Déclencher la synchronisation POS
-      window.dispatchEvent(new CustomEvent('pos-config-updated', { 
-        detail: { storeId, updates } 
-      }));
+      // Forcer la synchronisation immédiate
+      setTimeout(() => {
+        console.log('Déclenchement de la synchronisation POS');
+        window.dispatchEvent(new CustomEvent('pos-config-updated', { 
+          detail: { storeId, updates, config: updatedConfig } 
+        }));
+      }, 100);
 
       toast({
         title: "Configuration mise à jour",
@@ -56,6 +65,7 @@ export const usePOSConfig = () => {
       setIsLoading(false);
       return true;
     } catch (error) {
+      console.error('Erreur lors de la mise à jour:', error);
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour la configuration",
