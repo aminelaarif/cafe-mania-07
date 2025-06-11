@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,10 +39,12 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
     }
   }, [menu, selectedCategory]);
 
-  // Écouter les événements de synchronisation POS
+  // Écouter les événements de synchronisation POS et recharger la configuration
   useEffect(() => {
     const handlePOSSync = () => {
-      console.log('Menu synchronisé avec le POS');
+      console.log('Configuration POS synchronisée - rechargement...');
+      // Forcer un re-render pour appliquer la nouvelle configuration
+      window.location.reload();
     };
 
     window.addEventListener('menu-synced-to-pos', handlePOSSync);
@@ -94,12 +97,12 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   };
 
   const processCardPayment = () => {
-    console.log(`Paiement de ${totalWithTax.toFixed(2)}€ par carte`);
+    console.log(`Paiement de ${totalWithTax.toFixed(2)}${config?.display?.currency || '€'} par carte`);
     clearCart();
   };
 
   const processCashPayment = () => {
-    console.log(`Paiement de ${totalWithTax.toFixed(2)}€ par espèces`);
+    console.log(`Paiement de ${totalWithTax.toFixed(2)}${config?.display?.currency || '€'} par espèces`);
     clearCart();
   };
 
@@ -120,6 +123,17 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
 
   const getVisibleItems = (categoryItems: any[]) => {
     return categoryItems.filter(item => item.available && item.posVisible !== false);
+  };
+
+  // Fonction pour formater les prix selon la configuration
+  const formatPrice = (price: number) => {
+    const currency = config?.display?.currency || '€';
+    const position = config?.display?.currencyPosition || 'after';
+    const formattedPrice = price.toFixed(2);
+    
+    return position === 'before' 
+      ? `${currency} ${formattedPrice}`
+      : `${formattedPrice} ${currency}`;
   };
 
   // Calculs des taxes
@@ -144,8 +158,23 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   const selectedCategoryData = menu.find(category => category.id === selectedCategory);
   const visibleItems = selectedCategoryData ? getVisibleItems(selectedCategoryData.items) : [];
 
-  // Vérifier si le paiement par carte doit être affiché
+  // Vérifier si le paiement par carte doit être affiché selon la configuration
   const showCardPayment = config?.display?.showCardPayment !== false;
+  
+  // Vérifier si les prix doivent être affichés selon la configuration
+  const shouldShowPrices = config?.display?.showPrices !== false;
+  
+  // Vérifier si les descriptions doivent être affichées selon la configuration
+  const shouldShowDescriptions = config?.display?.showDescriptions !== false;
+  
+  // Vérifier si les images doivent être affichées selon la configuration
+  const shouldShowImages = config?.layout?.showImages !== false;
+
+  console.log('Configuration POS actuelle:', config);
+  console.log('Afficher les prix:', shouldShowPrices);
+  console.log('Afficher les descriptions:', shouldShowDescriptions);
+  console.log('Afficher les images:', shouldShowImages);
+  console.log('Afficher le paiement par carte:', showCardPayment);
 
   return (
     <>
@@ -219,8 +248,17 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
                         <CardTitle className="text-base leading-tight">{item.name}</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-2">
-                        <p className="text-xl font-bold text-primary">{item.price.toFixed(2)}€</p>
-                        <p className="text-xs text-muted-foreground line-clamp-2">{item.description}</p>
+                        {shouldShowImages && (
+                          <div className="w-full h-20 bg-muted rounded mb-2 flex items-center justify-center">
+                            <span className="text-sm text-muted-foreground">Image</span>
+                          </div>
+                        )}
+                        {shouldShowPrices && (
+                          <p className="text-xl font-bold text-primary">{formatPrice(item.price)}</p>
+                        )}
+                        {shouldShowDescriptions && (
+                          <p className="text-xs text-muted-foreground line-clamp-2">{item.description}</p>
+                        )}
                         {!item.available && (
                           <Badge variant="destructive" className="text-xs">
                             Indisponible
@@ -258,7 +296,7 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-lg leading-tight truncate">{item.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            {item.price.toFixed(2)}€ x {item.quantity} = {(item.price * item.quantity).toFixed(2)}€
+                            {formatPrice(item.price)} x {item.quantity} = {formatPrice(item.price * item.quantity)}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0 ml-2">
@@ -301,15 +339,15 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
                       <div className="space-y-2 p-3 bg-muted rounded-lg">
                         <div className="flex justify-between text-sm">
                           <span>Sous-total:</span>
-                          <span>{subtotal.toFixed(2)}€</span>
+                          <span>{formatPrice(subtotal)}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span>{taxName} ({taxRate}%):</span>
-                          <span>{taxAmount.toFixed(2)}€</span>
+                          <span>{formatPrice(taxAmount)}</span>
                         </div>
                         <div className="flex justify-between items-center pt-2 border-t">
                           <span className="text-lg font-bold">Total:</span>
-                          <span className="text-2xl font-bold text-primary">{totalWithTax.toFixed(2)}€</span>
+                          <span className="text-2xl font-bold text-primary">{formatPrice(totalWithTax)}</span>
                         </div>
                       </div>
                       
@@ -348,15 +386,15 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
                       <div className="space-y-2 p-3 bg-muted rounded-lg">
                         <div className="flex justify-between text-sm">
                           <span>Sous-total:</span>
-                          <span>0.00€</span>
+                          <span>{formatPrice(0)}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span>{taxName} ({taxRate}%):</span>
-                          <span>0.00€</span>
+                          <span>{formatPrice(0)}</span>
                         </div>
                         <div className="flex justify-between items-center pt-2 border-t">
                           <span className="text-lg font-bold">Total:</span>
-                          <span className="text-2xl font-bold text-primary">0.00€</span>
+                          <span className="text-2xl font-bold text-primary">{formatPrice(0)}</span>
                         </div>
                       </div>
                       
