@@ -50,6 +50,7 @@ export const POSDisplayConfig = ({
     { value: '£', label: 'Livre (£)' },
     { value: '¥', label: 'Yen (¥)' },
     { value: 'CHF', label: 'Franc Suisse (CHF)' },
+    { value: 'TND', label: 'Dinar Tunisien (TND)' },
   ];
 
   return (
