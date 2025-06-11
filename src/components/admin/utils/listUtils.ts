@@ -107,3 +107,53 @@ export const parseListContent = (content: string): { items: MenuItem[]; duplicat
   
   return { items, duplicateLines };
 };
+
+export const downloadFile = (content: string, filename: string) => {
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+export const parseListFile = (content: string, categoryId: string): MenuItem[] => {
+  const { items } = parseListContent(content);
+  return items.map(item => ({
+    ...item,
+    category: categoryId
+  }));
+};
+
+export const checkForDuplicates = (items: MenuItem[]): { hasDuplicates: boolean; duplicateLines: string[] } => {
+  const names = new Set<string>();
+  const duplicateLines: string[] = [];
+  
+  for (const item of items) {
+    if (names.has(item.name.toLowerCase())) {
+      duplicateLines.push(`| ${item.name} | ${item.price} | ${item.description || ''} |`);
+    } else {
+      names.add(item.name.toLowerCase());
+    }
+  }
+  
+  return {
+    hasDuplicates: duplicateLines.length > 0,
+    duplicateLines
+  };
+};
+
+export const generateTemplate = (categoryName: string): string => {
+  const config = getGlobalConfig();
+  const currencySymbol = config.currency.symbol;
+  
+  return `# Liste - ${categoryName} - Date
+| **Produit** | **Prix (${currencySymbol})** | **Description** | **Disponibilité** |
+| ----------- | ------------ | --------------- | ----------------- |
+| Espresso | 2.50 | Café italien traditionnel | Disponible |
+| Cappuccino | 3.00 | Café avec mousse de lait | Disponible |
+| Croissant | 1.80 | Viennoiserie française | Indisponible |`;
+};
