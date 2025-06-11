@@ -35,20 +35,31 @@ export const POSDisplayConfig = ({
   console.log('POSDisplayConfig - config reçu:', config);
   console.log('POSDisplayConfig - canEdit:', canEdit);
 
+  // Handlers pour les mises à jour qui passent les bonnes sections
+  const handleDisplayConfigUpdate = (newDisplayConfig: any) => {
+    console.log('POSDisplayConfig - handleDisplayConfigUpdate appelé avec:', newDisplayConfig);
+    onDisplayUpdate('display', newDisplayConfig);
+  };
+
+  const handleLayoutConfigUpdate = (newLayoutConfig: any) => {
+    console.log('POSDisplayConfig - handleLayoutConfigUpdate appelé avec:', newLayoutConfig);
+    onLayoutUpdate('layout', newLayoutConfig);
+  };
+
   return (
     <div className="grid lg:grid-cols-2 gap-6">
       <div className="space-y-6">
         {/* Configuration de la mise en page */}
         <POSLayoutSettings
           layoutConfig={layoutConfig}
-          onLayoutUpdate={onLayoutUpdate}
+          onLayoutUpdate={handleLayoutConfigUpdate}
           canEdit={canEdit}
         />
 
         {/* Configuration de l'affichage */}
         <POSDisplaySettings
           config={config}
-          onDisplayUpdate={onDisplayUpdate}
+          onDisplayUpdate={handleDisplayConfigUpdate}
           canEdit={canEdit}
         />
 
@@ -56,7 +67,7 @@ export const POSDisplayConfig = ({
         <div className="space-y-6">
           <POSCurrencySettings
             config={config}
-            onDisplayUpdate={onDisplayUpdate}
+            onDisplayUpdate={handleDisplayConfigUpdate}
             canEdit={canEdit}
           />
         </div>
