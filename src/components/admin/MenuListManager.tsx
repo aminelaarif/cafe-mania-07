@@ -38,6 +38,7 @@ export const MenuListManager = ({ category, onLoadList }: MenuListManagerProps) 
       const tableLines = lines.filter(line => 
         line.startsWith('|') && 
         !line.includes('---') &&
+        !line.includes('**Produit**') &&
         !line.includes('**Boisson**') &&
         line.trim() !== ''
       );
@@ -143,6 +144,29 @@ export const MenuListManager = ({ category, onLoadList }: MenuListManagerProps) 
     return header + '\n' + content;
   };
 
+  const downloadTemplate = () => {
+    const templateContent = `# Modèle de liste - ${category.name} - ${new Date().toLocaleDateString('fr-FR')}
+| **Produit** | **Prix (€)** | **Description** | **Disponibilité** |
+| ----------- | ------------ | --------------- | ----------------- |
+| Exemple Produit 1 | 3.50 | Description du produit exemple | Disponible |
+| Exemple Produit 2 | 4.20 | Autre description d'exemple | Indisponible |`;
+    
+    const blob = new Blob([templateContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Modele_${category.name.replace(/\s+/g, '')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Modèle téléchargé",
+      description: "Le fichier modèle a été téléchargé avec succès",
+    });
+  };
+
   const downloadList = (type: 'current' | 'backup') => {
     let content = '';
     let filename = '';
@@ -222,7 +246,13 @@ export const MenuListManager = ({ category, onLoadList }: MenuListManagerProps) 
               </Badge>
             )}
             <div className="bg-muted p-3 rounded text-sm">
-              <strong>Format attendu :</strong><br />
+              <div className="flex justify-between items-center mb-2">
+                <strong>Format attendu :</strong>
+                <Button variant="outline" size="sm" onClick={downloadTemplate}>
+                  <Download className="h-3 w-3 mr-1" />
+                  Télécharger modèle
+                </Button>
+              </div>
               <code>
                 # Liste - Catégorie - Date<br />
                 | **Produit** | **Prix (€)** | **Description** | **Disponibilité** |<br />
