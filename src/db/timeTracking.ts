@@ -79,12 +79,13 @@ export class TimeTrackingDB {
       }
     });
 
-    // Calculate current ongoing times
-    if (lastLoginTime && currentStatus === 'logged-in') {
-      totalWorkTime += (new Date().getTime() - lastLoginTime.getTime()) / (1000 * 60);
+    // Calculate current ongoing times - fix the comparison issues
+    const now = new Date().getTime();
+    if (lastLoginTime && (currentStatus === 'logged-in' || currentStatus === 'on-break')) {
+      totalWorkTime += (now - lastLoginTime.getTime()) / (1000 * 60);
     }
     if (lastBreakStartTime && currentStatus === 'on-break') {
-      totalBreakTime += (new Date().getTime() - lastBreakStartTime.getTime()) / (1000 * 60);
+      totalBreakTime += (now - lastBreakStartTime.getTime()) / (1000 * 60);
     }
 
     return {
@@ -99,13 +100,27 @@ export class TimeTrackingDB {
     action: 'login' | 'logout' | 'break-start' | 'break-end',
     currentStatus: 'logged-out' | 'logged-in' | 'on-break'
   ): boolean {
-    // Define valid state transitions
-    const validTransitions: Record<string, string[]> = {
-      'logged-out': ['login'],
-      'logged-in': ['logout', 'break-start'],
-      'on-break': ['break-end']
+    const stateTransitions: Record<string, Record<string, boolean>> = {
+      'logged-out': {
+        'login': true,
+        'logout': false,
+        'break-start': false,
+        'break-end': false
+      },
+      'logged-in': {
+        'login': false,
+        'logout': true,
+        'break-start': true,
+        'break-end': false
+      },
+      'on-break': {
+        'login': false,
+        'logout': false,
+        'break-start': false,
+        'break-end': true
+      }
     };
     
-    return validTransitions[currentStatus]?.includes(action) || false;
+    return stateTransitions[currentStatus]?.[action] || false;
   }
 }
