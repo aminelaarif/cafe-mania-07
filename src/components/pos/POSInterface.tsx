@@ -237,103 +237,145 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
             </Card>
           </div>
 
-          {/* Section 3: Commande/Panier */}
+          {/* Section 3: Commande/Panier - Toujours visible */}
           <div className="col-span-4">
             <Card className="h-full flex flex-col">
               <CardHeader className="flex-shrink-0">
                 <CardTitle className="flex items-center gap-2">
                   <ShoppingCart className="h-5 w-5" />
                   Commande
-                  {cart.length > 0 && (
-                    <Badge variant="default">{cart.length}</Badge>
-                  )}
+                  <Badge variant="default">{cart.length}</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col flex-1 min-h-0">
                 <div className="flex-1 space-y-3 overflow-y-auto min-h-0">
-                  {cart.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center p-3 border rounded-lg">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-lg leading-tight truncate">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {item.price.toFixed(2)}€ x {item.quantity} = {(item.price * item.quantity).toFixed(2)}€
-                        </p>
+                  {cart.length > 0 ? (
+                    cart.map((item) => (
+                      <div key={item.id} className="flex justify-between items-center p-3 border rounded-lg">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-lg leading-tight truncate">{item.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {item.price.toFixed(2)}€ x {item.quantity} = {(item.price * item.quantity).toFixed(2)}€
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => removeFromCart(item.id)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span className="min-w-[20px] text-center text-sm">{item.quantity}</span>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => addToCart(item)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => removeFromCart(item.id)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="min-w-[20px] text-center text-sm">{item.quantity}</span>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => addToCart(item)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {cart.length === 0 && (
+                    ))
+                  ) : (
                     <div className="flex items-center justify-center h-full">
-                      <p className="text-center text-muted-foreground">Aucun article</p>
+                      <div className="text-center">
+                        <ShoppingCart className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                        <p className="text-muted-foreground">Aucun article</p>
+                        <p className="text-sm text-muted-foreground">0 articles dans la commande</p>
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {cart.length > 0 && (
-                  <div className="flex-shrink-0 mt-4 pt-4 border-t space-y-4">
-                    {/* Détail des montants avec taxes */}
-                    <div className="space-y-2 p-3 bg-muted rounded-lg">
-                      <div className="flex justify-between text-sm">
-                        <span>Sous-total:</span>
-                        <span>{subtotal.toFixed(2)}€</span>
+                {/* Section des totaux et paiements - Toujours visible */}
+                <div className="flex-shrink-0 mt-4 pt-4 border-t space-y-4">
+                  {cart.length > 0 ? (
+                    <>
+                      {/* Détail des montants avec taxes */}
+                      <div className="space-y-2 p-3 bg-muted rounded-lg">
+                        <div className="flex justify-between text-sm">
+                          <span>Sous-total:</span>
+                          <span>{subtotal.toFixed(2)}€</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>{taxName} ({taxRate}%):</span>
+                          <span>{taxAmount.toFixed(2)}€</span>
+                        </div>
+                        <div className="flex justify-between items-center pt-2 border-t">
+                          <span className="text-lg font-bold">Total:</span>
+                          <span className="text-2xl font-bold text-primary">{totalWithTax.toFixed(2)}€</span>
+                        </div>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span>{taxName} ({taxRate}%):</span>
-                        <span>{taxAmount.toFixed(2)}€</span>
+                      
+                      <div className="space-y-2">
+                        {/* Boutons de paiement */}
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => setShowCashDrawer(true)}
+                        >
+                          <Banknote className="h-4 w-4 mr-2" />
+                          Paiement Espèces
+                        </Button>
+                        <Button 
+                          className="w-full" 
+                          onClick={processCardPayment}
+                          style={config ? { backgroundColor: config.colors.primary } : undefined}
+                        >
+                          <CreditCard className="h-4 w-4 mr-2" />
+                          Paiement Carte
+                        </Button>
+                        <Button 
+                          variant="destructive" 
+                          className="w-full"
+                          onClick={clearCart}
+                        >
+                          Annuler
+                        </Button>
                       </div>
-                      <div className="flex justify-between items-center pt-2 border-t">
-                        <span className="text-lg font-bold">Total:</span>
-                        <span className="text-2xl font-bold text-primary">{totalWithTax.toFixed(2)}€</span>
+                    </>
+                  ) : (
+                    /* État panier vide - Totaux à zéro */
+                    <div className="space-y-4">
+                      <div className="space-y-2 p-3 bg-muted rounded-lg">
+                        <div className="flex justify-between text-sm">
+                          <span>Sous-total:</span>
+                          <span>0.00€</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>{taxName} ({taxRate}%):</span>
+                          <span>0.00€</span>
+                        </div>
+                        <div className="flex justify-between items-center pt-2 border-t">
+                          <span className="text-lg font-bold">Total:</span>
+                          <span className="text-2xl font-bold text-primary">0.00€</span>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          disabled
+                        >
+                          <Banknote className="h-4 w-4 mr-2" />
+                          Paiement Espèces
+                        </Button>
+                        <Button 
+                          className="w-full" 
+                          disabled
+                          style={config ? { backgroundColor: config.colors.primary, opacity: 0.5 } : undefined}
+                        >
+                          <CreditCard className="h-4 w-4 mr-2" />
+                          Paiement Carte
+                        </Button>
                       </div>
                     </div>
-                    
-                    <div className="space-y-2">
-                      {/* Boutons inversés : Espèces en premier, puis Carte */}
-                      <Button 
-                        variant="outline" 
-                        className="w-full"
-                        onClick={() => setShowCashDrawer(true)}
-                      >
-                        <Banknote className="h-4 w-4 mr-2" />
-                        Paiement Espèces
-                      </Button>
-                      <Button 
-                        className="w-full" 
-                        onClick={processCardPayment}
-                        style={config ? { backgroundColor: config.colors.primary } : undefined}
-                      >
-                        <CreditCard className="h-4 w-4 mr-2" />
-                        Paiement Carte
-                      </Button>
-                      <Button 
-                        variant="destructive" 
-                        className="w-full"
-                        onClick={clearCart}
-                      >
-                        Annuler
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -350,3 +392,5 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
     </>
   );
 };
+
+export default POSInterface;
