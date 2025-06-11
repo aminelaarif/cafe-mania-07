@@ -17,7 +17,7 @@ export const useTimeTracking = (userId: string, userName: string) => {
     loadTodayData();
   }, [userId]);
 
-  const saveTimeEntry = (action: 'login' | 'logout' | 'break-start' | 'break-end') => {
+  const saveTimeEntry = (action: 'login' | 'logout', explanation?: string) => {
     const now = new Date();
     const today = now.toISOString().split('T')[0];
     
@@ -27,7 +27,8 @@ export const useTimeTracking = (userId: string, userName: string) => {
       userName,
       timestamp: now.toISOString(),
       action,
-      date: today
+      date: today,
+      explanation
     };
     
     TimeTrackingDB.saveTimeEntry(entry);
@@ -35,9 +36,7 @@ export const useTimeTracking = (userId: string, userName: string) => {
     
     const actionTexts = {
       'login': 'Pointage d\'entrée',
-      'logout': 'Pointage de sortie',
-      'break-start': 'Début de pause',
-      'break-end': 'Fin de pause'
+      'logout': 'Pointage de sortie'
     };
     
     toast({
@@ -46,18 +45,16 @@ export const useTimeTracking = (userId: string, userName: string) => {
     });
   };
 
-  const canPerformAction = (action: 'login' | 'logout' | 'break-start' | 'break-end'): boolean => {
+  const canPerformAction = (action: 'login' | 'logout'): boolean => {
     if (!todaySummary) return action === 'login';
     return TimeTrackingDB.canPerformAction(action, todaySummary.currentStatus);
   };
 
-  const handleAction = (action: 'login' | 'logout' | 'break-start' | 'break-end') => {
+  const handleAction = (action: 'login' | 'logout', explanation?: string) => {
     if (!canPerformAction(action)) {
       const errorMessages = {
-        'login': "Vous devez d'abord pointer votre sortie ou terminer votre pause",
-        'logout': "Vous devez d'abord pointer votre entrée",
-        'break-start': "Vous devez être en service pour prendre une pause",
-        'break-end': "Vous n'êtes pas en pause actuellement"
+        'login': "Vous êtes déjà en service",
+        'logout': "Vous devez d'abord pointer votre entrée"
       };
       
       toast({
@@ -68,7 +65,7 @@ export const useTimeTracking = (userId: string, userName: string) => {
       return;
     }
     
-    saveTimeEntry(action);
+    saveTimeEntry(action, explanation);
   };
 
   return {

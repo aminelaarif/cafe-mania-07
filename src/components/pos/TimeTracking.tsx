@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useTimeTracking } from '@/hooks/useTimeTracking';
-import { LogIn, LogOut, Clock, ArrowLeft, Coffee, Play, Pause } from 'lucide-react';
+import { ExplanationDialog } from './ExplanationDialog';
+import { LogIn, LogOut, Clock, ArrowLeft } from 'lucide-react';
 
 interface TimeTrackingProps {
   onBack: () => void;
@@ -13,6 +14,7 @@ interface TimeTrackingProps {
 export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
   const { user, logout } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showExplanationDialog, setShowExplanationDialog] = useState(false);
   
   const { todaySummary, canPerformAction, handleAction } = useTimeTracking(
     user?.id || '', 
@@ -36,7 +38,6 @@ export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
   const getStatusText = () => {
     switch (todaySummary?.currentStatus) {
       case 'logged': return 'En service';
-      case 'break': return 'En pause';
       case 'out': return 'Hors service';
       default: return 'Non pointé';
     }
@@ -45,10 +46,21 @@ export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
   const getStatusColor = () => {
     switch (todaySummary?.currentStatus) {
       case 'logged': return 'bg-green-100 text-green-800';
-      case 'break': return 'bg-yellow-100 text-yellow-800';
       case 'out': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const handleLoginClick = () => {
+    if (todaySummary?.needsExplanation && todaySummary?.lastLogoutTime) {
+      setShowExplanationDialog(true);
+    } else {
+      handleAction('login');
+    }
+  };
+
+  const handleLoginWithExplanation = (explanation: string) => {
+    handleAction('login', explanation);
   };
 
   return (
@@ -82,7 +94,7 @@ export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
               <LogIn className="h-8 w-8 mx-auto mb-4 text-green-500" />
               <h3 className="font-semibold mb-2">Pointage d'Entrée</h3>
               <Button 
-                onClick={() => handleAction('login')} 
+                onClick={handleLoginClick} 
                 className="w-full"
                 disabled={!canPerformAction('login')}
               >
@@ -104,38 +116,6 @@ export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Pointer la Sortie
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Pause className="h-8 w-8 mx-auto mb-4 text-orange-500" />
-              <h3 className="font-semibold mb-2">Début de Pause</h3>
-              <Button 
-                onClick={() => handleAction('break-start')} 
-                variant="outline" 
-                className="w-full"
-                disabled={!canPerformAction('break-start')}
-              >
-                <Coffee className="h-4 w-4 mr-2" />
-                Commencer la Pause
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Play className="h-8 w-8 mx-auto mb-4 text-blue-500" />
-              <h3 className="font-semibold mb-2">Fin de Pause</h3>
-              <Button 
-                onClick={() => handleAction('break-end')} 
-                variant="outline" 
-                className="w-full"
-                disabled={!canPerformAction('break-end')}
-              >
-                <Play className="h-4 w-4 mr-2" />
-                Reprendre le Travail
               </Button>
             </CardContent>
           </Card>
@@ -179,18 +159,27 @@ export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
                 {todaySummary.entries.slice(-5).reverse().map((entry) => (
                   <div key={entry.id} className="flex justify-between items-center text-sm">
                     <span>{new Date(entry.timestamp).toLocaleTimeString('fr-FR')}</span>
-                    <span className="capitalize">
-                      {entry.action === 'login' ? 'Entrée' :
-                       entry.action === 'logout' ? 'Sortie' :
-                       entry.action === 'break-start' ? 'Début pause' :
-                       'Fin pause'}
-                    </span>
+                    <div className="text-right">
+                      <span className="capitalize">
+                        {entry.action === 'login' ? 'Entrée' : 'Sortie'}
+                      </span>
+                      {entry.explanation && (
+                        <p className="text-xs text-muted-foreground">{entry.explanation}</p>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
         )}
+
+        <ExplanationDialog
+          isOpen={showExplanationDialog}
+          onClose={() => setShowExplanationDialog(false)}
+          onLogin={handleLoginWithExplanation}
+          lastLogoutTime={todaySummary?.lastLogoutTime || ''}
+        />
       </div>
     </div>
   );

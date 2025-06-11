@@ -4,15 +4,18 @@ export interface TimeEntry {
   userId: string;
   userName: string;
   timestamp: string;
-  action: 'login' | 'logout' | 'break-start' | 'break-end';
+  action: 'login' | 'logout';
   date: string;
+  explanation?: string; // For breaks >= 1 hour
 }
 
 export interface DaySummary {
   totalWorkTime: number;
   totalBreakTime: number;
   entries: TimeEntry[];
-  currentStatus: 'out' | 'logged' | 'break';
+  currentStatus: 'out' | 'logged';
+  needsExplanation?: boolean;
+  lastLogoutTime?: string;
 }
 
 export class TimeTrackingDB {
@@ -38,89 +41,76 @@ export class TimeTrackingDB {
   static calculateDaySummary(entries: TimeEntry[]): DaySummary {
     let totalWorkTime = 0;
     let totalBreakTime = 0;
-    let currentStatus: 'out' | 'logged' | 'break' = 'out';
+    let currentStatus: 'out' | 'logged' = 'out';
+    let needsExplanation = false;
+    let lastLogoutTime: string | undefined;
     
     const sortedEntries = [...entries].sort((a, b) => 
       new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
     
     let lastLoginTime: Date | null = null;
-    let lastBreakStartTime: Date | null = null;
     
-    sortedEntries.forEach((entry) => {
+    for (let i = 0; i < sortedEntries.length; i++) {
+      const entry = sortedEntries[i];
       const timestamp = new Date(entry.timestamp);
       
-      switch (entry.action) {
-        case 'login':
-          lastLoginTime = timestamp;
-          currentStatus = 'logged';
-          break;
+      if (entry.action === 'login') {
+        // Check if there was a previous logout for break calculation
+        if (i > 0 && sortedEntries[i - 1].action === 'logout') {
+          const prevLogout = new Date(sortedEntries[i - 1].timestamp);
+          const breakDuration = (timestamp.getTime() - prevLogout.getTime()) / (1000 * 60);
           
-        case 'logout':
-          if (lastLoginTime) {
-            totalWorkTime += (timestamp.getTime() - lastLoginTime.getTime()) / (1000 * 60);
-            lastLoginTime = null;
+          // Only count as break if less than 1 hour
+          if (breakDuration < 60) {
+            totalBreakTime += breakDuration;
           }
-          currentStatus = 'out';
-          break;
-          
-        case 'break-start':
-          lastBreakStartTime = timestamp;
-          currentStatus = 'break';
-          break;
-          
-        case 'break-end':
-          if (lastBreakStartTime) {
-            totalBreakTime += (timestamp.getTime() - lastBreakStartTime.getTime()) / (1000 * 60);
-            lastBreakStartTime = null;
-          }
-          currentStatus = 'logged';
-          break;
+        }
+        
+        lastLoginTime = timestamp;
+        currentStatus = 'logged';
+      } else if (entry.action === 'logout') {
+        if (lastLoginTime) {
+          totalWorkTime += (timestamp.getTime() - lastLoginTime.getTime()) / (1000 * 60);
+          lastLoginTime = null;
+        }
+        currentStatus = 'out';
+        lastLogoutTime = entry.timestamp;
       }
-    });
+    }
 
-    // Calculate current ongoing times
+    // Calculate current ongoing work time if logged in
     const now = new Date().getTime();
-    if (lastLoginTime && (currentStatus === 'logged' || currentStatus === 'break')) {
+    if (lastLoginTime && currentStatus === 'logged') {
       totalWorkTime += (now - lastLoginTime.getTime()) / (1000 * 60);
     }
-    if (lastBreakStartTime && currentStatus === 'break') {
-      totalBreakTime += (now - lastBreakStartTime.getTime()) / (1000 * 60);
+
+    // Check if explanation is needed for next login
+    if (currentStatus === 'out' && lastLogoutTime) {
+      const lastLogout = new Date(lastLogoutTime);
+      const timeSinceLogout = (now - lastLogout.getTime()) / (1000 * 60);
+      needsExplanation = timeSinceLogout >= 60;
     }
 
     return {
       totalWorkTime: Math.round(totalWorkTime),
       totalBreakTime: Math.round(totalBreakTime),
       entries: sortedEntries,
-      currentStatus
+      currentStatus,
+      needsExplanation,
+      lastLogoutTime
     };
   }
 
   static canPerformAction(
-    action: 'login' | 'logout' | 'break-start' | 'break-end',
-    currentStatus: 'out' | 'logged' | 'break'
+    action: 'login' | 'logout',
+    currentStatus: 'out' | 'logged'
   ): boolean {
-    const stateTransitions: Record<string, Record<string, boolean>> = {
-      'out': {
-        'login': true,
-        'logout': false,
-        'break-start': false,
-        'break-end': false
-      },
-      'logged': {
-        'login': false,
-        'logout': true,
-        'break-start': true,
-        'break-end': false
-      },
-      'break': {
-        'login': false,
-        'logout': false,
-        'break-start': false,
-        'break-end': true
-      }
-    };
-    
-    return stateTransitions[currentStatus]?.[action] || false;
+    if (action === 'login') {
+      return currentStatus === 'out';
+    } else if (action === 'logout') {
+      return currentStatus === 'logged';
+    }
+    return false;
   }
 }

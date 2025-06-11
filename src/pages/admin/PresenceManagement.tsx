@@ -6,16 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Calendar, Clock, Users, Download, Filter, Search } from 'lucide-react';
 import { mockUsers } from '@/db/mockdata';
-
-interface TimeEntry {
-  id: string;
-  userId: string;
-  userName: string;
-  loginTime: string | null;
-  logoutTime: string | null;
-  date: string;
-  status: 'logged-in' | 'logged-out' | 'break';
-}
+import { TimeTrackingDB, TimeEntry } from '@/db/timeTracking';
 
 export const PresenceManagement = () => {
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
@@ -27,7 +18,7 @@ export const PresenceManagement = () => {
   }, []);
 
   const loadTimeEntries = () => {
-    const entries = JSON.parse(localStorage.getItem('timeEntries') || '[]');
+    const entries = TimeTrackingDB.getAllEntries();
     setTimeEntries(entries);
   };
 
@@ -43,36 +34,76 @@ export const PresenceManagement = () => {
     );
   };
 
-  const calculateWorkingHours = (entry: TimeEntry) => {
-    if (!entry.loginTime) return '0h 0m';
-    
-    const loginTime = new Date(`${entry.date}T${entry.loginTime}`);
-    const logoutTime = entry.logoutTime 
-      ? new Date(`${entry.date}T${entry.logoutTime}`)
-      : new Date();
-    
-    const diff = logoutTime.getTime() - loginTime.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
+  const getUserDaySummary = (userId: string, date: string) => {
+    const userEntries = timeEntries.filter(entry => 
+      entry.userId === userId && entry.date === date
+    );
+    return TimeTrackingDB.calculateDaySummary(userEntries);
+  };
+
+  const calculateWorkingHours = (userId: string, date: string) => {
+    const summary = getUserDaySummary(userId, date);
+    const hours = Math.floor(summary.totalWorkTime / 60);
+    const minutes = summary.totalWorkTime % 60;
     return `${hours}h ${minutes}m`;
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'logged-in':
+  const getStatusBadge = (userId: string, date: string) => {
+    const summary = getUserDaySummary(userId, date);
+    switch (summary.currentStatus) {
+      case 'logged':
         return <Badge className="bg-green-100 text-green-800">En service</Badge>;
-      case 'logged-out':
-        return <Badge className="bg-gray-100 text-gray-800">Terminé</Badge>;
+      case 'out':
+        const hasWorked = summary.totalWorkTime > 0;
+        return hasWorked 
+          ? <Badge className="bg-gray-100 text-gray-800">Terminé</Badge>
+          : <Badge variant="outline">Non pointé</Badge>;
       default:
         return <Badge variant="outline">Non pointé</Badge>;
     }
   };
 
+  const getFirstLogin = (userId: string, date: string) => {
+    const userEntries = timeEntries
+      .filter(entry => entry.userId === userId && entry.date === date && entry.action === 'login')
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    
+    return userEntries.length > 0 
+      ? new Date(userEntries[0].timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+      : 'Non pointé';
+  };
+
+  const getLastLogout = (userId: string, date: string) => {
+    const userEntries = timeEntries
+      .filter(entry => entry.userId === userId && entry.date === date && entry.action === 'logout')
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    
+    return userEntries.length > 0 
+      ? new Date(userEntries[0].timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+      : 'En cours';
+  };
+
   const exportData = () => {
-    const csvContent = timeEntries.map(entry => 
-      `${entry.userName},${entry.date},${entry.loginTime || ''},${entry.logoutTime || ''},${calculateWorkingHours(entry)}`
-    ).join('\n');
+    const selectedEntries = getSelectedDateEntries();
+    const userSummaries = new Map();
+    
+    // Group entries by user
+    selectedEntries.forEach(entry => {
+      if (!userSummaries.has(entry.userId)) {
+        userSummaries.set(entry.userId, {
+          userName: entry.userName,
+          userId: entry.userId
+        });
+      }
+    });
+    
+    const csvContent = Array.from(userSummaries.values()).map(user => {
+      const firstLogin = getFirstLogin(user.userId, selectedDate);
+      const lastLogout = getLastLogout(user.userId, selectedDate);
+      const workingHours = calculateWorkingHours(user.userId, selectedDate);
+      
+      return `${user.userName},${selectedDate},${firstLogin},${lastLogout},${workingHours}`;
+    }).join('\n');
     
     const blob = new Blob([`Nom,Date,Arrivée,Départ,Heures\n${csvContent}`], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -83,8 +114,14 @@ export const PresenceManagement = () => {
   };
 
   const todayEntries = getTodayEntries();
-  const presentToday = todayEntries.filter(e => e.status === 'logged-in').length;
+  const uniqueUsersToday = new Set(todayEntries.map(e => e.userId));
+  const presentToday = Array.from(uniqueUsersToday).filter(userId => {
+    const summary = getUserDaySummary(userId, new Date().toISOString().split('T')[0]);
+    return summary.currentStatus === 'logged';
+  }).length;
   const totalStaff = mockUsers.filter(u => u.storeId === 'store-1').length;
+
+  const uniqueUsersSelected = new Set(getSelectedDateEntries().map(e => e.userId));
 
   return (
     <div className="p-6">
@@ -180,36 +217,41 @@ export const PresenceManagement = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {getSelectedDateEntries().length === 0 ? (
+            {uniqueUsersSelected.size === 0 ? (
               <p className="text-center text-muted-foreground py-8">
                 Aucun pointage trouvé pour cette date
               </p>
             ) : (
-              getSelectedDateEntries().map((entry) => (
-                <div key={entry.id} className="flex justify-between items-center p-4 border rounded-lg">
-                  <div>
-                    <h3 className="font-semibold">{entry.userName}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(entry.date).toLocaleDateString('fr-FR')}
-                    </p>
+              Array.from(uniqueUsersSelected).map((userId) => {
+                const user = mockUsers.find(u => u.id === userId);
+                if (!user) return null;
+                
+                return (
+                  <div key={userId} className="flex justify-between items-center p-4 border rounded-lg">
+                    <div>
+                      <h3 className="font-semibold">{user.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(selectedDate).toLocaleDateString('fr-FR')}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm">
+                        <span className="font-medium">Arrivée:</span> {getFirstLogin(userId, selectedDate)}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Départ:</span> {getLastLogout(userId, selectedDate)}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium">{calculateWorkingHours(userId, selectedDate)}</p>
+                      <p className="text-xs text-muted-foreground">Temps de travail</p>
+                    </div>
+                    <div>
+                      {getStatusBadge(userId, selectedDate)}
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <p className="text-sm">
-                      <span className="font-medium">Arrivée:</span> {entry.loginTime || 'Non pointé'}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-medium">Départ:</span> {entry.logoutTime || 'En cours'}
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm font-medium">{calculateWorkingHours(entry)}</p>
-                    <p className="text-xs text-muted-foreground">Temps de travail</p>
-                  </div>
-                  <div>
-                    {getStatusBadge(entry.status)}
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </CardContent>
