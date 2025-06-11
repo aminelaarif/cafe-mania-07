@@ -401,5 +401,3 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
 };
 
 export default POSInterface;
-
-}
