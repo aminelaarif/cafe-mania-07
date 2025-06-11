@@ -5,8 +5,36 @@ import { mockPOSConfigurations } from '@/db/mockdata/posConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
-// Stockage global pour maintenir la configuration mise à jour
-let globalConfigurations: POSConfiguration[] = [...mockPOSConfigurations];
+const STORAGE_KEY = 'pos-configurations';
+
+// Fonctions pour gérer localStorage
+const loadConfigurationsFromStorage = (): POSConfiguration[] => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      console.log('Configurations chargées depuis localStorage:', parsed);
+      return parsed;
+    }
+  } catch (error) {
+    console.error('Erreur lors du chargement des configurations:', error);
+  }
+  
+  console.log('Utilisation des configurations par défaut');
+  return [...mockPOSConfigurations];
+};
+
+const saveConfigurationsToStorage = (configurations: POSConfiguration[]) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(configurations));
+    console.log('Configurations sauvegardées dans localStorage:', configurations);
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde des configurations:', error);
+  }
+};
+
+// Stockage global pour maintenir la configuration mise à jour avec persistance
+let globalConfigurations: POSConfiguration[] = loadConfigurationsFromStorage();
 
 export const usePOSConfig = () => {
   const { user } = useAuth();
@@ -14,15 +42,19 @@ export const usePOSConfig = () => {
   const [configurations, setConfigurations] = useState<POSConfiguration[]>(globalConfigurations);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Synchroniser avec le stockage global au montage
+  // Synchroniser avec le stockage global et localStorage au montage
   useEffect(() => {
-    setConfigurations([...globalConfigurations]);
+    const loadedConfigs = loadConfigurationsFromStorage();
+    globalConfigurations = loadedConfigs;
+    setConfigurations([...loadedConfigs]);
+    console.log('Hook monté avec configurations:', loadedConfigs);
   }, []);
 
   const getCurrentConfig = (storeId?: string): POSConfiguration | undefined => {
     const targetStoreId = storeId || user?.storeId || 'store-1';
-    // Toujours utiliser la configuration globale la plus récente
-    const config = globalConfigurations.find(config => config.storeId === targetStoreId);
+    // Recharger depuis localStorage pour avoir la dernière version
+    const currentConfigs = loadConfigurationsFromStorage();
+    const config = currentConfigs.find(config => config.storeId === targetStoreId);
     console.log('Configuration récupérée pour', targetStoreId, ':', config);
     return config;
   };
@@ -44,7 +76,10 @@ export const usePOSConfig = () => {
       // Simulation d'appel API
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const currentConfig = globalConfigurations.find(c => c.storeId === storeId);
+      // Recharger les configurations depuis localStorage
+      const currentConfigs = loadConfigurationsFromStorage();
+      const currentConfig = currentConfigs.find(c => c.storeId === storeId);
+      
       const updatedConfig = { 
         ...currentConfig, 
         ...updates, 
@@ -54,15 +89,21 @@ export const usePOSConfig = () => {
       
       console.log('Configuration mise à jour:', updatedConfig);
       
-      // Mettre à jour le stockage global
-      globalConfigurations = globalConfigurations.map(config => 
+      // Mettre à jour les configurations
+      const newConfigurations = currentConfigs.map(config => 
         config.storeId === storeId ? updatedConfig : config
       );
       
+      // Sauvegarder dans localStorage
+      saveConfigurationsToStorage(newConfigurations);
+      
+      // Mettre à jour le stockage global
+      globalConfigurations = newConfigurations;
+      
       // Mettre à jour l'état local
-      setConfigurations([...globalConfigurations]);
+      setConfigurations([...newConfigurations]);
 
-      // Forcer la synchronisation immédiate avec un délai plus court
+      // Déclencher l'événement de synchronisation
       setTimeout(() => {
         console.log('Déclenchement de la synchronisation POS');
         window.dispatchEvent(new CustomEvent('pos-config-updated', { 
@@ -72,7 +113,7 @@ export const usePOSConfig = () => {
 
       toast({
         title: "Configuration mise à jour",
-        description: "Les modifications ont été synchronisées avec le POS",
+        description: "Les modifications ont été sauvegardées et synchronisées avec le POS",
       });
 
       setIsLoading(false);
@@ -92,7 +133,7 @@ export const usePOSConfig = () => {
   const resetToDefaults = async (storeId: string) => {
     if (!user || user.role !== 'marketing-manager') return false;
 
-    const defaultConfig = mockPOSConfigurations[0];
+    const defaultConfig = mockPOSConfigurations.find(c => c.storeId === storeId) || mockPOSConfigurations[0];
     return updateConfiguration(storeId, {
       layout: defaultConfig.layout,
       colors: defaultConfig.colors,
