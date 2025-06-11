@@ -5,15 +5,24 @@ import { mockPOSConfigurations } from '@/db/mockdata/posConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
+// Stockage global pour maintenir la configuration mise à jour
+let globalConfigurations: POSConfiguration[] = [...mockPOSConfigurations];
+
 export const usePOSConfig = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [configurations, setConfigurations] = useState<POSConfiguration[]>(mockPOSConfigurations);
+  const [configurations, setConfigurations] = useState<POSConfiguration[]>(globalConfigurations);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Synchroniser avec le stockage global au montage
+  useEffect(() => {
+    setConfigurations([...globalConfigurations]);
+  }, []);
 
   const getCurrentConfig = (storeId?: string): POSConfiguration | undefined => {
     const targetStoreId = storeId || user?.storeId || 'store-1';
-    const config = configurations.find(config => config.storeId === targetStoreId);
+    // Toujours utiliser la configuration globale la plus récente
+    const config = globalConfigurations.find(config => config.storeId === targetStoreId);
     console.log('Configuration récupérée pour', targetStoreId, ':', config);
     return config;
   };
@@ -35,27 +44,31 @@ export const usePOSConfig = () => {
       // Simulation d'appel API
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const updatedConfig = { ...configurations.find(c => c.storeId === storeId), ...updates };
+      const currentConfig = globalConfigurations.find(c => c.storeId === storeId);
+      const updatedConfig = { 
+        ...currentConfig, 
+        ...updates, 
+        updatedAt: new Date().toISOString(),
+        updatedBy: user.email 
+      };
+      
       console.log('Configuration mise à jour:', updatedConfig);
       
-      setConfigurations(prev => prev.map(config => 
-        config.storeId === storeId 
-          ? { 
-              ...config, 
-              ...updates, 
-              updatedAt: new Date().toISOString(),
-              updatedBy: user.email 
-            }
-          : config
-      ));
+      // Mettre à jour le stockage global
+      globalConfigurations = globalConfigurations.map(config => 
+        config.storeId === storeId ? updatedConfig : config
+      );
+      
+      // Mettre à jour l'état local
+      setConfigurations([...globalConfigurations]);
 
-      // Forcer la synchronisation immédiate
+      // Forcer la synchronisation immédiate avec un délai plus court
       setTimeout(() => {
         console.log('Déclenchement de la synchronisation POS');
         window.dispatchEvent(new CustomEvent('pos-config-updated', { 
           detail: { storeId, updates, config: updatedConfig } 
         }));
-      }, 100);
+      }, 50);
 
       toast({
         title: "Configuration mise à jour",

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useContent } from '@/contexts/ContentContext';
@@ -29,11 +28,13 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [showCashDrawer, setShowCashDrawer] = useState(false);
   const [config, setConfig] = useState(getCurrentConfig());
+  const [configVersion, setConfigVersion] = useState(0); // Pour forcer le rechargement
 
   // Fonction pour recharger la configuration
   const reloadConfig = () => {
     const newConfig = getCurrentConfig();
     setConfig(newConfig);
+    setConfigVersion(prev => prev + 1); // Forcer le re-render
     console.log('Configuration POS rechargée dans interface:', newConfig);
   };
 
@@ -44,7 +45,7 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
     }
   }, [menu, selectedCategory]);
 
-  // Recharger la configuration au montage du composant
+  // Recharger la configuration au montage du composant et à chaque changement
   useEffect(() => {
     console.log('Montage de POSInterface - rechargement de la configuration');
     reloadConfig();
@@ -54,10 +55,8 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   useEffect(() => {
     const handlePOSSync = (event: any) => {
       console.log('Événement de synchronisation reçu:', event.type, event.detail);
-      // Recharger la configuration au lieu de recharger toute la page
-      setTimeout(() => {
-        reloadConfig();
-      }, 200);
+      // Recharger la configuration immédiatement
+      reloadConfig();
     };
 
     window.addEventListener('menu-synced-to-pos', handlePOSSync);
@@ -66,6 +65,21 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
     return () => {
       window.removeEventListener('menu-synced-to-pos', handlePOSSync);
       window.removeEventListener('pos-config-updated', handlePOSSync);
+    };
+  }, []);
+
+  // Recharger la configuration quand on revient sur cette page
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Page visible - rechargement de la configuration');
+        reloadConfig();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
@@ -159,10 +173,11 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   console.log('Afficher les descriptions:', config?.display?.showDescriptions);
   console.log('Afficher les images:', config?.layout?.showImages);
   console.log('Afficher le paiement par carte:', config?.display?.showCardPayment);
+  console.log('Version de configuration:', configVersion);
 
   return (
     <>
-      <div className="min-h-screen bg-background p-4">
+      <div className="min-h-screen bg-background p-4" key={configVersion}>
         <POSHeader 
           userName={user?.name || ''}
           onBack={onBack}
