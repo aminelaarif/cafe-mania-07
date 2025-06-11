@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { POSPreview } from './POSPreview';
 
 interface POSColorConfigProps {
   config: {
@@ -36,90 +37,94 @@ export const POSColorConfig = ({ config, onUpdate, canEdit }: POSColorConfigProp
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Configuration des couleurs</CardTitle>
-        <CardDescription>
-          Personnalisez la palette de couleurs du POS
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {canEdit && (
-          <div>
-            <Label className="text-base font-medium">Présélections</Label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
-              {colorPresets.map((preset) => (
-                <Button
-                  key={preset.name}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => applyPreset(preset)}
-                  className="h-auto p-3"
-                >
-                  <div className="text-center">
-                    <div className="flex gap-1 mb-1">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: preset.colors.primary }}
-                      />
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: preset.colors.accent }}
-                      />
+    <div className="grid lg:grid-cols-2 gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Configuration des couleurs</CardTitle>
+          <CardDescription>
+            Personnalisez la palette de couleurs du POS
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {canEdit && (
+            <div>
+              <Label className="text-base font-medium">Présélections</Label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                {colorPresets.map((preset) => (
+                  <Button
+                    key={preset.name}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => applyPreset(preset)}
+                    className="h-auto p-3"
+                  >
+                    <div className="text-center">
+                      <div className="flex gap-1 mb-1">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: preset.colors.primary }}
+                        />
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: preset.colors.accent }}
+                        />
+                      </div>
+                      <span className="text-xs">{preset.name}</span>
                     </div>
-                    <span className="text-xs">{preset.name}</span>
-                  </div>
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="grid md:grid-cols-2 gap-6">
-          {Object.entries(config).map(([key, value]) => (
-            <div key={key} className="space-y-2">
-              <Label htmlFor={key} className="capitalize">
-                {key === 'primary' && 'Couleur primaire'}
-                {key === 'secondary' && 'Couleur secondaire'}
-                {key === 'accent' && 'Couleur d\'accent'}
-                {key === 'success' && 'Couleur de succès'}
-                {key === 'warning' && 'Couleur d\'avertissement'}
-                {key === 'danger' && 'Couleur de danger'}
-              </Label>
-              <div className="flex gap-2">
-                <div 
-                  className="w-12 h-10 rounded border"
-                  style={{ backgroundColor: value }}
-                />
-                <Input
-                  id={key}
-                  type="color"
-                  value={value}
-                  onChange={(e) => handleColorChange(key, e.target.value)}
-                  disabled={!canEdit}
-                  className="w-16"
-                />
-                <Input
-                  type="text"
-                  value={value}
-                  onChange={(e) => handleColorChange(key, e.target.value)}
-                  disabled={!canEdit}
-                  className="flex-1"
-                  placeholder="#000000"
-                />
+                  </Button>
+                ))}
               </div>
             </div>
-          ))}
-        </div>
+          )}
 
-        {!canEdit && (
-          <div className="p-4 bg-muted rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              Seuls les Marketing Managers peuvent modifier cette configuration.
-            </p>
+          <div className="grid md:grid-cols-2 gap-6">
+            {Object.entries(config).map(([key, value]) => (
+              <div key={key} className="space-y-2">
+                <Label htmlFor={key} className="capitalize">
+                  {key === 'primary' && 'Couleur primaire'}
+                  {key === 'secondary' && 'Couleur secondaire'}
+                  {key === 'accent' && 'Couleur d\'accent'}
+                  {key === 'success' && 'Couleur de succès'}
+                  {key === 'warning' && 'Couleur d\'avertissement'}
+                  {key === 'danger' && 'Couleur de danger'}
+                </Label>
+                <div className="flex gap-2">
+                  <div 
+                    className="w-12 h-10 rounded border"
+                    style={{ backgroundColor: value }}
+                  />
+                  <Input
+                    id={key}
+                    type="color"
+                    value={value}
+                    onChange={(e) => handleColorChange(key, e.target.value)}
+                    disabled={!canEdit}
+                    className="w-16"
+                  />
+                  <Input
+                    type="text"
+                    value={value}
+                    onChange={(e) => handleColorChange(key, e.target.value)}
+                    disabled={!canEdit}
+                    className="flex-1"
+                    placeholder="#000000"
+                  />
+                </div>
+              </div>
+            ))}
           </div>
-        )}
-      </CardContent>
-    </Card>
+
+          {!canEdit && (
+            <div className="p-4 bg-muted rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                Seuls les Marketing Managers peuvent modifier cette configuration.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <POSPreview colorConfig={config} />
+    </div>
   );
 };
