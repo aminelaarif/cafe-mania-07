@@ -16,16 +16,14 @@ interface CashPaymentDrawerProps {
 export const CashPaymentDrawer = ({ isOpen, onClose, total, onComplete }: CashPaymentDrawerProps) => {
   const [receivedAmount, setReceivedAmount] = useState<string>('');
   
-  const received = parseFloat(receivedAmount) || 0;
+  // Si aucun montant n'est saisi, on utilise le total par défaut
+  const received = receivedAmount === '' ? total : (parseFloat(receivedAmount) || 0);
   const change = received - total;
-  const isValidAmount = received >= total;
 
   const handleComplete = () => {
-    if (isValidAmount) {
-      onComplete();
-      setReceivedAmount('');
-      onClose();
-    }
+    onComplete();
+    setReceivedAmount('');
+    onClose();
   };
 
   const handleClose = () => {
@@ -35,22 +33,22 @@ export const CashPaymentDrawer = ({ isOpen, onClose, total, onComplete }: CashPa
 
   return (
     <Drawer open={isOpen} onOpenChange={handleClose}>
-      <DrawerContent>
-        <DrawerHeader>
-          <DrawerTitle className="flex items-center gap-2">
+      <DrawerContent className="max-w-md mx-auto">
+        <DrawerHeader className="pb-4">
+          <DrawerTitle className="flex items-center justify-center gap-2 text-xl">
             <Banknote className="h-5 w-5" />
             Paiement Espèces
           </DrawerTitle>
         </DrawerHeader>
         
-        <div className="p-6 space-y-6">
+        <div className="px-6 pb-2 space-y-4">
           <div className="text-center">
             <p className="text-sm text-muted-foreground">Montant à payer</p>
-            <p className="text-3xl font-bold text-primary">{total.toFixed(2)}€</p>
+            <p className="text-2xl font-bold text-primary">{total.toFixed(2)}€</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="received">Montant reçu</Label>
+            <Label htmlFor="received" className="text-sm">Montant reçu</Label>
             <Input
               id="received"
               type="number"
@@ -58,45 +56,42 @@ export const CashPaymentDrawer = ({ isOpen, onClose, total, onComplete }: CashPa
               step="0.01"
               value={receivedAmount}
               onChange={(e) => setReceivedAmount(e.target.value)}
-              placeholder="0.00"
-              className="text-center text-xl"
+              placeholder={total.toFixed(2)}
+              className="text-center text-lg h-12"
               autoFocus
             />
           </div>
 
-          {received > 0 && (
-            <div className="p-4 bg-muted rounded-lg">
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-medium">Montant reçu:</span>
-                <span className="text-lg">{received.toFixed(2)}€</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="font-medium">Monnaie à rendre:</span>
-                <span className={`text-lg font-bold ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {change.toFixed(2)}€
-                </span>
-              </div>
+          <div className="p-3 bg-muted rounded-lg space-y-2">
+            <div className="flex justify-between items-center text-sm">
+              <span className="font-medium">Montant reçu:</span>
+              <span>{received.toFixed(2)}€</span>
             </div>
-          )}
+            <div className="flex justify-between items-center text-sm">
+              <span className="font-medium">Monnaie à rendre:</span>
+              <span className={`font-bold ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {change.toFixed(2)}€
+              </span>
+            </div>
+          </div>
 
-          {received > 0 && !isValidAmount && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-700">
-                Le montant reçu est insuffisant. Minimum requis: {total.toFixed(2)}€
+          {change < 0 && (
+            <div className="p-2 bg-orange-50 border border-orange-200 rounded-lg">
+              <p className="text-xs text-orange-700 text-center">
+                Montant insuffisant (manque {Math.abs(change).toFixed(2)}€)
               </p>
             </div>
           )}
         </div>
 
-        <DrawerFooter>
+        <DrawerFooter className="pt-4">
           <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" onClick={handleClose}>
+            <Button variant="outline" onClick={handleClose} className="h-11">
               Annuler
             </Button>
             <Button 
               onClick={handleComplete}
-              disabled={!isValidAmount}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 h-11"
             >
               <Calculator className="h-4 w-4" />
               Valider le paiement
