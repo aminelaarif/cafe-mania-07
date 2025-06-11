@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useContent } from '@/contexts/ContentContext';
 import { useToast } from '@/hooks/use-toast';
-import { RefreshCcw, Eye, EyeOff, DollarSign, Edit } from 'lucide-react';
+import { RefreshCcw, Eye, EyeOff, Edit } from 'lucide-react';
 
 interface POSMenuSyncProps {
   storeId: string;
@@ -57,11 +57,13 @@ export const POSMenuSync = ({ storeId, canEdit, onSync }: POSMenuSyncProps) => {
       updateMenuItem(categoryId, itemId, { 
         posVisible: !item.posVisible 
       });
+      
+      // Ne pas synchroniser automatiquement, juste marquer comme modifié
       onSync();
       
       toast({
         title: "Visibilité POS mise à jour",
-        description: `${item.name} ${item.posVisible ? 'masqué du' : 'affiché dans le'} POS`,
+        description: `${item.name} ${item.posVisible ? 'masqué du' : 'affiché dans le'} POS - N'oubliez pas de sauvegarder`,
       });
     }
   };
@@ -70,11 +72,13 @@ export const POSMenuSync = ({ storeId, canEdit, onSync }: POSMenuSyncProps) => {
     if (!canEdit) return;
 
     updateMenuItem(categoryId, itemId, { price: newPrice });
+    
+    // Ne pas synchroniser automatiquement, juste marquer comme modifié
     onSync();
     
     toast({
       title: "Prix mis à jour",
-      description: "Le prix a été modifié pour le POS",
+      description: "Le prix a été modifié - N'oubliez pas de sauvegarder",
     });
   };
 
@@ -89,16 +93,6 @@ export const POSMenuSync = ({ storeId, canEdit, onSync }: POSMenuSyncProps) => {
                 Gérez la synchronisation entre le menu admin et le POS
               </CardDescription>
             </div>
-            {canEdit && (
-              <Button 
-                onClick={handleSyncToPOS}
-                disabled={isLoading}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <RefreshCcw className="h-4 w-4 mr-2" />
-                {isLoading ? "Synchronisation..." : "Synchroniser avec POS"}
-              </Button>
-            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -117,6 +111,15 @@ export const POSMenuSync = ({ storeId, canEdit, onSync }: POSMenuSyncProps) => {
               <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <p className="text-sm text-yellow-800">
                   <strong>Mode lecture seule:</strong> Seuls les Marketing Managers peuvent modifier le menu POS.
+                </p>
+              </div>
+            )}
+
+            {canEdit && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Information:</strong> Les modifications du menu ne sont pas synchronisées automatiquement. 
+                  Utilisez le bouton "Sauvegarder" en haut de la page pour appliquer les changements au POS.
                 </p>
               </div>
             )}
