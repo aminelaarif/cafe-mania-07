@@ -1,20 +1,16 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useContent } from '@/contexts/ContentContext';
-import { usePOSConfig } from '@/hooks/usePOSConfig';
 import { CashPaymentDrawer } from './CashPaymentDrawer';
 import { POSHeader } from './POSHeader';
 import { CategorySelector } from './CategorySelector';
 import { ProductGrid } from './ProductGrid';
 import { CartSection } from './CartSection';
 import { useGlobalConfig } from '@/hooks/useGlobalConfig';
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-}
+import { usePOSCart } from './POSCartLogic';
+import { usePOSEventHandlers } from './POSEventHandlers';
+import { calculateTotals } from './POSCalculations';
 
 interface POSInterfaceProps {
   onBack: () => void;
@@ -23,22 +19,11 @@ interface POSInterfaceProps {
 export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   const { user, logout } = useAuth();
   const { menu } = useContent();
-  const { getCurrentConfig } = usePOSConfig();
   const { formatPrice: globalFormatPrice, getGlobalConfig } = useGlobalConfig();
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [total, setTotal] = useState(0);
+  const { cart, total, addToCart, removeFromCart, clearCart } = usePOSCart();
+  const { config, configVersion } = usePOSEventHandlers();
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [showCashDrawer, setShowCashDrawer] = useState(false);
-  const [config, setConfig] = useState(getCurrentConfig());
-  const [configVersion, setConfigVersion] = useState(0); // Pour forcer le rechargement
-
-  // Fonction pour recharger la configuration
-  const reloadConfig = () => {
-    const newConfig = getCurrentConfig();
-    setConfig(newConfig);
-    setConfigVersion(prev => prev + 1); // Forcer le re-render
-    console.log('Configuration POS rechargée dans interface:', newConfig);
-  };
 
   // Initialiser la première catégorie
   useEffect(() => {
@@ -47,103 +32,22 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
     }
   }, [menu, selectedCategory]);
 
-  // Recharger la configuration au montage du composant et à chaque changement
-  useEffect(() => {
-    console.log('Montage de POSInterface - rechargement de la configuration');
-    reloadConfig();
-  }, []);
-
-  // Écouter les événements de synchronisation POS et recharger la configuration
-  useEffect(() => {
-    const handlePOSSync = (event: any) => {
-      console.log('Événement de synchronisation reçu:', event.type, event.detail);
-      // Recharger la configuration immédiatement
-      reloadConfig();
-    };
-
-    window.addEventListener('menu-synced-to-pos', handlePOSSync);
-    window.addEventListener('pos-config-updated', handlePOSSync);
-
-    return () => {
-      window.removeEventListener('menu-synced-to-pos', handlePOSSync);
-      window.removeEventListener('pos-config-updated', handlePOSSync);
-    };
-  }, []);
-
-  // Recharger la configuration quand on revient sur cette page
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        console.log('Page visible - rechargement de la configuration');
-        reloadConfig();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
-
-  // Écouter les changements de configuration globale
-  useEffect(() => {
-    const handleGlobalConfigUpdate = () => {
-      console.log('Configuration globale mise à jour - rechargement POS');
-      reloadConfig();
-    };
-
-    window.addEventListener('global-config-updated', handleGlobalConfigUpdate);
-    return () => {
-      window.removeEventListener('global-config-updated', handleGlobalConfigUpdate);
-    };
-  }, []);
-
-  const addToCart = (item: any) => {
-    const existingItem = cart.find(cartItem => cartItem.id === item.id);
-    
-    if (existingItem) {
-      const updatedCart = cart.map(cartItem =>
-        cartItem.id === item.id
-          ? { ...cartItem, quantity: cartItem.quantity + 1 }
-          : cartItem
-      );
-      setCart(updatedCart);
-    } else {
-      setCart([...cart, { ...item, quantity: 1 }]);
-    }
-    
-    setTotal(total + item.price);
-  };
-
-  const removeFromCart = (itemId: string) => {
-    const item = cart.find(cartItem => cartItem.id === itemId);
-    if (!item) return;
-
-    if (item.quantity === 1) {
-      setCart(cart.filter(cartItem => cartItem.id !== itemId));
-    } else {
-      const updatedCart = cart.map(cartItem =>
-        cartItem.id === itemId
-          ? { ...cartItem, quantity: cartItem.quantity - 1 }
-          : cartItem
-      );
-      setCart(updatedCart);
-    }
-    
-    setTotal(total - item.price);
-  };
-
-  const clearCart = () => {
-    setCart([]);
-    setTotal(0);
-  };
-
   const processCardPayment = () => {
+    const { totalWithTax } = calculateTotals(
+      total,
+      config?.taxes?.defaultTaxRate || 20,
+      config?.taxes?.includeInPrice || true
+    );
     console.log(`Paiement de ${totalWithTax.toFixed(2)}${config?.display?.currency || '€'} par carte`);
     clearCart();
   };
 
   const processCashPayment = () => {
+    const { totalWithTax } = calculateTotals(
+      total,
+      config?.taxes?.defaultTaxRate || 20,
+      config?.taxes?.includeInPrice || true
+    );
     console.log(`Paiement de ${totalWithTax.toFixed(2)}${config?.display?.currency || '€'} par espèces`);
     clearCart();
   };
@@ -152,7 +56,6 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
     return categoryItems.filter(item => item.available && item.posVisible !== false);
   };
 
-  // Utiliser le formatage global des prix
   const formatPrice = (price: number) => {
     return globalFormatPrice(price);
   };
@@ -162,17 +65,7 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   const includeInPrice = config?.taxes?.includeInPrice || true;
   const taxName = config?.taxes?.taxName || 'TVA';
   
-  let subtotal = total;
-  let taxAmount = 0;
-  let totalWithTax = total;
-  
-  if (includeInPrice) {
-    taxAmount = total * taxRate / (100 + taxRate);
-    subtotal = total - taxAmount;
-  } else {
-    taxAmount = total * taxRate / 100;
-    totalWithTax = total + taxAmount;
-  }
+  const { subtotal, taxAmount, totalWithTax } = calculateTotals(total, taxRate, includeInPrice);
 
   const selectedCategoryData = menu.find(category => category.id === selectedCategory);
   const visibleItems = selectedCategoryData ? getVisibleItems(selectedCategoryData.items) : [];
