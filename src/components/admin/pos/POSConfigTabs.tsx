@@ -5,7 +5,8 @@ import { POSColorConfig } from './POSColorConfig';
 import { POSTaxConfig } from './POSTaxConfig';
 import { POSDisplayConfig } from './POSDisplayConfig';
 import { POSMenuSync } from './POSMenuSync';
-import { Monitor, Palette, Calculator, Eye, RefreshCcw } from 'lucide-react';
+import { GlobalPreview } from './GlobalPreview';
+import { Monitor, Palette, Calculator, Eye, RefreshCcw, Globe } from 'lucide-react';
 
 interface POSConfigTabsProps {
   activeTab: string;
@@ -30,7 +31,7 @@ export const POSConfigTabs = ({
 }: POSConfigTabsProps) => {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange}>
-      <TabsList className="grid w-full grid-cols-5">
+      <TabsList className="grid w-full grid-cols-6">
         <TabsTrigger value="menu" className="flex items-center gap-2">
           <RefreshCcw className="h-4 w-4" />
           Menu & Sync
@@ -50,6 +51,10 @@ export const POSConfigTabs = ({
         <TabsTrigger value="display" className="flex items-center gap-2">
           <Eye className="h-4 w-4" />
           Affichage
+        </TabsTrigger>
+        <TabsTrigger value="preview" className="flex items-center gap-2">
+          <Globe className="h-4 w-4" />
+          Aperçu Global
         </TabsTrigger>
       </TabsList>
 
@@ -90,6 +95,13 @@ export const POSConfigTabs = ({
           config={previewConfig?.display || currentConfig.display}
           onUpdate={(display) => onConfigUpdate('display', display)}
           canEdit={canEditConfig}
+        />
+      </TabsContent>
+
+      <TabsContent value="preview" className="space-y-6">
+        <GlobalPreview 
+          previewConfig={previewConfig || currentConfig}
+          currentConfig={currentConfig}
         />
       </TabsContent>
     </Tabs>
