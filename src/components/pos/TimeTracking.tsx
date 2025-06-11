@@ -35,8 +35,8 @@ export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
 
   const getStatusText = () => {
     switch (todaySummary?.currentStatus) {
-      case 'logged-in': return 'En service';
-      case 'on-break': return 'En pause';
+      case 'logged': return 'En service';
+      case 'break': return 'En pause';
       case 'logged-out': return 'Hors service';
       default: return 'Non pointé';
     }
@@ -44,8 +44,8 @@ export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
 
   const getStatusColor = () => {
     switch (todaySummary?.currentStatus) {
-      case 'logged-in': return 'bg-green-100 text-green-800';
-      case 'on-break': return 'bg-yellow-100 text-yellow-800';
+      case 'logged': return 'bg-green-100 text-green-800';
+      case 'break': return 'bg-yellow-100 text-yellow-800';
       case 'logged-out': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }

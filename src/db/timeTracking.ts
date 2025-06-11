@@ -12,7 +12,7 @@ export interface DaySummary {
   totalWorkTime: number;
   totalBreakTime: number;
   entries: TimeEntry[];
-  currentStatus: 'logged-out' | 'logged-in' | 'on-break';
+  currentStatus: 'logged-out' | 'logged' | 'break';
 }
 
 export class TimeTrackingDB {
@@ -38,7 +38,7 @@ export class TimeTrackingDB {
   static calculateDaySummary(entries: TimeEntry[]): DaySummary {
     let totalWorkTime = 0;
     let totalBreakTime = 0;
-    let currentStatus: 'logged-out' | 'logged-in' | 'on-break' = 'logged-out';
+    let currentStatus: 'logged-out' | 'logged' | 'break' = 'logged-out';
     
     const sortedEntries = [...entries].sort((a, b) => 
       new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
@@ -53,7 +53,7 @@ export class TimeTrackingDB {
       switch (entry.action) {
         case 'login':
           lastLoginTime = timestamp;
-          currentStatus = 'logged-in';
+          currentStatus = 'logged';
           break;
           
         case 'logout':
@@ -66,7 +66,7 @@ export class TimeTrackingDB {
           
         case 'break-start':
           lastBreakStartTime = timestamp;
-          currentStatus = 'on-break';
+          currentStatus = 'break';
           break;
           
         case 'break-end':
@@ -74,17 +74,17 @@ export class TimeTrackingDB {
             totalBreakTime += (timestamp.getTime() - lastBreakStartTime.getTime()) / (1000 * 60);
             lastBreakStartTime = null;
           }
-          currentStatus = 'logged-in';
+          currentStatus = 'logged';
           break;
       }
     });
 
-    // Calculate current ongoing times - fix the comparison issues
+    // Calculate current ongoing times
     const now = new Date().getTime();
-    if (lastLoginTime && (currentStatus === 'logged-in' || currentStatus === 'on-break')) {
+    if (lastLoginTime && (currentStatus === 'logged' || currentStatus === 'break')) {
       totalWorkTime += (now - lastLoginTime.getTime()) / (1000 * 60);
     }
-    if (lastBreakStartTime && currentStatus === 'on-break') {
+    if (lastBreakStartTime && currentStatus === 'break') {
       totalBreakTime += (now - lastBreakStartTime.getTime()) / (1000 * 60);
     }
 
@@ -98,7 +98,7 @@ export class TimeTrackingDB {
 
   static canPerformAction(
     action: 'login' | 'logout' | 'break-start' | 'break-end',
-    currentStatus: 'logged-out' | 'logged-in' | 'on-break'
+    currentStatus: 'logged-out' | 'logged' | 'break'
   ): boolean {
     const stateTransitions: Record<string, Record<string, boolean>> = {
       'logged-out': {
@@ -107,13 +107,13 @@ export class TimeTrackingDB {
         'break-start': false,
         'break-end': false
       },
-      'logged-in': {
+      'logged': {
         'login': false,
         'logout': true,
         'break-start': true,
         'break-end': false
       },
-      'on-break': {
+      'break': {
         'login': false,
         'logout': false,
         'break-start': false,
