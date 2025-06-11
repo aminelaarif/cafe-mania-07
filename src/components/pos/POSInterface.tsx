@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -240,8 +239,8 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
 
           {/* Section 3: Commande/Panier */}
           <div className="col-span-4">
-            <Card className="h-full">
-              <CardHeader>
+            <Card className="h-full flex flex-col">
+              <CardHeader className="flex-shrink-0">
                 <CardTitle className="flex items-center gap-2">
                   <ShoppingCart className="h-5 w-5" />
                   Commande
@@ -250,17 +249,17 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col h-full">
-                <div className="flex-1 space-y-3 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 480px)' }}>
+              <CardContent className="flex flex-col flex-1 min-h-0">
+                <div className="flex-1 space-y-3 overflow-y-auto min-h-0">
                   {cart.map((item) => (
                     <div key={item.id} className="flex justify-between items-center p-3 border rounded-lg">
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{item.name}</p>
-                        <p className="text-xs text-muted-foreground">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-lg leading-tight truncate">{item.name}</p>
+                        <p className="text-sm text-muted-foreground">
                           {item.price.toFixed(2)}€ x {item.quantity} = {(item.price * item.quantity).toFixed(2)}€
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                         <Button 
                           size="sm" 
                           variant="outline" 
@@ -281,16 +280,16 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
                       </div>
                     </div>
                   ))}
+                  
+                  {cart.length === 0 && (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-center text-muted-foreground">Aucun article</p>
+                    </div>
+                  )}
                 </div>
-                
-                {cart.length === 0 && (
-                  <div className="flex-1 flex items-center justify-center">
-                    <p className="text-center text-muted-foreground">Aucun article</p>
-                  </div>
-                )}
 
                 {cart.length > 0 && (
-                  <div className="mt-4 pt-4 border-t space-y-4">
+                  <div className="flex-shrink-0 mt-4 pt-4 border-t space-y-4">
                     {/* Détail des montants avec taxes */}
                     <div className="space-y-2 p-3 bg-muted rounded-lg">
                       <div className="flex justify-between text-sm">
