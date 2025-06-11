@@ -99,17 +99,13 @@ export class TimeTrackingDB {
     action: 'login' | 'logout' | 'break-start' | 'break-end',
     currentStatus: 'logged-out' | 'logged-in' | 'on-break'
   ): boolean {
-    switch (action) {
-      case 'login':
-        return currentStatus === 'logged-out';
-      case 'logout':
-        return currentStatus === 'logged-in';
-      case 'break-start':
-        return currentStatus === 'logged-in';
-      case 'break-end':
-        return currentStatus === 'on-break';
-      default:
-        return false;
-    }
+    // Define valid state transitions
+    const validTransitions: Record<string, string[]> = {
+      'logged-out': ['login'],
+      'logged-in': ['logout', 'break-start'],
+      'on-break': ['break-end']
+    };
+    
+    return validTransitions[currentStatus]?.includes(action) || false;
   }
 }
