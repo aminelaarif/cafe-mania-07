@@ -1,23 +1,30 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { usePOSConfig } from '@/hooks/usePOSConfig';
 
 export const usePOSEventHandlers = () => {
   const { getCurrentConfig } = usePOSConfig();
   const [config, setConfig] = useState(getCurrentConfig());
   const [configVersion, setConfigVersion] = useState(0);
+  const lastConfigRef = useRef<string>('');
 
   const reloadConfig = useCallback(() => {
     const newConfig = getCurrentConfig();
-    setConfig(newConfig);
-    setConfigVersion(prev => prev + 1);
-    console.log('Configuration POS rechargée dans interface:', newConfig);
+    const newConfigString = JSON.stringify(newConfig);
+    
+    // Éviter les rechargements inutiles si la configuration n'a pas changé
+    if (lastConfigRef.current !== newConfigString) {
+      setConfig(newConfig);
+      setConfigVersion(prev => prev + 1);
+      lastConfigRef.current = newConfigString;
+      console.log('Configuration POS rechargée dans interface:', newConfig);
+    }
   }, [getCurrentConfig]);
 
   useEffect(() => {
-    console.log('Montage de POSInterface - rechargement de la configuration');
+    console.log('Montage de POSInterface - rechargement initial de la configuration');
     reloadConfig();
-  }, [reloadConfig]);
+  }, []); // Dependency array vide pour éviter les rechargements
 
   useEffect(() => {
     const handlePOSSync = (event: any) => {
