@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { mockMenu, mockHistoryContent, mockEvents } from '@/db/mockdata';
 
@@ -27,7 +28,7 @@ interface ContentContextType {
   addEvent: (event: any) => void;
   updateEvent: (eventId: string, updates: any) => void;
   deleteEvent: (eventId: string) => void;
-  addImage: (sectionId: string, image: Omit<Image, 'id' | 'sectionId'>) => void;
+  addImage: (image: any) => void;
   updateImage: (imageId: string, updates: Partial<Image>) => void;
   deleteImage: (imageId: string) => void;
 }
@@ -142,11 +143,10 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     updateEvents(newEvents);
   };
 
-  const addImage = (sectionId: string, image: Omit<Image, 'id' | 'sectionId'>) => {
+  const addImage = (image: any) => {
     const newImage = { 
       ...image, 
       id: Date.now().toString(),
-      sectionId,
       hidden: image.hidden ?? false
     };
     const newImages = [...images, newImage];

@@ -22,7 +22,7 @@ interface ImageManagerProps {
   sectionId: string;
   sectionTitle: string;
   images: ImageData[];
-  onImageAdd: (sectionId: string, image: Omit<ImageData, 'id' | 'sectionId'>) => void;
+  onImageAdd: (image: any) => void;
   onImageUpdate: (imageId: string, updates: Partial<ImageData>) => void;
   onImageDelete: (imageId: string) => void;
 }
@@ -47,9 +47,10 @@ export const ImageManager = ({
   const handleAddImage = () => {
     if (!newImage.url) return;
     
-    onImageAdd(sectionId, {
+    onImageAdd({
       url: newImage.url,
       alt: newImage.alt || 'Image',
+      sectionId,
       order: newImage.order || sectionImages.length + 1,
       hidden: false
     });
