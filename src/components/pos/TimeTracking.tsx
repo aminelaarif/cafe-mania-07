@@ -63,7 +63,7 @@ export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
     let lastLoginTime: Date | null = null;
     let lastBreakStartTime: Date | null = null;
     
-    entries.forEach((entry, index) => {
+    entries.forEach((entry) => {
       const timestamp = new Date(entry.timestamp);
       
       switch (entry.action) {
@@ -143,8 +143,25 @@ export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
     });
   };
 
+  const canPerformAction = (action: 'login' | 'logout' | 'break-start' | 'break-end'): boolean => {
+    const status = todaySummary?.currentStatus;
+    
+    switch (action) {
+      case 'login':
+        return status === 'logged-out';
+      case 'logout':
+        return status === 'logged-in';
+      case 'break-start':
+        return status === 'logged-in';
+      case 'break-end':
+        return status === 'on-break';
+      default:
+        return false;
+    }
+  };
+
   const handleLogin = () => {
-    if (todaySummary?.currentStatus !== 'logged-out') {
+    if (!canPerformAction('login')) {
       toast({
         title: "Action non autorisée",
         description: "Vous devez d'abord pointer votre sortie ou terminer votre pause",
@@ -156,18 +173,10 @@ export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
   };
 
   const handleLogout = () => {
-    if (todaySummary?.currentStatus === 'logged-out') {
+    if (!canPerformAction('logout')) {
       toast({
         title: "Action non autorisée",
         description: "Vous devez d'abord pointer votre entrée",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (todaySummary?.currentStatus === 'on-break') {
-      toast({
-        title: "Action non autorisée",
-        description: "Vous devez d'abord terminer votre pause",
         variant: "destructive",
       });
       return;
@@ -176,7 +185,7 @@ export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
   };
 
   const handleBreakStart = () => {
-    if (todaySummary?.currentStatus !== 'logged-in') {
+    if (!canPerformAction('break-start')) {
       toast({
         title: "Action non autorisée",
         description: "Vous devez être en service pour prendre une pause",
@@ -188,7 +197,7 @@ export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
   };
 
   const handleBreakEnd = () => {
-    if (todaySummary?.currentStatus !== 'on-break') {
+    if (!canPerformAction('break-end')) {
       toast({
         title: "Action non autorisée",
         description: "Vous n'êtes pas en pause actuellement",
@@ -256,7 +265,7 @@ export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
               <Button 
                 onClick={handleLogin} 
                 className="w-full"
-                disabled={todaySummary?.currentStatus !== 'logged-out'}
+                disabled={!canPerformAction('login')}
               >
                 <LogIn className="h-4 w-4 mr-2" />
                 Pointer l'Entrée
@@ -272,7 +281,7 @@ export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
                 onClick={handleLogout} 
                 variant="destructive" 
                 className="w-full"
-                disabled={todaySummary?.currentStatus !== 'logged-in'}
+                disabled={!canPerformAction('logout')}
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Pointer la Sortie
@@ -288,7 +297,7 @@ export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
                 onClick={handleBreakStart} 
                 variant="outline" 
                 className="w-full"
-                disabled={todaySummary?.currentStatus !== 'logged-in'}
+                disabled={!canPerformAction('break-start')}
               >
                 <Coffee className="h-4 w-4 mr-2" />
                 Commencer la Pause
@@ -304,7 +313,7 @@ export const TimeTracking = ({ onBack }: TimeTrackingProps) => {
                 onClick={handleBreakEnd} 
                 variant="outline" 
                 className="w-full"
-                disabled={todaySummary?.currentStatus !== 'on-break'}
+                disabled={!canPerformAction('break-end')}
               >
                 <Play className="h-4 w-4 mr-2" />
                 Reprendre le Travail
