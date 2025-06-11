@@ -35,15 +35,15 @@ export const POSDisplayConfig = ({
   console.log('POSDisplayConfig - config reçu:', config);
   console.log('POSDisplayConfig - canEdit:', canEdit);
 
-  // Handlers pour les mises à jour qui passent les bonnes sections
+  // Handlers pour les mises à jour qui passent les bonnes configurations
   const handleDisplayConfigUpdate = (newDisplayConfig: any) => {
     console.log('POSDisplayConfig - handleDisplayConfigUpdate appelé avec:', newDisplayConfig);
-    onDisplayUpdate('display', newDisplayConfig);
+    onDisplayUpdate(newDisplayConfig);
   };
 
   const handleLayoutConfigUpdate = (newLayoutConfig: any) => {
     console.log('POSDisplayConfig - handleLayoutConfigUpdate appelé avec:', newLayoutConfig);
-    onLayoutUpdate('layout', newLayoutConfig);
+    onLayoutUpdate(newLayoutConfig);
   };
 
   return (
