@@ -11,7 +11,8 @@ import {
   Calendar,
   LogOut,
   Home,
-  Clock
+  Clock,
+  History
 } from 'lucide-react';
 
 export const AdminSidebar = () => {
@@ -26,6 +27,7 @@ export const AdminSidebar = () => {
           { href: '/admin/users', icon: Users, label: 'Utilisateurs' },
           { href: '/admin/stores', icon: Store, label: 'Magasins' },
           { href: '/admin/presence', icon: Clock, label: 'Présences' },
+          { href: '/admin/personnel-history', icon: History, label: 'Historique Personnel' },
           { href: '/admin/config', icon: Settings, label: 'Configuration' },
         ];
       case 'brand-manager':
@@ -33,6 +35,7 @@ export const AdminSidebar = () => {
           { href: '/admin/dashboard', icon: BarChart3, label: 'Dashboard' },
           { href: '/admin/users', icon: Users, label: 'Utilisateurs' },
           { href: '/admin/presence', icon: Clock, label: 'Présences' },
+          { href: '/admin/personnel-history', icon: History, label: 'Historique Personnel' },
           { href: '/admin/config', icon: Settings, label: 'Configuration Globale' },
         ];
       case 'store-manager':
@@ -42,6 +45,7 @@ export const AdminSidebar = () => {
           { href: '/admin/sales', icon: BarChart3, label: 'Ventes' },
           { href: '/admin/staff', icon: Users, label: 'Personnel' },
           { href: '/admin/presence', icon: Clock, label: 'Présences' },
+          { href: '/admin/personnel-history', icon: History, label: 'Historique Personnel' },
           { href: '/admin/inventory', icon: Package, label: 'Inventaire' },
         ];
       case 'marketing-manager':
