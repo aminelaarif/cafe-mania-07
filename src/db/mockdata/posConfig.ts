@@ -30,6 +30,7 @@ export const mockPOSConfigurations: POSConfiguration[] = [
       showPrices: true,
       currency: '€',
       currencyPosition: 'after',
+      showCardPayment: true,
     },
     updatedAt: '2024-01-01T00:00:00Z',
     updatedBy: 'marketing@coffeeshop.com'

@@ -27,6 +27,7 @@ export interface POSConfiguration {
     showPrices: boolean;
     currency: string;
     currencyPosition: 'before' | 'after';
+    showCardPayment: boolean;
   };
   updatedAt: string;
   updatedBy: string;

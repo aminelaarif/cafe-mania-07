@@ -144,6 +144,9 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   const selectedCategoryData = menu.find(category => category.id === selectedCategory);
   const visibleItems = selectedCategoryData ? getVisibleItems(selectedCategoryData.items) : [];
 
+  // Vérifier si le paiement par carte doit être affiché
+  const showCardPayment = config?.display?.showCardPayment !== false;
+
   return (
     <>
       <div className="min-h-screen bg-background p-4">
@@ -320,14 +323,16 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
                           <Banknote className="h-4 w-4 mr-2" />
                           Paiement Espèces
                         </Button>
-                        <Button 
-                          className="w-full" 
-                          onClick={processCardPayment}
-                          style={config ? { backgroundColor: config.colors.primary } : undefined}
-                        >
-                          <CreditCard className="h-4 w-4 mr-2" />
-                          Paiement Carte
-                        </Button>
+                        {showCardPayment && (
+                          <Button 
+                            className="w-full" 
+                            onClick={processCardPayment}
+                            style={config ? { backgroundColor: config.colors.primary } : undefined}
+                          >
+                            <CreditCard className="h-4 w-4 mr-2" />
+                            Paiement Carte
+                          </Button>
+                        )}
                         <Button 
                           variant="destructive" 
                           className="w-full"
@@ -364,14 +369,16 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
                           <Banknote className="h-4 w-4 mr-2" />
                           Paiement Espèces
                         </Button>
-                        <Button 
-                          className="w-full" 
-                          disabled
-                          style={config ? { backgroundColor: config.colors.primary, opacity: 0.5 } : undefined}
-                        >
-                          <CreditCard className="h-4 w-4 mr-2" />
-                          Paiement Carte
-                        </Button>
+                        {showCardPayment && (
+                          <Button 
+                            className="w-full" 
+                            disabled
+                            style={config ? { backgroundColor: config.colors.primary, opacity: 0.5 } : undefined}
+                          >
+                            <CreditCard className="h-4 w-4 mr-2" />
+                            Paiement Carte
+                          </Button>
+                        )}
                       </div>
                     </div>
                   )}
@@ -394,3 +401,5 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
 };
 
 export default POSInterface;
+
+}

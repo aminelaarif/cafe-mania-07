@@ -30,7 +30,7 @@ interface POSPreviewProps {
 export const POSPreview = ({ 
   layoutConfig = { sectionsPerRow: 3, itemsPerSection: 6, showImages: true, compactMode: false },
   colorConfig = { primary: '#8B5CF6', secondary: '#64748B', accent: '#F59E0B', success: '#10B981', warning: '#F59E0B', danger: '#EF4444' },
-  displayConfig = { showDescriptions: true, showPrices: true, currency: '€', currencyPosition: 'after' }
+  displayConfig = { showDescriptions: true, showPrices: true, currency: '€', currencyPosition: 'after', showCardPayment: true }
 }: POSPreviewProps) => {
   const { menu } = useContent();
 
@@ -158,13 +158,24 @@ export const POSPreview = ({
                     {formatPrice(4.00)}
                   </span>
                 </div>
-                <Button 
-                  size="sm" 
-                  className="w-full mt-2 text-xs"
-                  style={{ backgroundColor: colorConfig.success }}
-                >
-                  Valider la commande
-                </Button>
+                <div className="space-y-1 mt-2">
+                  <Button 
+                    size="sm" 
+                    className="w-full text-xs"
+                    variant="outline"
+                  >
+                    Paiement Espèces
+                  </Button>
+                  {displayConfig.showCardPayment && (
+                    <Button 
+                      size="sm" 
+                      className="w-full text-xs"
+                      style={{ backgroundColor: colorConfig.primary }}
+                    >
+                      Paiement Carte
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

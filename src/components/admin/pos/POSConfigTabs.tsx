@@ -1,11 +1,10 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { POSLayoutConfig } from './POSLayoutConfig';
 import { POSColorConfig } from './POSColorConfig';
 import { POSTaxConfig } from './POSTaxConfig';
 import { POSDisplayConfig } from './POSDisplayConfig';
 import { POSMenuSync } from './POSMenuSync';
-import { Monitor, Palette, Calculator, Eye, RefreshCcw } from 'lucide-react';
+import { Palette, Calculator, Eye, RefreshCcw } from 'lucide-react';
 
 interface POSConfigTabsProps {
   activeTab: string;
@@ -30,14 +29,14 @@ export const POSConfigTabs = ({
 }: POSConfigTabsProps) => {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange}>
-      <TabsList className="grid w-full grid-cols-5">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="menu" className="flex items-center gap-2">
           <RefreshCcw className="h-4 w-4" />
           Menu & Sync
         </TabsTrigger>
-        <TabsTrigger value="layout" className="flex items-center gap-2">
-          <Monitor className="h-4 w-4" />
-          Mise en page
+        <TabsTrigger value="display" className="flex items-center gap-2">
+          <Eye className="h-4 w-4" />
+          Affichage
         </TabsTrigger>
         <TabsTrigger value="colors" className="flex items-center gap-2">
           <Palette className="h-4 w-4" />
@@ -46,10 +45,6 @@ export const POSConfigTabs = ({
         <TabsTrigger value="taxes" className="flex items-center gap-2">
           <Calculator className="h-4 w-4" />
           Taxes
-        </TabsTrigger>
-        <TabsTrigger value="display" className="flex items-center gap-2">
-          <Eye className="h-4 w-4" />
-          Affichage
         </TabsTrigger>
       </TabsList>
 
@@ -61,10 +56,12 @@ export const POSConfigTabs = ({
         />
       </TabsContent>
 
-      <TabsContent value="layout" className="space-y-6">
-        <POSLayoutConfig 
-          config={previewConfig?.layout || currentConfig.layout}
-          onUpdate={(layout) => onConfigUpdate('layout', layout)}
+      <TabsContent value="display" className="space-y-6">
+        <POSDisplayConfig 
+          config={previewConfig?.display || currentConfig.display}
+          layoutConfig={previewConfig?.layout || currentConfig.layout}
+          onDisplayUpdate={(display) => onConfigUpdate('display', display)}
+          onLayoutUpdate={(layout) => onConfigUpdate('layout', layout)}
           canEdit={canEditConfig}
           previewConfig={previewConfig || currentConfig}
         />
@@ -84,15 +81,6 @@ export const POSConfigTabs = ({
           config={previewConfig?.taxes || currentConfig.taxes}
           onUpdate={(taxes) => onConfigUpdate('taxes', taxes)}
           canEdit={canEditConfig}
-        />
-      </TabsContent>
-
-      <TabsContent value="display" className="space-y-6">
-        <POSDisplayConfig 
-          config={previewConfig?.display || currentConfig.display}
-          onUpdate={(display) => onConfigUpdate('display', display)}
-          canEdit={canEditConfig}
-          previewConfig={previewConfig || currentConfig}
         />
       </TabsContent>
     </Tabs>
