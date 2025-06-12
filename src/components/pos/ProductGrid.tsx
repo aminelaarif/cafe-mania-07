@@ -157,11 +157,20 @@ export const ProductGrid = ({
               const customization = getProductCustomization(item.id);
               const isCurrentlyEditing = editingProduct === item.id && isEditMode;
               
+              // Style 3D par défaut : blanc avec texte noir
+              const defaultStyle = {
+                backgroundColor: customization.backgroundColor || '#FFFFFF',
+                color: customization.textColor || '#000000',
+                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
+                border: '1px solid rgba(0, 0, 0, 0.1)',
+                transform: 'translateY(0px)'
+              };
+              
               return (
                 <Card 
                   key={item.id} 
-                  className={`cursor-pointer hover:shadow-lg transition-all duration-200 select-none relative ${
-                    isEditMode ? 'animate-[pulse_1.5s_ease-in-out_infinite] border-2 border-dashed border-blue-400' : ''
+                  className={`cursor-pointer hover:shadow-xl transition-all duration-200 select-none relative border-0 ${
+                    isEditMode ? 'animate-[vibrate3d_0.5s_ease-in-out_infinite]' : 'hover:transform hover:-translate-y-1'
                   } ${isCurrentlyEditing ? 'ring-2 ring-blue-500' : ''}`}
                   onClick={() => handleItemClick(item)}
                   onMouseDown={() => handleItemMouseDown(item)}
@@ -169,10 +178,7 @@ export const ProductGrid = ({
                   onMouseLeave={handleItemMouseLeave}
                   onTouchStart={() => handleItemMouseDown(item)}
                   onTouchEnd={handleItemMouseUp}
-                  style={{ 
-                    backgroundColor: customization.backgroundColor,
-                    color: customization.textColor
-                  }}
+                  style={defaultStyle}
                 >
                   {isEditMode && (
                     <div className="absolute top-2 right-2 z-10">
@@ -185,7 +191,7 @@ export const ProductGrid = ({
                   <CardHeader className="pb-2">
                     <CardTitle 
                       className="text-base leading-tight"
-                      style={{ color: customization.textColor }}
+                      style={{ color: customization.textColor || '#000000' }}
                     >
                       {item.name}
                     </CardTitle>
@@ -194,11 +200,11 @@ export const ProductGrid = ({
                     {shouldShowImages && (
                       <div 
                         className="w-full h-20 rounded mb-2 flex items-center justify-center"
-                        style={{ backgroundColor: `${customization.textColor}20` }}
+                        style={{ backgroundColor: `${customization.textColor || '#000000'}20` }}
                       >
                         <span 
                           className="text-sm"
-                          style={{ color: `${customization.textColor}80` }}
+                          style={{ color: `${customization.textColor || '#000000'}80` }}
                         >
                           Image
                         </span>
@@ -207,7 +213,7 @@ export const ProductGrid = ({
                     {shouldShowPrices && (
                       <p 
                         className="text-xl font-bold"
-                        style={{ color: customization.textColor }}
+                        style={{ color: customization.textColor || '#000000' }}
                       >
                         {formatPrice(item.price)}
                       </p>
@@ -215,7 +221,7 @@ export const ProductGrid = ({
                     {shouldShowDescriptions && (
                       <p 
                         className="text-xs line-clamp-2"
-                        style={{ color: `${customization.textColor}CC` }}
+                        style={{ color: `${customization.textColor || '#000000'}CC` }}
                       >
                         {item.description}
                       </p>
@@ -245,9 +251,25 @@ export const ProductGrid = ({
         product={editingProductData}
         formatPrice={formatPrice}
         availableColors={generateAvailableColors()}
-        currentCustomization={currentCustomization || { backgroundColor: '#8B5CF6', textColor: '#FFFFFF' }}
+        currentCustomization={currentCustomization || { backgroundColor: '#FFFFFF', textColor: '#000000' }}
         onCustomizationChange={handleCustomizationChange}
       />
+
+      <style jsx>{`
+        @keyframes vibrate3d {
+          0% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
+          10% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
+          20% { transform: translateY(1px) rotateX(-1deg) rotateY(1deg); }
+          30% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
+          40% { transform: translateY(1px) rotateX(-1deg) rotateY(1deg); }
+          50% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
+          60% { transform: translateY(1px) rotateX(-1deg) rotateY(1deg); }
+          70% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
+          80% { transform: translateY(1px) rotateX(-1deg) rotateY(1deg); }
+          90% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
+          100% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
+        }
+      `}</style>
     </>
   );
 };
