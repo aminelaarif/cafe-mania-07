@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -50,6 +49,7 @@ interface SortableProductCardProps {
   onMouseUp: () => void;
   onMouseLeave: () => void;
   isDragging?: boolean;
+  activeId?: string | null;
 }
 
 const SortableProductCard = ({
@@ -67,6 +67,7 @@ const SortableProductCard = ({
   onMouseLeave,
   onEditIconClick,
   isDragging = false,
+  activeId,
 }: SortableProductCardProps & { onEditIconClick: (productId: string, event: React.MouseEvent) => void }) => {
   const {
     attributes,
@@ -80,22 +81,50 @@ const SortableProductCard = ({
     disabled: !isEditMode
   });
 
+  // Détermine si cet élément est en cours de déplacement ou doit faire place à l'élément déplacé
+  const isBeingDragged = isSortableDragging || (activeId === item.id);
+  const shouldMakeSpace = activeId && activeId !== item.id && transform;
+
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: isSortableDragging ? 'none' : transition,
-    opacity: isDragging || isSortableDragging ? 0.8 : 1,
-    zIndex: isSortableDragging ? 1000 : 'auto',
+    transition: isBeingDragged 
+      ? 'none' 
+      : shouldMakeSpace 
+        ? 'transform 250ms cubic-bezier(0.4, 0, 0.2, 1)' 
+        : transition || 'transform 200ms ease-out',
+    opacity: isBeingDragged ? 0.7 : 1,
+    zIndex: isBeingDragged ? 1000 : 'auto',
+    scale: isBeingDragged ? '1.05' : '1',
   };
 
-  // Style 3D par défaut : blanc avec texte noir
+  // Style 3D avec effets de drag améliorés
   const defaultStyle = {
     backgroundColor: customization.backgroundColor || '#FFFFFF',
     color: customization.textColor || '#000000',
-    boxShadow: isSortableDragging 
-      ? '0 8px 25px rgba(0, 0, 0, 0.3), 0 4px 10px rgba(0, 0, 0, 0.2)' 
-      : '0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
+    boxShadow: isBeingDragged 
+      ? '0 20px 40px rgba(0, 0, 0, 0.4), 0 10px 20px rgba(0, 0, 0, 0.3)' 
+      : shouldMakeSpace
+        ? '0 6px 12px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.1)'
+        : '0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
     border: '1px solid rgba(0, 0, 0, 0.1)',
-    transform: isSortableDragging ? 'rotate(5deg) scale(1.05)' : 'translateY(0px)'
+    borderRadius: '8px',
+    transform: isBeingDragged 
+      ? 'rotate(3deg)' 
+      : shouldMakeSpace 
+        ? 'scale(0.98)' 
+        : 'translateY(0px)',
+  };
+
+  // Gestionnaires pour empêcher le drag sur l'icône d'édition
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onEditIconClick(item.id, e);
+  };
+
+  const handleEditMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
   };
 
   const cardProps = isEditMode ? {
@@ -113,7 +142,9 @@ const SortableProductCard = ({
       {...cardProps}
       className={`cursor-pointer hover:shadow-xl transition-all duration-200 select-none relative border-0 ${
         isEditMode ? 'vibrate3d cursor-grab active:cursor-grabbing' : 'hover:transform hover:-translate-y-1'
-      } ${isCurrentlyEditing ? 'ring-2 ring-blue-500' : ''}`}
+      } ${isCurrentlyEditing ? 'ring-2 ring-blue-500' : ''} ${
+        shouldMakeSpace ? 'animate-pulse' : ''
+      }`}
       onClick={() => !isEditMode && onItemClick(item)}
       onMouseDown={() => !isEditMode && onMouseDown(item)}
       onMouseUp={!isEditMode ? onMouseUp : undefined}
@@ -125,13 +156,10 @@ const SortableProductCard = ({
         {isEditMode && (
           <div className="absolute top-2 right-2 z-20">
             <div 
-              className="bg-white rounded-full p-1 shadow-lg cursor-pointer hover:bg-gray-50"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEditIconClick(item.id, e);
-              }}
-              onMouseDown={(e) => e.stopPropagation()}
-              onPointerDown={(e) => e.stopPropagation()}
+              className="bg-white rounded-full p-1 shadow-lg cursor-pointer hover:bg-gray-50 transition-all duration-150 hover:scale-110"
+              onClick={handleEditClick}
+              onMouseDown={handleEditMouseDown}
+              onPointerDown={handleEditMouseDown}
             >
               <Edit className="h-4 w-4 text-gray-600" />
             </div>
@@ -268,6 +296,10 @@ export const ProductGrid = ({
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
+    // Ajouter un effet de vibration au début du drag
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -281,6 +313,11 @@ export const ProductGrid = ({
       
       const newOrder = arrayMove(sortedItems, oldIndex, newIndex).map(item => item.id);
       updateProductOrder(newOrder);
+      
+      // Feedback haptique à la fin du drag
+      if (navigator.vibrate) {
+        navigator.vibrate(100);
+      }
     }
   };
 
@@ -344,6 +381,21 @@ export const ProductGrid = ({
           }
           .vibrate3d {
             animation: vibrate3d 1.2s ease-in-out infinite;
+          }
+          
+          @keyframes smoothSlideIn {
+            from {
+              opacity: 0;
+              transform: scale(0.95) translateY(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: scale(1) translateY(0);
+            }
+          }
+          
+          .smooth-enter {
+            animation: smoothSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           }
         `}
       </style>
@@ -415,30 +467,37 @@ export const ProductGrid = ({
                       onMouseLeave={handleItemMouseLeave}
                       onEditIconClick={handleEditIconClick}
                       isDragging={item.id === activeId}
+                      activeId={activeId}
                     />
                   );
                 })}
               </div>
             </SortableContext>
             
-            <DragOverlay>
+            <DragOverlay dropAnimation={{
+              duration: 250,
+              easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+            }}>
               {activeItem ? (
-                <SortableProductCard
-                  item={activeItem}
-                  isEditMode={isEditMode}
-                  isCurrentlyEditing={false}
-                  customization={getProductCustomization(activeItem.id)}
-                  shouldShowImages={shouldShowImages}
-                  shouldShowPrices={shouldShowPrices}
-                  shouldShowDescriptions={shouldShowDescriptions}
-                  formatPrice={formatPrice}
-                  onItemClick={() => {}}
-                  onMouseDown={() => {}}
-                  onMouseUp={() => {}}
-                  onMouseLeave={() => {}}
-                  onEditIconClick={() => {}}
-                  isDragging={true}
-                />
+                <div className="transform rotate-3 scale-105 opacity-90">
+                  <SortableProductCard
+                    item={activeItem}
+                    isEditMode={isEditMode}
+                    isCurrentlyEditing={false}
+                    customization={getProductCustomization(activeItem.id)}
+                    shouldShowImages={shouldShowImages}
+                    shouldShowPrices={shouldShowPrices}
+                    shouldShowDescriptions={shouldShowDescriptions}
+                    formatPrice={formatPrice}
+                    onItemClick={() => {}}
+                    onMouseDown={() => {}}
+                    onMouseUp={() => {}}
+                    onMouseLeave={() => {}}
+                    onEditIconClick={() => {}}
+                    isDragging={true}
+                    activeId={activeId}
+                  />
+                </div>
               ) : null}
             </DragOverlay>
           </DndContext>
