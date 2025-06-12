@@ -1,12 +1,13 @@
 
-import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { usePOSConfig } from '@/hooks/usePOSConfig';
 import { useAuth } from '@/hooks/useAuth';
 
 export const usePOSConfigChanges = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const { getCurrentConfig, updateConfiguration, resetToDefaults, isLoading } = usePOSConfig();
   
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -26,30 +27,56 @@ export const usePOSConfigChanges = () => {
     }
   }, [currentConfig]);
 
-  // Gérer l'alerte avant de quitter la page (pas les onglets)
+  // Gérer l'alerte avant de quitter la page avec une approche moderne
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
         e.preventDefault();
-        e.returnValue = 'Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter ?';
+        // Modern browsers ignore the custom message, but still show the dialog
+        return '';
       }
     };
 
-    // Gérer la navigation avec React Router
-    const handlePopstate = () => {
-      if (hasUnsavedChanges && location.pathname === '/admin/pos') {
-        setShowUnsavedAlert(true);
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('popstate', handlePopstate);
+    if (hasUnsavedChanges) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
     
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('popstate', handlePopstate);
     };
-  }, [hasUnsavedChanges, location.pathname]);
+  }, [hasUnsavedChanges]);
+
+  // Gérer la navigation interne avec React Router
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Page visible - rechargement de la configuration');
+        // Recharger la configuration si nécessaire
+      }
+    };
+
+    const handleGlobalConfigUpdate = () => {
+      console.log('Configuration globale mise à jour - rechargement POS');
+      // Recharger la configuration si nécessaire
+    };
+
+    const handlePOSSync = (event: any) => {
+      console.log('Événement de synchronisation reçu:', event.type, event.detail);
+      // Recharger la configuration si nécessaire
+    };
+
+    window.addEventListener('menu-synced-to-pos', handlePOSSync);
+    window.addEventListener('pos-config-updated', handlePOSSync);
+    window.addEventListener('global-config-updated', handleGlobalConfigUpdate);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('menu-synced-to-pos', handlePOSSync);
+      window.removeEventListener('pos-config-updated', handlePOSSync);
+      window.removeEventListener('global-config-updated', handleGlobalConfigUpdate);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   const handleConfigUpdate = (section: string, updates: any) => {
     if (!canEditConfig) return;
