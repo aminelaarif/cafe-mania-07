@@ -14,12 +14,14 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
+  rectSortingStrategy,
   useSortable,
 } from '@dnd-kit/sortable';
 import {
@@ -47,6 +49,7 @@ interface SortableProductCardProps {
   onMouseDown: (item: any) => void;
   onMouseUp: () => void;
   onMouseLeave: () => void;
+  isDragging?: boolean;
 }
 
 const SortableProductCard = ({
@@ -63,6 +66,7 @@ const SortableProductCard = ({
   onMouseUp,
   onMouseLeave,
   onEditIconClick,
+  isDragging = false,
 }: SortableProductCardProps & { onEditIconClick: (productId: string, event: React.MouseEvent) => void }) => {
   const {
     attributes,
@@ -70,59 +74,68 @@ const SortableProductCard = ({
     setNodeRef,
     transform,
     transition,
-    isDragging,
-  } = useSortable({ id: item.id });
+    isDragging: isSortableDragging,
+  } = useSortable({ 
+    id: item.id,
+    disabled: !isEditMode
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
+    transition: isSortableDragging ? 'none' : transition,
+    opacity: isDragging || isSortableDragging ? 0.8 : 1,
+    zIndex: isSortableDragging ? 1000 : 'auto',
   };
 
   // Style 3D par défaut : blanc avec texte noir
   const defaultStyle = {
     backgroundColor: customization.backgroundColor || '#FFFFFF',
     color: customization.textColor || '#000000',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
+    boxShadow: isSortableDragging 
+      ? '0 8px 25px rgba(0, 0, 0, 0.3), 0 4px 10px rgba(0, 0, 0, 0.2)' 
+      : '0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
     border: '1px solid rgba(0, 0, 0, 0.1)',
-    transform: 'translateY(0px)'
+    transform: isSortableDragging ? 'rotate(5deg) scale(1.05)' : 'translateY(0px)'
+  };
+
+  const cardProps = isEditMode ? {
+    ...attributes,
+    ...listeners,
+    ref: setNodeRef,
+    style
+  } : {
+    ref: setNodeRef,
+    style
   };
 
   return (
     <Card 
-      ref={setNodeRef}
-      style={style}
+      {...cardProps}
       className={`cursor-pointer hover:shadow-xl transition-all duration-200 select-none relative border-0 ${
-        isEditMode ? 'vibrate3d' : 'hover:transform hover:-translate-y-1'
+        isEditMode ? 'vibrate3d cursor-grab active:cursor-grabbing' : 'hover:transform hover:-translate-y-1'
       } ${isCurrentlyEditing ? 'ring-2 ring-blue-500' : ''}`}
-      onClick={() => onItemClick(item)}
-      onMouseDown={() => onMouseDown(item)}
-      onMouseUp={onMouseUp}
-      onMouseLeave={onMouseLeave}
-      onTouchStart={() => onMouseDown(item)}
-      onTouchEnd={onMouseUp}
+      onClick={() => !isEditMode && onItemClick(item)}
+      onMouseDown={() => !isEditMode && onMouseDown(item)}
+      onMouseUp={!isEditMode ? onMouseUp : undefined}
+      onMouseLeave={!isEditMode ? onMouseLeave : undefined}
+      onTouchStart={() => !isEditMode && onMouseDown(item)}
+      onTouchEnd={!isEditMode ? onMouseUp : undefined}
     >
       <div style={defaultStyle} className="rounded-lg p-3 h-full">
         {isEditMode && (
-          <>
-            <div className="absolute top-2 right-2 z-10">
-              <div 
-                className="bg-white rounded-full p-1 shadow-lg cursor-pointer hover:bg-gray-50"
-                onClick={(e) => onEditIconClick(item.id, e)}
-              >
-                <Edit className="h-4 w-4 text-gray-600" />
-              </div>
-            </div>
+          <div className="absolute top-2 right-2 z-20">
             <div 
-              className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing"
-              {...attributes}
-              {...listeners}
+              className="bg-white rounded-full p-1 shadow-lg cursor-pointer hover:bg-gray-50"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditIconClick(item.id, e);
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
             >
-              <div className="bg-white rounded-full p-1 shadow-lg">
-                <GripVertical className="h-4 w-4 text-gray-600" />
-              </div>
+              <Edit className="h-4 w-4 text-gray-600" />
             </div>
-          </>
+          </div>
         )}
         
         <CardHeader className="pb-2">
@@ -181,6 +194,8 @@ export const ProductGrid = ({
   onAddToCart, 
   formatPrice 
 }: ProductGridProps) => {
+  const [activeId, setActiveId] = useState<string | null>(null);
+  
   const {
     isEditMode,
     editingProduct,
@@ -198,7 +213,11 @@ export const ProductGrid = ({
   } = useProductCustomization();
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: isEditMode ? 8 : Infinity,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -247,8 +266,13 @@ export const ProductGrid = ({
     }
   };
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveId(null);
 
     if (active.id !== over?.id) {
       const sortedItems = getSortedProducts(visibleItems);
@@ -298,6 +322,7 @@ export const ProductGrid = ({
   const editingProductData = visibleItems.find(item => item.id === editingProduct);
   const currentCustomization = editingProduct ? getProductCustomization(editingProduct) : null;
   const sortedItems = getSortedProducts(visibleItems);
+  const activeItem = activeId ? sortedItems.find(item => item.id === activeId) : null;
 
   return (
     <>
@@ -361,11 +386,12 @@ export const ProductGrid = ({
           <DndContext 
             sensors={sensors}
             collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
             <SortableContext 
               items={sortedItems.map(item => item.id)}
-              strategy={verticalListSortingStrategy}
+              strategy={rectSortingStrategy}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {sortedItems.map((item) => {
@@ -388,11 +414,33 @@ export const ProductGrid = ({
                       onMouseUp={handleItemMouseUp}
                       onMouseLeave={handleItemMouseLeave}
                       onEditIconClick={handleEditIconClick}
+                      isDragging={item.id === activeId}
                     />
                   );
                 })}
               </div>
             </SortableContext>
+            
+            <DragOverlay>
+              {activeItem ? (
+                <SortableProductCard
+                  item={activeItem}
+                  isEditMode={isEditMode}
+                  isCurrentlyEditing={false}
+                  customization={getProductCustomization(activeItem.id)}
+                  shouldShowImages={shouldShowImages}
+                  shouldShowPrices={shouldShowPrices}
+                  shouldShowDescriptions={shouldShowDescriptions}
+                  formatPrice={formatPrice}
+                  onItemClick={() => {}}
+                  onMouseDown={() => {}}
+                  onMouseUp={() => {}}
+                  onMouseLeave={() => {}}
+                  onEditIconClick={() => {}}
+                  isDragging={true}
+                />
+              ) : null}
+            </DragOverlay>
           </DndContext>
           
           {visibleItems.length === 0 && (
