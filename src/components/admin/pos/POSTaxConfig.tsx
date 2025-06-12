@@ -1,9 +1,9 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TaxNumberInput } from './settings/TaxNumberInput';
+import { TaxTextInput } from './settings/TaxTextInput';
+import { DisplayToggleSwitch } from './settings/DisplayToggleSwitch';
 
 interface POSTaxConfigProps {
   config: {
@@ -32,58 +32,45 @@ export const POSTaxConfig = ({ config, onUpdate, canEdit }: POSTaxConfigProps) =
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="taxRate">Taux de taxe par défaut (%)</Label>
-            <Input
-              id="taxRate"
-              type="number"
-              min="0"
-              max="100"
-              step="0.1"
-              value={config.defaultTaxRate}
-              onChange={(e) => handleUpdate('defaultTaxRate', parseFloat(e.target.value))}
-              disabled={!canEdit}
-            />
-            <p className="text-xs text-muted-foreground">
-              Taux appliqué par défaut aux articles
-            </p>
-          </div>
+          <TaxNumberInput
+            id="taxRate"
+            label="Taux de taxe par défaut (%)"
+            description="Taux appliqué par défaut aux articles"
+            value={config?.defaultTaxRate || 0}
+            min={0}
+            max={100}
+            step={0.1}
+            onChange={(value) => handleUpdate('defaultTaxRate', value)}
+            disabled={!canEdit}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="taxName">Nom de la taxe</Label>
-            <Input
-              id="taxName"
-              type="text"
-              value={config.taxName}
-              onChange={(e) => handleUpdate('taxName', e.target.value)}
-              disabled={!canEdit}
-              placeholder="TVA, GST, etc."
-            />
-            <p className="text-xs text-muted-foreground">
-              Nom affiché sur les reçus
-            </p>
-          </div>
+          <TaxTextInput
+            id="taxName"
+            label="Nom de la taxe"
+            description="Nom affiché sur les reçus"
+            value={config?.taxName || ''}
+            placeholder="TVA, GST, etc."
+            onChange={(value) => handleUpdate('taxName', value)}
+            disabled={!canEdit}
+          />
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Taxe incluse dans le prix</Label>
-              <p className="text-sm text-muted-foreground">
-                Les prix affichés incluent déjà la taxe
-              </p>
-            </div>
-            <Switch
-              checked={!!config.includeInPrice}
-              onCheckedChange={(checked) => handleUpdate('includeInPrice', checked)}
-              disabled={!canEdit}
-            />
-          </div>
+          <DisplayToggleSwitch
+            id="includeInPrice"
+            label="Taxe incluse dans le prix"
+            description="Les prix affichés incluent déjà la taxe"
+            checked={Boolean(config?.includeInPrice)}
+            onCheckedChange={(checked) => handleUpdate('includeInPrice', checked)}
+            disabled={!canEdit}
+          />
 
           <div className="space-y-2">
-            <Label>Mode d'arrondi</Label>
+            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Mode d'arrondi
+            </label>
             <Select 
-              value={config.roundingMode} 
+              value={config?.roundingMode || 'nearest'} 
               onValueChange={(value) => handleUpdate('roundingMode', value)}
               disabled={!canEdit}
             >
@@ -109,17 +96,17 @@ export const POSTaxConfig = ({ config, onUpdate, canEdit }: POSTaxConfigProps) =
               <span className="font-medium">Prix exemple:</span> 10,00 €
             </p>
             <p>
-              <span className="font-medium">Taxe ({config.defaultTaxRate}%):</span> {
-                config.includeInPrice 
-                  ? `${(10 * config.defaultTaxRate / (100 + config.defaultTaxRate)).toFixed(2)} € (incluse)`
-                  : `${(10 * config.defaultTaxRate / 100).toFixed(2)} € (ajoutée)`
+              <span className="font-medium">Taxe ({config?.defaultTaxRate || 0}%):</span> {
+                config?.includeInPrice 
+                  ? `${(10 * (config?.defaultTaxRate || 0) / (100 + (config?.defaultTaxRate || 0))).toFixed(2)} € (incluse)`
+                  : `${(10 * (config?.defaultTaxRate || 0) / 100).toFixed(2)} € (ajoutée)`
               }
             </p>
             <p>
               <span className="font-medium">Total:</span> {
-                config.includeInPrice 
+                config?.includeInPrice 
                   ? '10,00 €'
-                  : `${(10 + (10 * config.defaultTaxRate / 100)).toFixed(2)} €`
+                  : `${(10 + (10 * (config?.defaultTaxRate || 0) / 100)).toFixed(2)} €`
               }
             </p>
           </div>

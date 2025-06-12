@@ -1,8 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { LayoutNumberInput } from './settings/LayoutNumberInput';
+import { DisplayToggleSwitch } from './settings/DisplayToggleSwitch';
 
 interface POSLayoutSettingsProps {
   layoutConfig: {
@@ -44,73 +43,47 @@ export const POSLayoutSettings = ({
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="sectionsPerRow">Sections par ligne</Label>
-            <Input
-              id="sectionsPerRow"
-              type="number"
-              min="1"
-              max="6"
-              value={layoutConfig.sectionsPerRow}
-              onChange={(e) => handleLayoutUpdate('sectionsPerRow', parseInt(e.target.value))}
-              disabled={!canEdit}
-            />
-            <p className="text-xs text-muted-foreground">
-              Nombre de catégories affichées par ligne
-            </p>
-          </div>
+          <LayoutNumberInput
+            id="sectionsPerRow"
+            label="Sections par ligne"
+            description="Nombre de catégories affichées par ligne"
+            value={layoutConfig?.sectionsPerRow || 1}
+            min={1}
+            max={6}
+            onChange={(value) => handleLayoutUpdate('sectionsPerRow', value)}
+            disabled={!canEdit}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="itemsPerSection">Articles par section</Label>
-            <Input
-              id="itemsPerSection"
-              type="number"
-              min="3"
-              max="12"
-              value={layoutConfig.itemsPerSection}
-              onChange={(e) => handleLayoutUpdate('itemsPerSection', parseInt(e.target.value))}
-              disabled={!canEdit}
-            />
-            <p className="text-xs text-muted-foreground">
-              Nombre d'articles visibles par catégorie
-            </p>
-          </div>
+          <LayoutNumberInput
+            id="itemsPerSection"
+            label="Articles par section"
+            description="Nombre d'articles visibles par catégorie"
+            value={layoutConfig?.itemsPerSection || 3}
+            min={3}
+            max={12}
+            onChange={(value) => handleLayoutUpdate('itemsPerSection', value)}
+            disabled={!canEdit}
+          />
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Afficher les images</Label>
-              <p className="text-sm text-muted-foreground">
-                Affiche les images des produits dans le POS
-              </p>
-            </div>
-            <Switch
-              checked={!!layoutConfig.showImages}
-              onCheckedChange={(checked) => {
-                console.log('Switch images clicked:', checked);
-                handleLayoutUpdate('showImages', checked);
-              }}
-              disabled={!canEdit}
-            />
-          </div>
+          <DisplayToggleSwitch
+            id="showImages"
+            label="Afficher les images"
+            description="Affiche les images des produits dans le POS"
+            checked={Boolean(layoutConfig?.showImages)}
+            onCheckedChange={(checked) => handleLayoutUpdate('showImages', checked)}
+            disabled={!canEdit}
+          />
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Mode compact</Label>
-              <p className="text-sm text-muted-foreground">
-                Réduit l'espacement pour afficher plus d'éléments
-              </p>
-            </div>
-            <Switch
-              checked={!!layoutConfig.compactMode}
-              onCheckedChange={(checked) => {
-                console.log('Switch compact clicked:', checked);
-                handleLayoutUpdate('compactMode', checked);
-              }}
-              disabled={!canEdit}
-            />
-          </div>
+          <DisplayToggleSwitch
+            id="compactMode"
+            label="Mode compact"
+            description="Réduit l'espacement pour afficher plus d'éléments"
+            checked={Boolean(layoutConfig?.compactMode)}
+            onCheckedChange={(checked) => handleLayoutUpdate('compactMode', checked)}
+            disabled={!canEdit}
+          />
         </div>
       </CardContent>
     </Card>
