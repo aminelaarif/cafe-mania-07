@@ -1,6 +1,6 @@
 
 import { POSPreview } from './POSPreview';
-import { POSLayoutSettings } from './POSLayoutSettings';
+import { POSLayoutSettingsWithLocal } from './POSLayoutSettingsWithLocal';
 import { POSDisplaySettings } from './POSDisplaySettings';
 import { POSCurrencySettings } from './POSCurrencySettings';
 
@@ -18,8 +18,16 @@ interface POSDisplayConfigProps {
     showImages: boolean;
     compactMode: boolean;
   };
+  localSwitchStates: {
+    showDescriptions: boolean;
+    showPrices: boolean;
+    showCardPayment: boolean;
+    showImages: boolean;
+    compactMode: boolean;
+  };
   onDisplayUpdate: (config: any) => void;
   onLayoutUpdate: (config: any) => void;
+  onSwitchChange: (switchId: string, value: boolean) => void;
   canEdit: boolean;
   previewConfig: any;
 }
@@ -27,21 +35,17 @@ interface POSDisplayConfigProps {
 export const POSDisplayConfig = ({ 
   config, 
   layoutConfig,
+  localSwitchStates,
   onDisplayUpdate, 
   onLayoutUpdate,
+  onSwitchChange,
   canEdit, 
   previewConfig 
 }: POSDisplayConfigProps) => {
   console.log('POSDisplayConfig - config reçu:', config);
+  console.log('POSDisplayConfig - localSwitchStates:', localSwitchStates);
   console.log('POSDisplayConfig - previewConfig:', previewConfig);
   console.log('POSDisplayConfig - canEdit:', canEdit);
-
-  // Utiliser previewConfig si disponible, sinon fallback sur config
-  const currentDisplayConfig = previewConfig?.display || config;
-  const currentLayoutConfig = previewConfig?.layout || layoutConfig;
-
-  console.log('POSDisplayConfig - currentDisplayConfig utilisé:', currentDisplayConfig);
-  console.log('POSDisplayConfig - currentLayoutConfig utilisé:', currentLayoutConfig);
 
   // Handlers pour les mises à jour qui passent les bonnes configurations
   const handleDisplayConfigUpdate = (newDisplayConfig: any) => {
@@ -57,24 +61,27 @@ export const POSDisplayConfig = ({
   return (
     <div className="grid lg:grid-cols-2 gap-6">
       <div className="space-y-6">
-        {/* Configuration de la mise en page */}
-        <POSLayoutSettings
-          layoutConfig={currentLayoutConfig}
+        {/* Configuration de la mise en page avec états locaux */}
+        <POSLayoutSettingsWithLocal
+          layoutConfig={layoutConfig}
+          localSwitchStates={localSwitchStates}
           onLayoutUpdate={handleLayoutConfigUpdate}
+          onSwitchChange={onSwitchChange}
           canEdit={canEdit}
         />
 
-        {/* Configuration de l'affichage */}
+        {/* Configuration de l'affichage avec états locaux */}
         <POSDisplaySettings
-          config={currentDisplayConfig}
-          onDisplayUpdate={handleDisplayConfigUpdate}
+          config={config}
+          localSwitchStates={localSwitchStates}
+          onSwitchChange={onSwitchChange}
           canEdit={canEdit}
         />
 
         {/* Configuration de la devise */}
         <div className="space-y-6">
           <POSCurrencySettings
-            config={currentDisplayConfig}
+            config={config}
             onDisplayUpdate={handleDisplayConfigUpdate}
             canEdit={canEdit}
           />

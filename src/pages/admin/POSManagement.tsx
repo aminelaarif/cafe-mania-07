@@ -19,7 +19,9 @@ export const POSManagement = () => {
     isLoading,
     canEditConfig,
     storeId,
+    localSwitchStates,
     handleConfigUpdate,
+    handleSwitchChange,
     handleSaveChanges,
     handleReset,
     handleDiscardChanges,
@@ -77,7 +79,9 @@ export const POSManagement = () => {
           previewConfig={previewConfig}
           canEditConfig={canEditConfig}
           storeId={storeId}
+          localSwitchStates={localSwitchStates}
           onConfigUpdate={handleConfigUpdate}
+          onSwitchChange={handleSwitchChange}
           onSync={handleSync}
         />
       )}

@@ -13,7 +13,9 @@ interface POSConfigTabsProps {
   previewConfig: any;
   canEditConfig: boolean;
   storeId: string;
+  localSwitchStates: any;
   onConfigUpdate: (section: string, updates: any) => void;
+  onSwitchChange: (switchId: string, value: boolean) => void;
   onSync: () => void;
 }
 
@@ -24,7 +26,9 @@ export const POSConfigTabs = ({
   previewConfig,
   canEditConfig,
   storeId,
+  localSwitchStates,
   onConfigUpdate,
+  onSwitchChange,
   onSync
 }: POSConfigTabsProps) => {
   return (
@@ -60,8 +64,10 @@ export const POSConfigTabs = ({
         <POSDisplayConfig 
           config={previewConfig?.display || currentConfig.display}
           layoutConfig={previewConfig?.layout || currentConfig.layout}
+          localSwitchStates={localSwitchStates}
           onDisplayUpdate={(display) => onConfigUpdate('display', display)}
           onLayoutUpdate={(layout) => onConfigUpdate('layout', layout)}
+          onSwitchChange={onSwitchChange}
           canEdit={canEditConfig}
           previewConfig={previewConfig || currentConfig}
         />

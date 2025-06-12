@@ -9,6 +9,7 @@ interface DisplayToggleSwitchProps {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   disabled?: boolean;
+  useLocalState?: boolean; // Nouveau prop pour indiquer l'utilisation d'état local
 }
 
 export const DisplayToggleSwitch = ({
@@ -17,9 +18,10 @@ export const DisplayToggleSwitch = ({
   description,
   checked,
   onCheckedChange,
-  disabled = false
+  disabled = false,
+  useLocalState = false
 }: DisplayToggleSwitchProps) => {
-  console.log(`DisplayToggleSwitch ${id} - checked:`, checked, 'disabled:', disabled);
+  console.log(`DisplayToggleSwitch ${id} - checked:`, checked, 'disabled:', disabled, 'useLocalState:', useLocalState);
 
   return (
     <div className="flex items-center justify-between">
@@ -30,10 +32,10 @@ export const DisplayToggleSwitch = ({
         </p>
       </div>
       <Switch
-        key={`${id}-${checked}`}
+        key={useLocalState ? `${id}-local-${checked}` : `${id}-config-${checked}`}
         checked={checked}
         onCheckedChange={(newChecked) => {
-          console.log(`Switch ${id} clicked:`, newChecked);
+          console.log(`Switch ${id} clicked:`, newChecked, 'useLocalState:', useLocalState);
           onCheckedChange(newChecked);
         }}
         disabled={disabled}

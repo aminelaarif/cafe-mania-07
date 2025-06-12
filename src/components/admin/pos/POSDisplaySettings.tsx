@@ -8,28 +8,24 @@ interface POSDisplaySettingsProps {
     showPrices: boolean;
     showCardPayment: boolean;
   };
-  onDisplayUpdate: (config: any) => void;
+  localSwitchStates: {
+    showDescriptions: boolean;
+    showPrices: boolean;
+    showCardPayment: boolean;
+  };
+  onSwitchChange: (switchId: string, value: boolean) => void;
   canEdit: boolean;
 }
 
 export const POSDisplaySettings = ({ 
   config,
-  onDisplayUpdate,
+  localSwitchStates,
+  onSwitchChange,
   canEdit
 }: POSDisplaySettingsProps) => {
   console.log('POSDisplaySettings - config reçu:', config);
+  console.log('POSDisplaySettings - localSwitchStates:', localSwitchStates);
   console.log('POSDisplaySettings - canEdit:', canEdit);
-
-  const handleDisplayUpdate = (key: string, value: any) => {
-    console.log('POSDisplaySettings - mise à jour:', key, value, 'canEdit:', canEdit);
-    if (!canEdit) {
-      console.log('POSDisplaySettings - modification refusée, canEdit=false');
-      return;
-    }
-    const newConfig = { ...config, [key]: value };
-    console.log('POSDisplaySettings - nouveau config:', newConfig);
-    onDisplayUpdate(newConfig);
-  };
 
   return (
     <Card>
@@ -45,27 +41,30 @@ export const POSDisplaySettings = ({
             id="showDescriptions"
             label="Afficher les descriptions"
             description="Montre la description des articles dans le POS"
-            checked={Boolean(config?.showDescriptions)}
-            onCheckedChange={(checked) => handleDisplayUpdate('showDescriptions', checked)}
+            checked={localSwitchStates.showDescriptions}
+            onCheckedChange={(checked) => onSwitchChange('showDescriptions', checked)}
             disabled={!canEdit}
+            useLocalState={true}
           />
 
           <DisplayToggleSwitch
             id="showPrices"
             label="Afficher les prix"
             description="Montre les prix sur les boutons des articles"
-            checked={Boolean(config?.showPrices)}
-            onCheckedChange={(checked) => handleDisplayUpdate('showPrices', checked)}
+            checked={localSwitchStates.showPrices}
+            onCheckedChange={(checked) => onSwitchChange('showPrices', checked)}
             disabled={!canEdit}
+            useLocalState={true}
           />
 
           <DisplayToggleSwitch
             id="showCardPayment"
             label="Paiement par carte"
             description="Affiche le bouton de paiement par carte dans le POS"
-            checked={Boolean(config?.showCardPayment)}
-            onCheckedChange={(checked) => handleDisplayUpdate('showCardPayment', checked)}
+            checked={localSwitchStates.showCardPayment}
+            onCheckedChange={(checked) => onSwitchChange('showCardPayment', checked)}
             disabled={!canEdit}
+            useLocalState={true}
           />
         </div>
 
