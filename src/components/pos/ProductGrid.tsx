@@ -121,20 +121,21 @@ export const ProductGrid = ({
       <style>
         {`
           @keyframes vibrate3d {
-            0% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
-            10% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
-            20% { transform: translateY(1px) rotateX(-1deg) rotateY(1deg); }
-            30% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
-            40% { transform: translateY(1px) rotateX(-1deg) rotateY(1deg); }
-            50% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
-            60% { transform: translateY(1px) rotateX(-1deg) rotateY(1deg); }
-            70% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
-            80% { transform: translateY(1px) rotateX(-1deg) rotateY(1deg); }
-            90% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
-            100% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
+            0% { transform: translateX(0px) translateY(0px) rotateZ(0deg); }
+            5% { transform: translateX(-1px) translateY(1px) rotateZ(-0.5deg); }
+            15% { transform: translateX(2px) translateY(-1px) rotateZ(1deg); }
+            25% { transform: translateX(-2px) translateY(0px) rotateZ(-1deg); }
+            35% { transform: translateX(1px) translateY(-2px) rotateZ(0.5deg); }
+            45% { transform: translateX(-1px) translateY(1px) rotateZ(-0.5deg); }
+            55% { transform: translateX(2px) translateY(1px) rotateZ(1deg); }
+            65% { transform: translateX(-1px) translateY(-1px) rotateZ(-0.8deg); }
+            75% { transform: translateX(1px) translateY(2px) rotateZ(0.8deg); }
+            85% { transform: translateX(-2px) translateY(-1px) rotateZ(-1deg); }
+            95% { transform: translateX(1px) translateY(0px) rotateZ(0.5deg); }
+            100% { transform: translateX(0px) translateY(0px) rotateZ(0deg); }
           }
           .vibrate3d {
-            animation: vibrate3d 0.5s ease-in-out infinite;
+            animation: vibrate3d 1.2s ease-in-out infinite;
           }
         `}
       </style>
