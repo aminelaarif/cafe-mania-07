@@ -50,8 +50,7 @@ export const POSDisplaySettings = ({
               </p>
             </div>
             <Switch
-              key={`desc-${config.showDescriptions}`}
-              checked={config.showDescriptions}
+              checked={!!config.showDescriptions}
               onCheckedChange={(checked) => {
                 console.log('Switch descriptions clicked:', checked);
                 handleDisplayUpdate('showDescriptions', checked);
@@ -68,8 +67,7 @@ export const POSDisplaySettings = ({
               </p>
             </div>
             <Switch
-              key={`prices-${config.showPrices}`}
-              checked={config.showPrices}
+              checked={!!config.showPrices}
               onCheckedChange={(checked) => {
                 console.log('Switch prix clicked:', checked);
                 handleDisplayUpdate('showPrices', checked);
@@ -86,8 +84,7 @@ export const POSDisplaySettings = ({
               </p>
             </div>
             <Switch
-              key={`card-${config.showCardPayment}`}
-              checked={config.showCardPayment}
+              checked={!!config.showCardPayment}
               onCheckedChange={(checked) => {
                 console.log('Switch paiement carte clicked:', checked);
                 handleDisplayUpdate('showCardPayment', checked);

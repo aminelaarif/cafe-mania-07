@@ -74,8 +74,7 @@ export const POSTaxConfig = ({ config, onUpdate, canEdit }: POSTaxConfigProps) =
               </p>
             </div>
             <Switch
-              key={`tax-included-${config.includeInPrice}`}
-              checked={config.includeInPrice}
+              checked={!!config.includeInPrice}
               onCheckedChange={(checked) => handleUpdate('includeInPrice', checked)}
               disabled={!canEdit}
             />
