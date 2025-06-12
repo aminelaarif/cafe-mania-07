@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useContent } from '@/contexts/ContentContext';
@@ -75,9 +76,7 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
 
   console.log('Configuration POS actuelle dans interface:', config);
   console.log('Mode édition actif:', isEditMode);
-
-  // Afficher les boutons si le mode édition est actif OU si le panneau est ouvert
-  const shouldShowEditButtons = isEditMode || showEditPanel;
+  console.log('Panneau édition ouvert:', showEditPanel);
 
   return (
     <>
@@ -86,11 +85,11 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold">POS - {user?.name || ''}</h1>
             
-            {/* Boutons de sauvegarde/annulation - Affichés dès que le panneau s'ouvre */}
-            {shouldShowEditButtons && (
+            {/* Boutons de sauvegarde/annulation - Toujours affichés en mode édition */}
+            {isEditMode && (
               <div className="flex items-center gap-2 ml-4 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <span className="text-sm font-medium text-yellow-800">
-                  {isEditMode ? 'Mode édition actif' : 'Personnalisation en cours'}
+                  Mode édition actif
                 </span>
                 <Button
                   onClick={saveChanges}
