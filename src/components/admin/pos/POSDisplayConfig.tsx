@@ -33,7 +33,15 @@ export const POSDisplayConfig = ({
   previewConfig 
 }: POSDisplayConfigProps) => {
   console.log('POSDisplayConfig - config reçu:', config);
+  console.log('POSDisplayConfig - previewConfig:', previewConfig);
   console.log('POSDisplayConfig - canEdit:', canEdit);
+
+  // Utiliser previewConfig si disponible, sinon fallback sur config
+  const currentDisplayConfig = previewConfig?.display || config;
+  const currentLayoutConfig = previewConfig?.layout || layoutConfig;
+
+  console.log('POSDisplayConfig - currentDisplayConfig utilisé:', currentDisplayConfig);
+  console.log('POSDisplayConfig - currentLayoutConfig utilisé:', currentLayoutConfig);
 
   // Handlers pour les mises à jour qui passent les bonnes configurations
   const handleDisplayConfigUpdate = (newDisplayConfig: any) => {
@@ -51,14 +59,14 @@ export const POSDisplayConfig = ({
       <div className="space-y-6">
         {/* Configuration de la mise en page */}
         <POSLayoutSettings
-          layoutConfig={layoutConfig}
+          layoutConfig={currentLayoutConfig}
           onLayoutUpdate={handleLayoutConfigUpdate}
           canEdit={canEdit}
         />
 
         {/* Configuration de l'affichage */}
         <POSDisplaySettings
-          config={config}
+          config={currentDisplayConfig}
           onDisplayUpdate={handleDisplayConfigUpdate}
           canEdit={canEdit}
         />
@@ -66,7 +74,7 @@ export const POSDisplayConfig = ({
         {/* Configuration de la devise */}
         <div className="space-y-6">
           <POSCurrencySettings
-            config={config}
+            config={currentDisplayConfig}
             onDisplayUpdate={handleDisplayConfigUpdate}
             canEdit={canEdit}
           />

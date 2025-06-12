@@ -30,6 +30,7 @@ export const DisplayToggleSwitch = ({
         </p>
       </div>
       <Switch
+        key={`${id}-${checked}`}
         checked={checked}
         onCheckedChange={(newChecked) => {
           console.log(`Switch ${id} clicked:`, newChecked);
