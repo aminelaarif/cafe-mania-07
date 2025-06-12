@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useContent } from '@/contexts/ContentContext';
+import { Button } from '@/components/ui/button';
 import { CashPaymentDrawer } from './CashPaymentDrawer';
 import { POSHeader } from './POSHeader';
 import { CategorySelector } from './CategorySelector';
@@ -10,7 +11,9 @@ import { CartSection } from './CartSection';
 import { useGlobalConfig } from '@/hooks/useGlobalConfig';
 import { usePOSCart } from './POSCartLogic';
 import { usePOSEventHandlers } from './POSEventHandlers';
+import { useProductCustomization } from '@/hooks/useProductCustomization';
 import { calculateTotals } from './POSCalculations';
+import { Save, X } from 'lucide-react';
 
 interface POSInterfaceProps {
   onBack: () => void;
@@ -22,6 +25,7 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   const { formatPrice: globalFormatPrice, getGlobalConfig } = useGlobalConfig();
   const { cart, total, addToCart, removeFromCart, clearCart } = usePOSCart();
   const { config, configVersion } = usePOSEventHandlers();
+  const { isEditMode, saveChanges, cancelChanges } = useProductCustomization();
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [showCashDrawer, setShowCashDrawer] = useState(false);
 
@@ -71,20 +75,48 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   const visibleItems = selectedCategoryData ? getVisibleItems(selectedCategoryData.items) : [];
 
   console.log('Configuration POS actuelle dans interface:', config);
-  console.log('Afficher les prix:', config?.display?.showPrices);
-  console.log('Afficher les descriptions:', config?.display?.showDescriptions);
-  console.log('Afficher les images:', config?.layout?.showImages);
-  console.log('Afficher le paiement par carte:', config?.display?.showCardPayment);
-  console.log('Version de configuration:', configVersion);
+  console.log('Mode édition actif:', isEditMode);
 
   return (
     <>
       <div className="min-h-screen bg-background p-4" key={configVersion}>
-        <POSHeader 
-          userName={user?.name || ''}
-          onBack={onBack}
-          onLogout={logout}
-        />
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold">POS - {user?.name || ''}</h1>
+            
+            {/* Boutons de sauvegarde/annulation en mode édition */}
+            {isEditMode && (
+              <div className="flex items-center gap-2 ml-4">
+                <Button
+                  onClick={saveChanges}
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Save className="h-4 w-4 mr-1" />
+                  Sauvegarder
+                </Button>
+                <Button
+                  onClick={cancelChanges}
+                  size="sm"
+                  variant="outline"
+                  className="border-red-500 text-red-500 hover:bg-red-50"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Annuler
+                </Button>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={onBack}>
+              Retour
+            </Button>
+            <Button variant="ghost" onClick={logout}>
+              Déconnexion
+            </Button>
+          </div>
+        </div>
 
         <div className="grid grid-cols-12 gap-6 h-[calc(100vh-120px)]">
           {/* Section 1: Onglets des catégories */}
