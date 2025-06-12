@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -117,6 +118,27 @@ export const ProductGrid = ({
 
   return (
     <>
+      <style>
+        {`
+          @keyframes vibrate3d {
+            0% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
+            10% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
+            20% { transform: translateY(1px) rotateX(-1deg) rotateY(1deg); }
+            30% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
+            40% { transform: translateY(1px) rotateX(-1deg) rotateY(1deg); }
+            50% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
+            60% { transform: translateY(1px) rotateX(-1deg) rotateY(1deg); }
+            70% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
+            80% { transform: translateY(1px) rotateX(-1deg) rotateY(1deg); }
+            90% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
+            100% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
+          }
+          .vibrate3d {
+            animation: vibrate3d 0.5s ease-in-out infinite;
+          }
+        `}
+      </style>
+
       <Card className="h-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -170,7 +192,7 @@ export const ProductGrid = ({
                 <Card 
                   key={item.id} 
                   className={`cursor-pointer hover:shadow-xl transition-all duration-200 select-none relative border-0 ${
-                    isEditMode ? 'animate-[vibrate3d_0.5s_ease-in-out_infinite]' : 'hover:transform hover:-translate-y-1'
+                    isEditMode ? 'vibrate3d' : 'hover:transform hover:-translate-y-1'
                   } ${isCurrentlyEditing ? 'ring-2 ring-blue-500' : ''}`}
                   onClick={() => handleItemClick(item)}
                   onMouseDown={() => handleItemMouseDown(item)}
@@ -254,22 +276,6 @@ export const ProductGrid = ({
         currentCustomization={currentCustomization || { backgroundColor: '#FFFFFF', textColor: '#000000' }}
         onCustomizationChange={handleCustomizationChange}
       />
-
-      <style jsx>{`
-        @keyframes vibrate3d {
-          0% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
-          10% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
-          20% { transform: translateY(1px) rotateX(-1deg) rotateY(1deg); }
-          30% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
-          40% { transform: translateY(1px) rotateX(-1deg) rotateY(1deg); }
-          50% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
-          60% { transform: translateY(1px) rotateX(-1deg) rotateY(1deg); }
-          70% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
-          80% { transform: translateY(1px) rotateX(-1deg) rotateY(1deg); }
-          90% { transform: translateY(-1px) rotateX(1deg) rotateY(-1deg); }
-          100% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
-        }
-      `}</style>
     </>
   );
 };
