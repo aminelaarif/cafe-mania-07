@@ -54,7 +54,7 @@ export const POSLayoutSettingsWithLocal = ({
             value={layoutConfig.sectionsPerRow}
             min={1}
             max={6}
-            onValueChange={(value) => handleLayoutUpdate('sectionsPerRow', value)}
+            onChange={(value) => handleLayoutUpdate('sectionsPerRow', value)}
             disabled={!canEdit}
           />
 
@@ -65,7 +65,7 @@ export const POSLayoutSettingsWithLocal = ({
             value={layoutConfig.itemsPerSection}
             min={3}
             max={12}
-            onValueChange={(value) => handleLayoutUpdate('itemsPerSection', value)}
+            onChange={(value) => handleLayoutUpdate('itemsPerSection', value)}
             disabled={!canEdit}
           />
         </div>
