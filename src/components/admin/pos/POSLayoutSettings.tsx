@@ -86,6 +86,7 @@ export const POSLayoutSettings = ({
               </p>
             </div>
             <Switch
+              key={`images-${layoutConfig.showImages}`}
               checked={layoutConfig.showImages}
               onCheckedChange={(checked) => {
                 console.log('Switch images clicked:', checked);
@@ -103,6 +104,7 @@ export const POSLayoutSettings = ({
               </p>
             </div>
             <Switch
+              key={`compact-${layoutConfig.compactMode}`}
               checked={layoutConfig.compactMode}
               onCheckedChange={(checked) => {
                 console.log('Switch compact clicked:', checked);
