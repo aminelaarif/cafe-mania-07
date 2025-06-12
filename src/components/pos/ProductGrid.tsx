@@ -140,7 +140,7 @@ export const ProductGrid = ({
                 <Card 
                   key={item.id} 
                   className={`cursor-pointer hover:shadow-lg transition-all duration-200 select-none relative ${
-                    isEditMode ? 'animate-pulse border-2 border-dashed' : ''
+                    isEditMode ? 'animate-[pulse_1.5s_ease-in-out_infinite] border-2 border-dashed border-blue-400' : ''
                   } ${isCurrentlyEditing ? 'ring-2 ring-blue-500' : ''}`}
                   onClick={() => handleItemClick(item)}
                   onMouseDown={() => handleItemMouseDown(item)}
