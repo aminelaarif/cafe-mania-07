@@ -1,8 +1,8 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Coffee, Snowflake, Cookie, Utensils, Edit } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Coffee, Snowflake, Cookie, Utensils, Edit, Save, X } from 'lucide-react';
 import { ButtonCustomizationPanel } from './ButtonCustomizationPanel';
 import { useProductCustomization } from '@/hooks/useProductCustomization';
 
@@ -29,7 +29,9 @@ export const ProductGrid = ({
     cancelTimer,
     getProductCustomization,
     updateProductCustomization,
-    setShowEditPanel
+    setShowEditPanel,
+    saveChanges,
+    cancelChanges
   } = useProductCustomization();
 
   const getCategoryIcon = (categoryId: string) => {
@@ -90,7 +92,7 @@ export const ProductGrid = ({
     const variants: string[] = [];
     baseColors.forEach(color => {
       variants.push(color);
-      // Ajouter des variants plus clairs et plus foncés
+      // Ajouter des variants plus claires et plus foncés
       const hue = color.replace('#', '');
       const r = parseInt(hue.substr(0, 2), 16);
       const g = parseInt(hue.substr(2, 2), 16);
@@ -124,9 +126,28 @@ export const ProductGrid = ({
               {visibleItems.length} produit(s)
             </Badge>
             {isEditMode && (
-              <Badge variant="secondary" className="ml-auto">
-                Mode édition
-              </Badge>
+              <div className="ml-auto flex items-center gap-2">
+                <Badge variant="secondary">
+                  Mode édition
+                </Badge>
+                <Button
+                  onClick={saveChanges}
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
+                >
+                  <Save className="h-4 w-4 mr-1" />
+                  Sauvegarder
+                </Button>
+                <Button
+                  onClick={cancelChanges}
+                  size="sm"
+                  variant="outline"
+                  className="border-red-500 text-red-500 hover:bg-red-50 shadow-lg"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Annuler
+                </Button>
+              </div>
             )}
           </CardTitle>
         </CardHeader>

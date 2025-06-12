@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useContent } from '@/contexts/ContentContext';
@@ -84,32 +83,6 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold">POS - {user?.name || ''}</h1>
-            
-            {/* Boutons de sauvegarde/annulation - Toujours affichés en mode édition */}
-            {isEditMode && (
-              <div className="flex items-center gap-2 ml-4 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <span className="text-sm font-medium text-yellow-800">
-                  Mode édition actif
-                </span>
-                <Button
-                  onClick={saveChanges}
-                  size="sm"
-                  className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
-                >
-                  <Save className="h-4 w-4 mr-1" />
-                  Sauvegarder
-                </Button>
-                <Button
-                  onClick={cancelChanges}
-                  size="sm"
-                  variant="outline"
-                  className="border-red-500 text-red-500 hover:bg-red-50 shadow-lg"
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Annuler
-                </Button>
-              </div>
-            )}
           </div>
           
           <div className="flex items-center gap-2">
