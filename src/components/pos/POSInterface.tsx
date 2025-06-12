@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useContent } from '@/contexts/ContentContext';
@@ -25,7 +24,7 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   const { formatPrice: globalFormatPrice, getGlobalConfig } = useGlobalConfig();
   const { cart, total, addToCart, removeFromCart, clearCart } = usePOSCart();
   const { config, configVersion } = usePOSEventHandlers();
-  const { isEditMode, saveChanges, cancelChanges } = useProductCustomization();
+  const { isEditMode, showEditPanel, saveChanges, cancelChanges } = useProductCustomization();
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [showCashDrawer, setShowCashDrawer] = useState(false);
 
@@ -77,6 +76,9 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   console.log('Configuration POS actuelle dans interface:', config);
   console.log('Mode édition actif:', isEditMode);
 
+  // Afficher les boutons si le mode édition est actif OU si le panneau est ouvert
+  const shouldShowEditButtons = isEditMode || showEditPanel;
+
   return (
     <>
       <div className="min-h-screen bg-background p-4" key={configVersion}>
@@ -84,10 +86,12 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold">POS - {user?.name || ''}</h1>
             
-            {/* Boutons de sauvegarde/annulation en mode édition - Plus visibles */}
-            {isEditMode && (
+            {/* Boutons de sauvegarde/annulation - Affichés dès que le panneau s'ouvre */}
+            {shouldShowEditButtons && (
               <div className="flex items-center gap-2 ml-4 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <span className="text-sm font-medium text-yellow-800">Mode édition actif</span>
+                <span className="text-sm font-medium text-yellow-800">
+                  {isEditMode ? 'Mode édition actif' : 'Personnalisation en cours'}
+                </span>
                 <Button
                   onClick={saveChanges}
                   size="sm"
