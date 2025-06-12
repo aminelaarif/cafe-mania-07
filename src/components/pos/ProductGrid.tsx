@@ -62,7 +62,8 @@ const SortableProductCard = ({
   onMouseDown,
   onMouseUp,
   onMouseLeave,
-}: SortableProductCardProps) => {
+  onEditIconClick,
+}: SortableProductCardProps & { onEditIconClick: (productId: string, event: React.MouseEvent) => void }) => {
   const {
     attributes,
     listeners,
@@ -105,7 +106,10 @@ const SortableProductCard = ({
         {isEditMode && (
           <>
             <div className="absolute top-2 right-2 z-10">
-              <div className="bg-white rounded-full p-1 shadow-lg">
+              <div 
+                className="bg-white rounded-full p-1 shadow-lg cursor-pointer hover:bg-gray-50"
+                onClick={(e) => onEditIconClick(item.id, e)}
+              >
                 <Edit className="h-4 w-4 text-gray-600" />
               </div>
             </div>
@@ -182,6 +186,7 @@ export const ProductGrid = ({
     editingProduct,
     showEditPanel,
     handleProductClick,
+    handleEditIconClick,
     cancelTimer,
     getProductCustomization,
     updateProductCustomization,
@@ -382,6 +387,7 @@ export const ProductGrid = ({
                       onMouseDown={handleItemMouseDown}
                       onMouseUp={handleItemMouseUp}
                       onMouseLeave={handleItemMouseLeave}
+                      onEditIconClick={handleEditIconClick}
                     />
                   );
                 })}

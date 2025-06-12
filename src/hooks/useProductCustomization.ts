@@ -82,22 +82,25 @@ export const useProductCustomization = () => {
 
   const handleProductClick = useCallback((productId: string) => {
     if (isEditMode) {
-      setEditingProduct(productId);
-      setShowEditPanel(true);
+      // En mode édition, le clic sur le produit ne fait rien
       return;
     }
 
-    // Démarrer le timer de 3 secondes
+    // Démarrer le timer de 3 secondes pour entrer en mode édition
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
 
     timerRef.current = setTimeout(() => {
       startEditMode();
-      setEditingProduct(productId);
-      setShowEditPanel(true);
     }, 3000);
   }, [isEditMode, startEditMode]);
+
+  const handleEditIconClick = useCallback((productId: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Empêcher la propagation vers le bouton parent
+    setEditingProduct(productId);
+    setShowEditPanel(true);
+  }, []);
 
   const cancelTimer = useCallback(() => {
     if (timerRef.current) {
@@ -148,6 +151,7 @@ export const useProductCustomization = () => {
     updateProductCustomization,
     updateProductOrder,
     handleProductClick,
+    handleEditIconClick,
     cancelTimer,
     getProductCustomization,
     getSortedProducts,
