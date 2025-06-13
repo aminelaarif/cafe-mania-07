@@ -48,7 +48,7 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
     
     console.log('Traitement du paiement par carte pour utilisateur:', user?.id);
     
-    // Enregistrer la vente avec l'ID de l'utilisateur connecté
+    // Enregistrer la vente avec l'ID et le nom de l'utilisateur connecté
     addSale({
       orderId: `ord_${Date.now()}`,
       items: cart.map(item => ({
@@ -63,6 +63,7 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
       total: totalWithTax,
       paymentMethod: 'card',
       userId: user?.id || 'unknown', // ID utilisateur POS connecté
+      userName: user?.name || 'Utilisateur Inconnu', // Nom utilisateur POS connecté
       storeId: 'store_001',
       tags: ['pos', 'carte'],
       status: 'completed'
@@ -81,7 +82,7 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
     
     console.log('Traitement du paiement en espèces pour utilisateur:', user?.id);
     
-    // Enregistrer la vente avec l'ID de l'utilisateur connecté
+    // Enregistrer la vente avec l'ID et le nom de l'utilisateur connecté
     addSale({
       orderId: `ord_${Date.now()}`,
       items: cart.map(item => ({
@@ -96,6 +97,7 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
       total: totalWithTax,
       paymentMethod: 'cash',
       userId: user?.id || 'unknown', // ID utilisateur POS connecté
+      userName: user?.name || 'Utilisateur Inconnu', // Nom utilisateur POS connecté
       storeId: 'store_001',
       tags: ['pos', 'especes'],
       status: 'completed'

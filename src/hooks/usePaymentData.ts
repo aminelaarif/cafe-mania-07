@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Payment, Sale, FinancialSummary, mockPayments, mockSales, mockFinancialSummaries } from '@/db/mockdata/payments';
 
@@ -90,13 +89,14 @@ export const usePaymentData = () => {
   };
 
   // Fonction principale pour ajouter une vente depuis le POS
-  const addSale = (newSale: Omit<Sale, 'id' | 'timestamp'>) => {
+  const addSale = (newSale: Omit<Sale, 'id' | 'timestamp' | 'userName'> & { userName?: string }) => {
     console.log('Ajout d\'une nouvelle vente depuis le POS:', newSale);
     
     const sale: Sale = {
       ...newSale,
       id: `sale_${Date.now()}`,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      userName: newSale.userName || 'Utilisateur Inconnu'
     };
     
     // Ajouter la vente à l'historique

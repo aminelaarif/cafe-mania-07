@@ -1,3 +1,4 @@
+
 export interface Payment {
   id: string;
   orderId: string;
@@ -30,6 +31,7 @@ export interface Sale {
   total: number;
   paymentMethod: 'cash' | 'card';
   userId: string; // ID de l'utilisateur POS (vendeur)
+  userName: string; // Nom de l'utilisateur POS (vendeur)
   storeId: string;
   timestamp: string;
   tags: string[];
@@ -104,7 +106,7 @@ export const mockPayments: Payment[] = [
   }
 ];
 
-// Données mockées pour les ventes - MODIFIÉES pour utiliser les IDs utilisateurs
+// Données mockées pour les ventes - MODIFIÉES pour inclure userName
 export const mockSales: Sale[] = [
   {
     id: 'sale_001',
@@ -118,6 +120,7 @@ export const mockSales: Sale[] = [
     total: 24.50,
     paymentMethod: 'cash',
     userId: '6', // Barista John (ID utilisateur POS)
+    userName: 'Barista John', // Nom de l'utilisateur POS
     storeId: 'store_001',
     timestamp: '2024-01-15T10:30:00Z',
     tags: ['matin', 'petit-dejeuner'],
@@ -136,6 +139,7 @@ export const mockSales: Sale[] = [
     total: 18.75,
     paymentMethod: 'card',
     userId: '6', // Barista John (ID utilisateur POS)
+    userName: 'Barista John', // Nom de l'utilisateur POS
     storeId: 'store_001',
     timestamp: '2024-01-15T11:15:00Z',
     tags: ['pause', 'sucre'],
@@ -153,6 +157,7 @@ export const mockSales: Sale[] = [
     total: 32.00,
     paymentMethod: 'card',
     userId: '3', // Store Manager (ID utilisateur POS)
+    userName: 'Store Manager', // Nom de l'utilisateur POS
     storeId: 'store_001',
     timestamp: '2024-01-15T14:20:00Z',
     tags: ['dejeuner', 'sain'],
