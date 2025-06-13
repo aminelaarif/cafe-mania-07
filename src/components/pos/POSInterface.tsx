@@ -25,8 +25,10 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   const { cart, total, addToCart, removeFromCart, clearCart } = usePOSCart();
   const { config, configVersion } = usePOSEventHandlers();
   const { isEditMode, showEditPanel, saveChanges, cancelChanges } = useProductCustomization();
+  const { addSale } = usePaymentData();
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [showCashDrawer, setShowCashDrawer] = useState(false);
+  const [showSalesHistory, setShowSalesHistory] = useState(false);
 
   // Initialiser la première catégorie
   useEffect(() => {
@@ -41,6 +43,28 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
       config?.taxes?.defaultTaxRate || 20,
       config?.taxes?.includeInPrice || true
     );
+    
+    // Enregistrer la vente
+    addSale({
+      orderId: `ord_${Date.now()}`,
+      items: cart.map(item => ({
+        productId: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        category: 'unknown'
+      })),
+      subtotal,
+      taxAmount,
+      total: totalWithTax,
+      paymentMethod: 'card',
+      userId: user?.id || 'unknown',
+      userName: user?.name || 'Utilisateur inconnu',
+      storeId: 'store_001',
+      tags: ['pos', 'carte'],
+      status: 'completed'
+    });
+
     console.log(`Paiement de ${totalWithTax.toFixed(2)}${config?.display?.currency || '€'} par carte`);
     clearCart();
   };
@@ -51,6 +75,28 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
       config?.taxes?.defaultTaxRate || 20,
       config?.taxes?.includeInPrice || true
     );
+    
+    // Enregistrer la vente
+    addSale({
+      orderId: `ord_${Date.now()}`,
+      items: cart.map(item => ({
+        productId: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        category: 'unknown'
+      })),
+      subtotal,
+      taxAmount,
+      total: totalWithTax,
+      paymentMethod: 'cash',
+      userId: user?.id || 'unknown',
+      userName: user?.name || 'Utilisateur inconnu',
+      storeId: 'store_001',
+      tags: ['pos', 'especes'],
+      status: 'completed'
+    });
+
     console.log(`Paiement de ${totalWithTax.toFixed(2)}${config?.display?.currency || '€'} par espèces`);
     clearCart();
   };
@@ -77,6 +123,10 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   console.log('Mode édition actif:', isEditMode);
   console.log('Panneau édition ouvert:', showEditPanel);
 
+  if (showSalesHistory) {
+    return <SalesHistory onBack={() => setShowSalesHistory(false)} />;
+  }
+
   return (
     <>
       <div className="min-h-screen bg-background p-4" key={configVersion}>
@@ -86,6 +136,9 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
           </div>
           
           <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setShowSalesHistory(true)}>
+              Historique
+            </Button>
             <Button variant="outline" onClick={onBack}>
               Retour
             </Button>

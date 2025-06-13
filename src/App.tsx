@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,6 +25,8 @@ import { InventoryManagement } from "@/pages/admin/InventoryManagement";
 import { PresenceManagement } from "@/pages/admin/PresenceManagement";
 import { PersonnelHistory } from "@/pages/admin/PersonnelHistory";
 import { POSManagement } from "@/pages/admin/POSManagement";
+import { FinancialAnalysis } from "@/pages/admin/FinancialAnalysis";
+import { FinancialManagement } from "@/pages/admin/FinancialManagement";
 
 // POS Pages
 import { POSApp } from "@/pages/pos/POSApp";
@@ -147,6 +148,20 @@ const App = () => (
                   <ProtectedRoute allowedRoles={['store-manager', 'technical-manager']}>
                     <AdminLayout>
                       <SalesReport />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/financial-analysis" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
+                    <AdminLayout>
+                      <FinancialAnalysis />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/financial-management" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
+                    <AdminLayout>
+                      <FinancialManagement />
                     </AdminLayout>
                   </ProtectedRoute>
                 } />
