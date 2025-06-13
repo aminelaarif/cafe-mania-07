@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Home,
@@ -23,7 +24,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTheme } from "@/hooks/useTheme";
-import { ModeToggle } from "@/components/ui/mode-toggle";
 
 interface NavItem {
   title: string;
@@ -41,7 +41,7 @@ export const AdminSidebar = () => {
   const toggleTheme = () => {
     const newTheme = isDarkTheme ? "light" : "dark";
     setIsDarkTheme(!isDarkTheme);
-    setTheme(newTheme);
+    setTheme(newTheme as "light" | "dark");
   };
 
   const navigation: NavItem[] = [

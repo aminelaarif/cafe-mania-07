@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { POSLogin } from '@/components/pos/POSLogin';
@@ -5,7 +6,7 @@ import { POSInterface } from '@/components/pos/POSInterface';
 import { POSModeSelector } from '@/components/pos/POSModeSelector';
 import { TimeTracking } from '@/components/pos/TimeTracking';
 import { LoyaltyQRCode } from '@/components/pos/LoyaltyQRCode';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export const POSApp = () => {
   const { user } = useAuth();

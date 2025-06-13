@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -502,7 +503,7 @@ export const PersonnelManagement = () => {
                     <SelectValue placeholder="Mois" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous</SelectItem>
+                    <SelectItem value="all-months">Tous</SelectItem>
                     <SelectItem value="01">Janvier</SelectItem>
                     <SelectItem value="02">Février</SelectItem>
                     <SelectItem value="11">Novembre</SelectItem>
@@ -728,8 +729,8 @@ export const PersonnelManagement = () => {
         open={showEmployeeExportDialog}
         onOpenChange={setShowEmployeeExportDialog}
         employees={filteredUsers}
-        personalInfos={personalInfo}
-        bankInfos={bankInfo}
+        personalInfos={[]}
+        bankInfos={[]}
       />
     </div>
   );
