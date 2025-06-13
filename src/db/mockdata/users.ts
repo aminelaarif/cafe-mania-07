@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   email: string;
@@ -65,7 +64,37 @@ export const mockUsers: User[] = [
     posId: '100001',
     webIdentifier: generateWebIdentifier('Admin', 'User', '1990-01-01'),
     accessCode: generateAccessCode(),
-    permissions: ['all'],
+    // Admin a TOUTES les permissions sans exception
+    permissions: [
+      'all',
+      'user_management', 
+      'system_config', 
+      'financial_reports', 
+      'financial_management',
+      'inventory_global', 
+      'recipes_management', 
+      'store_management',
+      'sales_analysis',
+      'staff_management',
+      'local_inventory',
+      'pos_maintenance',
+      'pos_operations',
+      'order_management',
+      'stock_consultation',
+      'cash_management',
+      'content_management',
+      'promotions',
+      'kitchen_orders',
+      'ingredients_inventory',
+      'recipes_consultation',
+      'cleaning_tasks',
+      'incident_reports',
+      'maintenance_interventions',
+      'equipment_history',
+      'pos_config_edit',
+      'pos_config_view',
+      'global_config_edit'
+    ],
     createdAt: '2024-01-01T00:00:00Z',
     isActive: true
   },

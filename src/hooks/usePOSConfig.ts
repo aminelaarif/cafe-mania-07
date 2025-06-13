@@ -60,10 +60,11 @@ export const usePOSConfig = () => {
   };
 
   const updateConfiguration = async (storeId: string, updates: Partial<POSConfiguration>) => {
-    if (!user || user.role !== 'marketing-manager') {
+    // Admin (POS ID 100001) a accès complet à toutes les modifications
+    if (!user || (user.role !== 'admin' && user.role !== 'marketing-manager')) {
       toast({
         title: "Accès refusé",
-        description: "Seuls les Marketing Managers peuvent modifier les configurations POS",
+        description: "Seuls les Admins et Marketing Managers peuvent modifier les configurations POS",
         variant: "destructive",
       });
       return false;
@@ -131,7 +132,8 @@ export const usePOSConfig = () => {
   };
 
   const resetToDefaults = async (storeId: string) => {
-    if (!user || user.role !== 'marketing-manager') return false;
+    // Admin a accès complet à la réinitialisation
+    if (!user || (user.role !== 'admin' && user.role !== 'marketing-manager')) return false;
 
     const defaultConfig = mockPOSConfigurations.find(c => c.storeId === storeId) || mockPOSConfigurations[0];
     return updateConfiguration(storeId, {
@@ -148,6 +150,7 @@ export const usePOSConfig = () => {
     updateConfiguration,
     resetToDefaults,
     isLoading,
-    canEdit: user?.role === 'marketing-manager',
+    // Admin a tous les droits d'édition
+    canEdit: user?.role === 'admin' || user?.role === 'marketing-manager',
   };
 };

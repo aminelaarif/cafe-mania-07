@@ -29,6 +29,7 @@ export const POSManagement = () => {
     setShowUnsavedAlert
   } = usePOSConfigChanges();
 
+  // Admin a accès complet, autres rôles ont accès en lecture
   const canView = user && ['admin', 'brand-manager', 'store-manager', 'technical-manager', 'marketing-manager'].includes(user.role);
 
   if (!canView) {

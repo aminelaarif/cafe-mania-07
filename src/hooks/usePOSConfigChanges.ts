@@ -20,7 +20,8 @@ export const usePOSConfigChanges = () => {
 
   const currentConfig = getCurrentConfig();
   const storeId = user?.storeId || 'store-1';
-  const canEditConfig = user?.role === 'marketing-manager';
+  // Admin a tous les droits d'édition
+  const canEditConfig = user?.role === 'admin' || user?.role === 'marketing-manager';
 
   // Initialiser la configuration d'aperçu avec la configuration actuelle
   useEffect(() => {
