@@ -38,7 +38,7 @@ export const usePersonnelManagement = () => {
   const [selectedStore, setSelectedStore] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'administrative' | 'production'>('all');
   const [paymentFilters, setPaymentFilters] = useState({
-    month: '',
+    month: 'all-months',
     year: new Date().getFullYear().toString(),
     status: 'all',
     type: 'all',
@@ -255,7 +255,7 @@ export const usePersonnelManagement = () => {
       filteredPayments = filteredPayments.filter(p => p.category === selectedCategory);
     }
 
-    if (paymentFilters.month) {
+    if (paymentFilters.month !== 'all-months') {
       filteredPayments = filteredPayments.filter(p => p.period.includes(paymentFilters.month));
     }
 
