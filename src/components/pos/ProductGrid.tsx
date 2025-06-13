@@ -1,16 +1,8 @@
+
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Coffee, Snowflake, Cookie, Utensils, Edit, Save, X, Settings, GripVertical } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import { ButtonCustomizationPanel } from './ButtonCustomizationPanel';
 import { useProductCustomization } from '@/hooks/useProductCustomization';
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from '@/components/ui/context-menu';
 import {
   DndContext,
   closestCenter,
@@ -19,19 +11,15 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
-  DragOverlay,
   DragStartEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove,
-  SortableContext,
   sortableKeyboardCoordinates,
-  rectSortingStrategy,
-  useSortable,
 } from '@dnd-kit/sortable';
-import {
-  CSS,
-} from '@dnd-kit/utilities';
+import { ProductGridHeader } from './ProductGridHeader';
+import { ProductGridContent } from './ProductGridContent';
+import { ProductGridStyles } from './ProductGridStyles';
 
 interface ProductGridProps {
   selectedCategoryData: any;
@@ -40,195 +28,6 @@ interface ProductGridProps {
   onAddToCart: (item: any) => void;
   formatPrice: (price: number) => string;
 }
-
-interface SortableProductCardProps {
-  item: any;
-  isEditMode: boolean;
-  isCurrentlyEditing: boolean;
-  customization: any;
-  shouldShowImages: boolean;
-  shouldShowPrices: boolean;
-  shouldShowDescriptions: boolean;
-  formatPrice: (price: number) => string;
-  onItemClick: (item: any) => void;
-  onEditIconClick: (productId: string, event: React.MouseEvent) => void;
-  onStartEditMode: () => void;
-  isDragging?: boolean;
-  activeId?: string | null;
-}
-
-const SortableProductCard = ({
-  item,
-  isEditMode,
-  isCurrentlyEditing,
-  customization,
-  shouldShowImages,
-  shouldShowPrices,
-  shouldShowDescriptions,
-  formatPrice,
-  onItemClick,
-  onEditIconClick,
-  onStartEditMode,
-  isDragging = false,
-  activeId,
-}: SortableProductCardProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging: isSortableDragging,
-  } = useSortable({ 
-    id: item.id,
-    disabled: !isEditMode
-  });
-
-  const isBeingDragged = isSortableDragging || (activeId === item.id);
-  const shouldMakeSpace = activeId && activeId !== item.id && transform;
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition: isBeingDragged 
-      ? 'none' 
-      : shouldMakeSpace 
-        ? 'transform 250ms cubic-bezier(0.4, 0, 0.2, 1)' 
-        : transition || 'transform 200ms ease-out',
-    opacity: isBeingDragged ? 0.7 : 1,
-    zIndex: isBeingDragged ? 1000 : 'auto',
-    scale: isBeingDragged ? '1.05' : '1',
-  };
-
-  const defaultStyle = {
-    backgroundColor: customization.backgroundColor || '#FFFFFF',
-    color: customization.textColor || '#000000',
-    boxShadow: isBeingDragged 
-      ? '0 20px 40px rgba(0, 0, 0, 0.4), 0 10px 20px rgba(0, 0, 0, 0.3)' 
-      : shouldMakeSpace
-        ? '0 6px 12px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.1)'
-        : '0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
-    border: '1px solid rgba(0, 0, 0, 0.1)',
-    borderRadius: '8px',
-    transform: isBeingDragged 
-      ? 'rotate(3deg)' 
-      : shouldMakeSpace 
-        ? 'scale(0.98)' 
-        : 'translateY(0px)',
-  };
-
-  const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    onEditIconClick(item.id, e);
-  };
-
-  const handleEditMouseDown = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-  };
-
-  const cardProps = isEditMode ? {
-    ...attributes,
-    ...listeners,
-    ref: setNodeRef,
-    style
-  } : {
-    ref: setNodeRef,
-    style
-  };
-
-  const cardContent = (
-    <Card 
-      {...cardProps}
-      className={`cursor-pointer hover:shadow-xl transition-all duration-200 select-none relative border-0 ${
-        isEditMode ? 'vibrate3d cursor-grab active:cursor-grabbing' : 'hover:transform hover:-translate-y-1'
-      } ${isCurrentlyEditing ? 'ring-2 ring-blue-500' : ''} ${
-        shouldMakeSpace ? 'animate-pulse' : ''
-      }`}
-      onClick={() => !isEditMode && onItemClick(item)}
-    >
-      <div style={defaultStyle} className="rounded-lg p-3 h-full">
-        {isEditMode && (
-          <div className="absolute top-2 right-2 z-20">
-            <div 
-              className="bg-white rounded-full p-1 shadow-lg cursor-pointer hover:bg-gray-50 transition-all duration-150 hover:scale-110"
-              onClick={handleEditClick}
-              onMouseDown={handleEditMouseDown}
-              onPointerDown={handleEditMouseDown}
-            >
-              <Edit className="h-4 w-4 text-gray-600" />
-            </div>
-          </div>
-        )}
-        
-        <CardHeader className="pb-2">
-          <CardTitle 
-            className="text-base leading-tight"
-            style={{ color: customization.textColor || '#000000' }}
-          >
-            {item.name}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {shouldShowImages && (
-            <div 
-              className="w-full h-20 rounded mb-2 flex items-center justify-center"
-              style={{ backgroundColor: `${customization.textColor || '#000000'}20` }}
-            >
-              <span 
-                className="text-sm"
-                style={{ color: `${customization.textColor || '#000000'}80` }}
-              >
-                Image
-              </span>
-            </div>
-          )}
-          {shouldShowPrices && (
-            <p 
-              className="text-xl font-bold"
-              style={{ color: customization.textColor || '#000000' }}
-            >
-              {formatPrice(item.price)}
-            </p>
-          )}
-          {shouldShowDescriptions && (
-            <p 
-              className="text-xs line-clamp-2"
-              style={{ color: `${customization.textColor || '#000000'}CC` }}
-            >
-              {item.description}
-            </p>
-          )}
-          {!item.available && (
-            <Badge variant="destructive" className="text-xs">
-              Indisponible
-            </Badge>
-          )}
-        </CardContent>
-      </div>
-    </Card>
-  );
-
-  // Si nous sommes en mode édition, on retourne juste la carte sans menu contextuel
-  if (isEditMode) {
-    return cardContent;
-  }
-
-  // Sinon, on enveloppe dans un menu contextuel
-  return (
-    <ContextMenu>
-      <ContextMenuTrigger asChild>
-        {cardContent}
-      </ContextMenuTrigger>
-      <ContextMenuContent className="w-48">
-        <ContextMenuItem onClick={onStartEditMode} className="flex items-center gap-2">
-          <Settings className="h-4 w-4" />
-          Activer le mode édition
-        </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
-  );
-};
 
 export const ProductGrid = ({ 
   selectedCategoryData, 
@@ -264,21 +63,6 @@ export const ProductGrid = ({
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
-
-  const getCategoryIcon = (categoryId: string) => {
-    switch (categoryId) {
-      case 'hot-drinks':
-        return <Coffee className="h-4 w-4" />;
-      case 'cold-drinks':
-        return <Snowflake className="h-4 w-4" />;
-      case 'pastries':
-        return <Cookie className="h-4 w-4" />;
-      case 'food':
-        return <Utensils className="h-4 w-4" />;
-      default:
-        return null;
-    }
-  };
 
   const handleItemClick = (item: any) => {
     if (isEditMode) {
@@ -357,147 +141,40 @@ export const ProductGrid = ({
 
   return (
     <>
-      <style>
-        {`
-          @keyframes vibrate3d {
-            0% { transform: translateX(0px) translateY(0px) rotateZ(0deg); }
-            5% { transform: translateX(-1px) translateY(1px) rotateZ(-0.5deg); }
-            15% { transform: translateX(2px) translateY(-1px) rotateZ(1deg); }
-            25% { transform: translateX(-2px) translateY(0px) rotateZ(-1deg); }
-            35% { transform: translateX(1px) translateY(-2px) rotateZ(0.5deg); }
-            45% { transform: translateX(-1px) translateY(1px) rotateZ(-0.5deg); }
-            55% { transform: translateX(2px) translateY(1px) rotateZ(1deg); }
-            65% { transform: translateX(-1px) translateY(-1px) rotateZ(-0.8deg); }
-            75% { transform: translateX(1px) translateY(2px) rotateZ(0.8deg); }
-            85% { transform: translateX(-2px) translateY(-1px) rotateZ(-1deg); }
-            95% { transform: translateX(1px) translateY(0px) rotateZ(0.5deg); }
-            100% { transform: translateX(0px) translateY(0px) rotateZ(0deg); }
-          }
-          .vibrate3d {
-            animation: vibrate3d 1.2s ease-in-out infinite;
-          }
-          
-          @keyframes smoothSlideIn {
-            from {
-              opacity: 0;
-              transform: scale(0.95) translateY(-10px);
-            }
-            to {
-              opacity: 1;
-              transform: scale(1) translateY(0);
-            }
-          }
-          
-          .smooth-enter {
-            animation: smoothSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-        `}
-      </style>
+      <ProductGridStyles />
 
       <Card className="h-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {selectedCategoryData && getCategoryIcon(selectedCategoryData.id)}
-            {selectedCategoryData?.name}
-            <Badge variant="outline">
-              {visibleItems.length} produit(s)
-            </Badge>
-            {isEditMode && (
-              <div className="ml-auto flex items-center gap-2">
-                <Badge variant="secondary">
-                  Mode édition
-                </Badge>
-                <Button
-                  onClick={saveChanges}
-                  size="sm"
-                  className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
-                >
-                  <Save className="h-4 w-4 mr-1" />
-                  Sauvegarder
-                </Button>
-                <Button
-                  onClick={cancelChanges}
-                  size="sm"
-                  variant="outline"
-                  className="border-red-500 text-red-500 hover:bg-red-50 shadow-lg"
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Annuler
-                </Button>
-              </div>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 240px)' }}>
-          <DndContext 
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext 
-              items={sortedItems.map(item => item.id)}
-              strategy={rectSortingStrategy}
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {sortedItems.map((item) => {
-                  const customization = getProductCustomization(item.id);
-                  const isCurrentlyEditing = editingProduct === item.id && isEditMode;
-                  
-                  return (
-                    <SortableProductCard
-                      key={item.id}
-                      item={item}
-                      isEditMode={isEditMode}
-                      isCurrentlyEditing={isCurrentlyEditing}
-                      customization={customization}
-                      shouldShowImages={shouldShowImages}
-                      shouldShowPrices={shouldShowPrices}
-                      shouldShowDescriptions={shouldShowDescriptions}
-                      formatPrice={formatPrice}
-                      onItemClick={handleItemClick}
-                      onEditIconClick={handleEditIconClick}
-                      onStartEditMode={startEditMode}
-                      isDragging={item.id === activeId}
-                      activeId={activeId}
-                    />
-                  );
-                })}
-              </div>
-            </SortableContext>
-            
-            <DragOverlay dropAnimation={{
-              duration: 250,
-              easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-            }}>
-              {activeItem ? (
-                <div className="transform rotate-3 scale-105 opacity-90">
-                  <SortableProductCard
-                    item={activeItem}
-                    isEditMode={isEditMode}
-                    isCurrentlyEditing={false}
-                    customization={getProductCustomization(activeItem.id)}
-                    shouldShowImages={shouldShowImages}
-                    shouldShowPrices={shouldShowPrices}
-                    shouldShowDescriptions={shouldShowDescriptions}
-                    formatPrice={formatPrice}
-                    onItemClick={() => {}}
-                    onEditIconClick={() => {}}
-                    onStartEditMode={() => {}}
-                    isDragging={true}
-                    activeId={activeId}
-                  />
-                </div>
-              ) : null}
-            </DragOverlay>
-          </DndContext>
-          
-          {visibleItems.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Aucun produit disponible dans cette catégorie</p>
-            </div>
-          )}
-        </CardContent>
+        <ProductGridHeader
+          selectedCategoryData={selectedCategoryData}
+          visibleItemsCount={visibleItems.length}
+          isEditMode={isEditMode}
+          onSaveChanges={saveChanges}
+          onCancelChanges={cancelChanges}
+        />
+        
+        <DndContext 
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          <ProductGridContent
+            sortedItems={sortedItems}
+            visibleItems={visibleItems}
+            isEditMode={isEditMode}
+            editingProduct={editingProduct}
+            activeId={activeId}
+            activeItem={activeItem}
+            shouldShowImages={shouldShowImages}
+            shouldShowPrices={shouldShowPrices}
+            shouldShowDescriptions={shouldShowDescriptions}
+            formatPrice={formatPrice}
+            getProductCustomization={getProductCustomization}
+            handleItemClick={handleItemClick}
+            handleEditIconClick={handleEditIconClick}
+            startEditMode={startEditMode}
+          />
+        </DndContext>
       </Card>
 
       <ButtonCustomizationPanel
