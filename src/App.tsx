@@ -23,8 +23,7 @@ import { UserManagement } from "@/pages/admin/UserManagement";
 import { SalesReport } from "@/pages/admin/SalesReport";
 import { StaffManagement } from "@/pages/admin/StaffManagement";
 import { InventoryManagement } from "@/pages/admin/InventoryManagement";
-import { PresenceManagement } from "@/pages/admin/PresenceManagement";
-import { PersonnelHistory } from "@/pages/admin/PersonnelHistory";
+import { PersonnelManagement } from "@/pages/admin/PersonnelManagement";
 import { POSManagement } from "@/pages/admin/POSManagement";
 import { FinancialAnalysis } from "@/pages/admin/FinancialAnalysis";
 import { FinancialManagement } from "@/pages/admin/FinancialManagement";
@@ -180,17 +179,25 @@ const App = () => (
                     </AdminLayout>
                   </ProtectedRoute>
                 } />
+                {/* Redirection des anciennes routes vers la nouvelle page Personnel */}
                 <Route path="/admin/presence" element={
                   <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
                     <AdminLayout>
-                      <PresenceManagement />
+                      <PersonnelManagement />
                     </AdminLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/admin/personnel-history" element={
                   <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
                     <AdminLayout>
-                      <PersonnelHistory />
+                      <PersonnelManagement />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/personnel" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
+                    <AdminLayout>
+                      <PersonnelManagement />
                     </AdminLayout>
                   </ProtectedRoute>
                 } />

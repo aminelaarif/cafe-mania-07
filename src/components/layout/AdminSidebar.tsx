@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -32,8 +31,7 @@ export const AdminSidebar = () => {
           { href: '/admin/pos', icon: Monitor, label: 'Gestion POS' },
           { href: '/admin/financial-analysis', icon: DollarSign, label: 'Analyse Financière' },
           { href: '/admin/financial-management', icon: CreditCard, label: 'Gestion Financière' },
-          { href: '/admin/presence', icon: Clock, label: 'Présences' },
-          { href: '/admin/personnel-history', icon: History, label: 'Historique Personnel' },
+          { href: '/admin/personnel', icon: Clock, label: 'Gestion Personnel' },
           { href: '/admin/config', icon: Settings, label: 'Configuration' },
         ];
       case 'brand-manager':
@@ -43,8 +41,7 @@ export const AdminSidebar = () => {
           { href: '/admin/pos', icon: Monitor, label: 'Gestion POS' },
           { href: '/admin/financial-analysis', icon: DollarSign, label: 'Analyse Financière' },
           { href: '/admin/financial-management', icon: CreditCard, label: 'Gestion Financière' },
-          { href: '/admin/presence', icon: Clock, label: 'Présences' },
-          { href: '/admin/personnel-history', icon: History, label: 'Historique Personnel' },
+          { href: '/admin/personnel', icon: Clock, label: 'Gestion Personnel' },
           { href: '/admin/config', icon: Settings, label: 'Configuration Globale' },
         ];
       case 'store-manager':
@@ -56,8 +53,7 @@ export const AdminSidebar = () => {
           { href: '/admin/pos', icon: Monitor, label: 'Gestion POS' },
           { href: '/admin/financial-analysis', icon: DollarSign, label: 'Analyse Financière' },
           { href: '/admin/financial-management', icon: CreditCard, label: 'Gestion Financière' },
-          { href: '/admin/presence', icon: Clock, label: 'Présences' },
-          { href: '/admin/personnel-history', icon: History, label: 'Historique Personnel' },
+          { href: '/admin/personnel', icon: Clock, label: 'Gestion Personnel' },
           { href: '/admin/inventory', icon: Package, label: 'Inventaire' },
         ];
       case 'marketing-manager':
