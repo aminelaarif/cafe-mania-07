@@ -42,7 +42,7 @@ export const AdminSidebar = () => {
   const location = useLocation();
   const { theme, setTheme } = useTheme();
   const [isDarkTheme, setIsDarkTheme] = useState(theme.mode === 'dark');
-  const [expandedItems, setExpandedItems] = useState<string[]>(['finances', 'stores']);
+  const [expandedItems, setExpandedItems] = useState<string[]>(['finances-generales', 'stores']);
 
   const toggleTheme = () => {
     const newTheme = isDarkTheme ? defaultTheme : darkTheme;
@@ -66,27 +66,21 @@ export const AdminSidebar = () => {
       roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager', 'marketing-manager']
     },
     {
-      title: "Finances",
+      title: "Finances Générales",
       icon: DollarSign,
-      roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager'],
+      roles: ['admin', 'brand-manager'],
       children: [
         {
           title: "Vue d'ensemble",
-          url: "/admin/finances",
+          url: "/admin/finances-overview",
           icon: BarChart,
-          roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
+          roles: ['admin', 'brand-manager']
         },
         {
-          title: "Analyse Financière",
-          url: "/admin/financial-analysis",
-          icon: BarChart,
-          roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
-        },
-        {
-          title: "Gestion Financière",
-          url: "/admin/financial-management",
-          icon: BarChart,
-          roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
+          title: "Analyse Générale",
+          url: "/admin/finances-analysis",
+          icon: TrendingUp,
+          roles: ['admin', 'brand-manager']
         }
       ]
     },
@@ -129,6 +123,31 @@ export const AdminSidebar = () => {
               url: "/admin/stores/store-1/stock",
               icon: ClipboardList,
               roles: ['store-manager', 'technical-manager']
+            },
+            {
+              title: "Finances",
+              icon: DollarSign,
+              roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager'],
+              children: [
+                {
+                  title: "Vue d'ensemble",
+                  url: "/admin/stores/store-1/finances",
+                  icon: BarChart,
+                  roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
+                },
+                {
+                  title: "Analyse Financière",
+                  url: "/admin/stores/store-1/financial-analysis",
+                  icon: BarChart,
+                  roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
+                },
+                {
+                  title: "Gestion Financière",
+                  url: "/admin/stores/store-1/financial-management",
+                  icon: BarChart,
+                  roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
+                }
+              ]
             }
           ]
         },
@@ -160,6 +179,31 @@ export const AdminSidebar = () => {
               url: "/admin/stores/store-2/stock",
               icon: ClipboardList,
               roles: ['store-manager', 'technical-manager']
+            },
+            {
+              title: "Finances",
+              icon: DollarSign,
+              roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager'],
+              children: [
+                {
+                  title: "Vue d'ensemble",
+                  url: "/admin/stores/store-2/finances",
+                  icon: BarChart,
+                  roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
+                },
+                {
+                  title: "Analyse Financière",
+                  url: "/admin/stores/store-2/financial-analysis",
+                  icon: BarChart,
+                  roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
+                },
+                {
+                  title: "Gestion Financière",
+                  url: "/admin/stores/store-2/financial-management",
+                  icon: BarChart,
+                  roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
+                }
+              ]
             }
           ]
         }
@@ -192,14 +236,20 @@ export const AdminSidebar = () => {
       children: child.children?.filter(grandChild => {
         if (!grandChild.roles) return true;
         return grandChild.roles.includes(user?.role || '');
-      })
+      }).map(grandChild => ({
+        ...grandChild,
+        children: grandChild.children?.filter(greatGrandChild => {
+          if (!greatGrandChild.roles) return true;
+          return greatGrandChild.roles.includes(user?.role || '');
+        })
+      }))
     }))
   }));
 
   const renderNavItem = (item: NavItem, level: number = 0) => {
     const hasChildren = item.children && item.children.length > 0;
     const isExpanded = expandedItems.includes(item.title);
-    const paddingClass = level === 0 ? 'pl-2' : level === 1 ? 'pl-6' : 'pl-10';
+    const paddingClass = level === 0 ? 'pl-2' : level === 1 ? 'pl-6' : level === 2 ? 'pl-10' : 'pl-14';
 
     if (hasChildren) {
       return (

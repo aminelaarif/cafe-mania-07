@@ -30,6 +30,8 @@ import { LoyaltyManagement } from "@/pages/admin/LoyaltyManagement";
 import { Finances } from "@/pages/admin/Finances";
 import { Stores } from "@/pages/admin/Stores";
 import { StoreStock } from "@/pages/admin/StoreStock";
+import { FinancesOverview } from "@/pages/admin/FinancesOverview";
+import { FinancesAnalysis } from "@/pages/admin/FinancesAnalysis";
 
 // POS Pages
 import { POSApp } from "@/pages/pos/POSApp";
@@ -124,7 +126,23 @@ const App = () => (
                   </ProtectedRoute>
                 } />
 
-                {/* Finances Routes */}
+                {/* Finances Générales Routes */}
+                <Route path="/admin/finances-overview" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
+                    <AdminLayout>
+                      <FinancesOverview />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/finances-analysis" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
+                    <AdminLayout>
+                      <FinancesAnalysis />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+
+                {/* Legacy Finances Routes (for backwards compatibility) */}
                 <Route path="/admin/finances" element={
                   <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
                     <AdminLayout>
@@ -180,6 +198,29 @@ const App = () => (
                   <ProtectedRoute allowedRoles={['store-manager', 'technical-manager']}>
                     <AdminLayout>
                       <StoreStock />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+
+                {/* Store-specific Finance Routes */}
+                <Route path="/admin/stores/:storeId/finances" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
+                    <AdminLayout>
+                      <Finances />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/stores/:storeId/financial-analysis" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
+                    <AdminLayout>
+                      <FinancialAnalysis />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/stores/:storeId/financial-management" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
+                    <AdminLayout>
+                      <FinancialManagement />
                     </AdminLayout>
                   </ProtectedRoute>
                 } />
