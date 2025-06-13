@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useContent } from '@/contexts/ContentContext';
@@ -7,10 +8,12 @@ import { POSHeader } from './POSHeader';
 import { CategorySelector } from './CategorySelector';
 import { ProductGrid } from './ProductGrid';
 import { CartSection } from './CartSection';
+import { SalesHistory } from './SalesHistory';
 import { useGlobalConfig } from '@/hooks/useGlobalConfig';
 import { usePOSCart } from './POSCartLogic';
 import { usePOSEventHandlers } from './POSEventHandlers';
 import { useProductCustomization } from '@/hooks/useProductCustomization';
+import { usePaymentData } from '@/hooks/usePaymentData';
 import { calculateTotals } from './POSCalculations';
 import { Save, X } from 'lucide-react';
 

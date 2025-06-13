@@ -20,7 +20,7 @@ export const FinancialAnalysis = () => {
         </div>
         <div className="flex items-center gap-4">
           <SyncStatus />
-          <ActionButtons variant="financial" />
+          <ActionButtons variant="dashboard" />
         </div>
       </div>
 
