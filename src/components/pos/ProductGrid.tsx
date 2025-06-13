@@ -2,9 +2,15 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Coffee, Snowflake, Cookie, Utensils, Edit, Save, X, GripVertical } from 'lucide-react';
+import { Coffee, Snowflake, Cookie, Utensils, Edit, Save, X, Settings, GripVertical } from 'lucide-react';
 import { ButtonCustomizationPanel } from './ButtonCustomizationPanel';
 import { useProductCustomization } from '@/hooks/useProductCustomization';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
 import {
   DndContext,
   closestCenter,
@@ -45,9 +51,8 @@ interface SortableProductCardProps {
   shouldShowDescriptions: boolean;
   formatPrice: (price: number) => string;
   onItemClick: (item: any) => void;
-  onMouseDown: (item: any) => void;
-  onMouseUp: () => void;
-  onMouseLeave: () => void;
+  onEditIconClick: (productId: string, event: React.MouseEvent) => void;
+  onStartEditMode: () => void;
   isDragging?: boolean;
   activeId?: string | null;
 }
@@ -62,13 +67,11 @@ const SortableProductCard = ({
   shouldShowDescriptions,
   formatPrice,
   onItemClick,
-  onMouseDown,
-  onMouseUp,
-  onMouseLeave,
   onEditIconClick,
+  onStartEditMode,
   isDragging = false,
   activeId,
-}: SortableProductCardProps & { onEditIconClick: (productId: string, event: React.MouseEvent) => void }) => {
+}: SortableProductCardProps) => {
   const {
     attributes,
     listeners,
@@ -81,7 +84,6 @@ const SortableProductCard = ({
     disabled: !isEditMode
   });
 
-  // Détermine si cet élément est en cours de déplacement ou doit faire place à l'élément déplacé
   const isBeingDragged = isSortableDragging || (activeId === item.id);
   const shouldMakeSpace = activeId && activeId !== item.id && transform;
 
@@ -97,7 +99,6 @@ const SortableProductCard = ({
     scale: isBeingDragged ? '1.05' : '1',
   };
 
-  // Style 3D avec effets de drag améliorés
   const defaultStyle = {
     backgroundColor: customization.backgroundColor || '#FFFFFF',
     color: customization.textColor || '#000000',
@@ -115,7 +116,6 @@ const SortableProductCard = ({
         : 'translateY(0px)',
   };
 
-  // Gestionnaires pour empêcher le drag sur l'icône d'édition
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -137,7 +137,7 @@ const SortableProductCard = ({
     style
   };
 
-  return (
+  const cardContent = (
     <Card 
       {...cardProps}
       className={`cursor-pointer hover:shadow-xl transition-all duration-200 select-none relative border-0 ${
@@ -146,11 +146,6 @@ const SortableProductCard = ({
         shouldMakeSpace ? 'animate-pulse' : ''
       }`}
       onClick={() => !isEditMode && onItemClick(item)}
-      onMouseDown={() => !isEditMode && onMouseDown(item)}
-      onMouseUp={!isEditMode ? onMouseUp : undefined}
-      onMouseLeave={!isEditMode ? onMouseLeave : undefined}
-      onTouchStart={() => !isEditMode && onMouseDown(item)}
-      onTouchEnd={!isEditMode ? onMouseUp : undefined}
     >
       <div style={defaultStyle} className="rounded-lg p-3 h-full">
         {isEditMode && (
@@ -213,6 +208,26 @@ const SortableProductCard = ({
       </div>
     </Card>
   );
+
+  // Si nous sommes en mode édition, on retourne juste la carte sans menu contextuel
+  if (isEditMode) {
+    return cardContent;
+  }
+
+  // Sinon, on enveloppe dans un menu contextuel
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        {cardContent}
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-48">
+        <ContextMenuItem onClick={onStartEditMode} className="flex items-center gap-2">
+          <Settings className="h-4 w-4" />
+          Activer le mode édition
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  );
 };
 
 export const ProductGrid = ({ 
@@ -228,16 +243,15 @@ export const ProductGrid = ({
     isEditMode,
     editingProduct,
     showEditPanel,
-    handleProductClick,
     handleEditIconClick,
-    cancelTimer,
     getProductCustomization,
     updateProductCustomization,
     updateProductOrder,
     getSortedProducts,
     setShowEditPanel,
     saveChanges,
-    cancelChanges
+    cancelChanges,
+    startEditMode
   } = useProductCustomization();
 
   const sensors = useSensors(
@@ -268,21 +282,9 @@ export const ProductGrid = ({
 
   const handleItemClick = (item: any) => {
     if (isEditMode) {
-      return; // En mode édition, on ne fait rien sur le click normal
+      return;
     }
     onAddToCart(item);
-  };
-
-  const handleItemMouseDown = (item: any) => {
-    handleProductClick(item.id);
-  };
-
-  const handleItemMouseUp = () => {
-    cancelTimer();
-  };
-
-  const handleItemMouseLeave = () => {
-    cancelTimer();
   };
 
   const handleCustomizationChange = (backgroundColor: string, textColor: string) => {
@@ -296,7 +298,6 @@ export const ProductGrid = ({
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
-    // Ajouter un effet de vibration au début du drag
     if (navigator.vibrate) {
       navigator.vibrate(50);
     }
@@ -314,14 +315,12 @@ export const ProductGrid = ({
       const newOrder = arrayMove(sortedItems, oldIndex, newIndex).map(item => item.id);
       updateProductOrder(newOrder);
       
-      // Feedback haptique à la fin du drag
       if (navigator.vibrate) {
         navigator.vibrate(100);
       }
     }
   };
 
-  // Générer les couleurs disponibles basées sur la configuration
   const generateAvailableColors = () => {
     const baseColors = [
       config?.colors?.primary || '#8B5CF6',
@@ -332,26 +331,21 @@ export const ProductGrid = ({
       config?.colors?.danger || '#EF4444',
     ];
 
-    // Générer des variants pour chaque couleur
     const variants: string[] = [];
     baseColors.forEach(color => {
       variants.push(color);
-      // Ajouter des variants plus claires et plus foncés
       const hue = color.replace('#', '');
       const r = parseInt(hue.substr(0, 2), 16);
       const g = parseInt(hue.substr(2, 2), 16);
       const b = parseInt(hue.substr(4, 2), 16);
 
-      // Version plus claire
       variants.push(`rgb(${Math.min(255, r + 40)}, ${Math.min(255, g + 40)}, ${Math.min(255, b + 40)})`);
-      // Version plus foncée
       variants.push(`rgb(${Math.max(0, r - 40)}, ${Math.max(0, g - 40)}, ${Math.max(0, b - 40)})`);
     });
 
     return variants;
   };
 
-  // Utiliser la configuration pour l'affichage
   const shouldShowPrices = config?.display?.showPrices !== false;
   const shouldShowDescriptions = config?.display?.showDescriptions !== false;
   const shouldShowImages = config?.layout?.showImages !== false;
@@ -462,10 +456,8 @@ export const ProductGrid = ({
                       shouldShowDescriptions={shouldShowDescriptions}
                       formatPrice={formatPrice}
                       onItemClick={handleItemClick}
-                      onMouseDown={handleItemMouseDown}
-                      onMouseUp={handleItemMouseUp}
-                      onMouseLeave={handleItemMouseLeave}
                       onEditIconClick={handleEditIconClick}
+                      onStartEditMode={startEditMode}
                       isDragging={item.id === activeId}
                       activeId={activeId}
                     />
@@ -490,10 +482,8 @@ export const ProductGrid = ({
                     shouldShowDescriptions={shouldShowDescriptions}
                     formatPrice={formatPrice}
                     onItemClick={() => {}}
-                    onMouseDown={() => {}}
-                    onMouseUp={() => {}}
-                    onMouseLeave={() => {}}
                     onEditIconClick={() => {}}
+                    onStartEditMode={() => {}}
                     isDragging={true}
                     activeId={activeId}
                   />

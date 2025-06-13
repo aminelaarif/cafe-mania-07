@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 
 interface ProductCustomization {
   id: string;
@@ -17,11 +17,9 @@ export const useProductCustomization = () => {
   const [originalState, setOriginalState] = useState<Record<string, ProductCustomization>>({});
   const [productOrder, setProductOrder] = useState<string[]>([]);
   const [pendingOrder, setPendingOrder] = useState<string[]>([]);
-  
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const startEditMode = useCallback(() => {
-    console.log('Mode édition activé');
+    console.log('Mode édition activé via clic droit');
     setIsEditMode(true);
     setOriginalState({ ...customizations });
     setPendingChanges({ ...customizations });
@@ -80,33 +78,10 @@ export const useProductCustomization = () => {
     }
   }, [isEditMode, pendingChanges]);
 
-  const handleProductClick = useCallback((productId: string) => {
-    if (isEditMode) {
-      // En mode édition, le clic sur le produit ne fait rien
-      return;
-    }
-
-    // Démarrer le timer de 3 secondes pour entrer en mode édition
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-
-    timerRef.current = setTimeout(() => {
-      startEditMode();
-    }, 3000);
-  }, [isEditMode, startEditMode]);
-
   const handleEditIconClick = useCallback((productId: string, event: React.MouseEvent) => {
-    event.stopPropagation(); // Empêcher la propagation vers le bouton parent
+    event.stopPropagation();
     setEditingProduct(productId);
     setShowEditPanel(true);
-  }, []);
-
-  const cancelTimer = useCallback(() => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
   }, []);
 
   const getProductCustomization = useCallback((productId: string) => {
@@ -150,9 +125,7 @@ export const useProductCustomization = () => {
     cancelChanges,
     updateProductCustomization,
     updateProductOrder,
-    handleProductClick,
     handleEditIconClick,
-    cancelTimer,
     getProductCustomization,
     getSortedProducts,
     setShowEditPanel,
