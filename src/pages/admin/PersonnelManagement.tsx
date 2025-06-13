@@ -442,11 +442,12 @@ export const PersonnelManagement = () => {
                       <DialogTitle>Ajouter un Paiement</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
-                      <Select value={selectedUser || ''} onValueChange={setSelectedUser}>
+                      <Select value={selectedUser || 'none'} onValueChange={setSelectedUser}>
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionner un employé" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="none" disabled>Sélectionner un employé</SelectItem>
                           {filteredUsers.map((user) => (
                             <SelectItem key={user.id} value={user.id}>
                               {user.name}
@@ -495,7 +496,7 @@ export const PersonnelManagement = () => {
                     <SelectValue placeholder="Mois" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tous</SelectItem>
+                    <SelectItem value="all">Tous</SelectItem>
                     <SelectItem value="01">Janvier</SelectItem>
                     <SelectItem value="02">Février</SelectItem>
                     <SelectItem value="11">Novembre</SelectItem>
