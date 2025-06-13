@@ -19,6 +19,28 @@ interface EmployeeDetailsDialogProps {
   onUpdate: (updates: any) => void;
 }
 
+interface EditData {
+  name?: string;
+  email?: string;
+  personalInfo?: {
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    postalCode?: string;
+    emergencyContact?: string;
+    emergencyPhone?: string;
+    position?: string;
+    salary?: number;
+  };
+  bankInfo?: {
+    bankName?: string;
+    accountNumber?: string;
+    routingNumber?: string;
+  };
+}
+
 export const EmployeeDetailsDialog = ({ 
   open, 
   onOpenChange, 
@@ -29,13 +51,29 @@ export const EmployeeDetailsDialog = ({
 }: EmployeeDetailsDialogProps) => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({});
+  const [editData, setEditData] = useState<EditData>({});
 
   const handleEdit = () => {
     setEditData({
-      ...employee,
-      personalInfo: personalInfo || {},
-      bankInfo: bankInfo || {}
+      name: employee?.name || '',
+      email: employee?.email || '',
+      personalInfo: personalInfo ? {
+        firstName: personalInfo.firstName || '',
+        lastName: personalInfo.lastName || '',
+        phone: personalInfo.phone || '',
+        address: personalInfo.address || '',
+        city: personalInfo.city || '',
+        postalCode: personalInfo.postalCode || '',
+        emergencyContact: personalInfo.emergencyContact || '',
+        emergencyPhone: personalInfo.emergencyPhone || '',
+        position: personalInfo.position || '',
+        salary: personalInfo.salary || 0
+      } : {},
+      bankInfo: bankInfo ? {
+        bankName: bankInfo.bankName || '',
+        accountNumber: bankInfo.accountNumber || '',
+        routingNumber: bankInfo.routingNumber || ''
+      } : {}
     });
     setIsEditing(true);
   };
