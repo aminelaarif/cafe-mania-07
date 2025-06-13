@@ -19,7 +19,11 @@ import {
   Plus,
   Edit,
   Download,
-  Mail
+  Mail,
+  UserCheck,
+  UserX,
+  Eye,
+  FileSpreadsheet
 } from 'lucide-react';
 import { usePersonnelManagement } from '@/hooks/usePersonnelManagement';
 import { useAuth } from '@/hooks/useAuth';
@@ -33,19 +37,31 @@ export const PersonnelManagement = () => {
     setSearchTerm,
     selectedStore,
     setSelectedStore,
+    selectedCategory,
+    setSelectedCategory,
+    paymentFilters,
+    setPaymentFilters,
     availableModules,
     updateUserPermission,
+    updateAccessCode,
+    suspendUserAccess,
     addPayment,
     updatePaymentStatus,
-    generateAccessCode,
+    exportPaymentsData,
     getFilteredUsers,
+    getFilteredPayments,
     getUserPermissions,
     getUserPayments,
+    getUserPersonalInfo,
+    getUserBankInfo,
+    getUserWorkSchedules,
+    getUserAccessCodes,
     canManage
   } = usePersonnelManagement();
 
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [showUserDialog, setShowUserDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentType, setPaymentType] = useState<'salary' | 'bonus' | 'overtime' | 'commission'>('salary');
 
@@ -63,6 +79,9 @@ export const PersonnelManagement = () => {
   }
 
   const filteredUsers = getFilteredUsers();
+  const filteredPayments = getFilteredPayments();
+  const adminUsers = filteredUsers.filter(u => ['admin', 'brand-manager', 'store-manager', 'marketing-manager', 'technical-manager'].includes(u.role));
+  const productionUsers = filteredUsers.filter(u => ['operations-staff', 'production-staff', 'cleaning-staff', 'maintenance-staff'].includes(u.role));
 
   const handleAddPayment = () => {
     if (!selectedUser || !paymentAmount) return;
@@ -70,13 +89,18 @@ export const PersonnelManagement = () => {
     const userToUpdate = filteredUsers.find(u => u.id === selectedUser);
     if (!userToUpdate) return;
 
+    const category = ['admin', 'brand-manager', 'store-manager', 'marketing-manager', 'technical-manager'].includes(userToUpdate.role) 
+      ? 'administrative' as const
+      : 'production' as const;
+
     addPayment({
       userId: selectedUser,
       userName: userToUpdate.name,
       amount: parseFloat(paymentAmount),
       type: paymentType,
-      period: new Date().toISOString().slice(0, 7), // YYYY-MM
-      status: 'pending'
+      period: new Date().toISOString().slice(0, 7),
+      status: 'pending',
+      category
     });
 
     setPaymentAmount('');
@@ -85,19 +109,13 @@ export const PersonnelManagement = () => {
   };
 
   const handlePermissionChange = (userId: string, module: string, permission: 'canRead' | 'canWrite' | 'canDelete', value: boolean) => {
-    // Logique: si on retire la lecture, on retire aussi l'écriture et la suppression
     if (permission === 'canRead' && !value) {
       updateUserPermission(userId, module, { canRead: false, canWrite: false, canDelete: false });
-    }
-    // Logique: si on ajoute l'écriture, on doit avoir la lecture
-    else if (permission === 'canWrite' && value) {
+    } else if (permission === 'canWrite' && value) {
       updateUserPermission(userId, module, { canRead: true, canWrite: true });
-    }
-    // Logique: si on ajoute la suppression, on doit avoir la lecture et l'écriture
-    else if (permission === 'canDelete' && value) {
+    } else if (permission === 'canDelete' && value) {
       updateUserPermission(userId, module, { canRead: true, canWrite: true, canDelete: true });
-    }
-    else {
+    } else {
       updateUserPermission(userId, module, { [permission]: value });
     }
   };
@@ -112,14 +130,14 @@ export const PersonnelManagement = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Exporter
+          <Button variant="outline" size="sm" onClick={exportPaymentsData}>
+            <FileSpreadsheet className="h-4 w-4 mr-2" />
+            Exporter Paiements
           </Button>
         </div>
       </div>
 
-      {/* Filtres */}
+      {/* Filtres globaux */}
       <Card>
         <CardContent className="p-4">
           <div className="flex gap-4 items-center">
@@ -144,6 +162,16 @@ export const PersonnelManagement = () => {
                 <SelectItem value="store-2">Magasin 2</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={selectedCategory} onValueChange={(value: any) => setSelectedCategory(value)}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Toutes catégories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes catégories</SelectItem>
+                <SelectItem value="administrative">Administratifs</SelectItem>
+                <SelectItem value="production">Production</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -160,22 +188,23 @@ export const PersonnelManagement = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Employés</CardTitle>
+                <CardTitle className="text-sm font-medium">Administratifs</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{filteredUsers.length}</div>
+                <div className="text-2xl font-bold">{adminUsers.length}</div>
+                <p className="text-xs text-muted-foreground">Gestion et encadrement</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Présents Aujourd'hui</CardTitle>
+                <CardTitle className="text-sm font-medium">Production</CardTitle>
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">8</div>
-                <p className="text-xs text-muted-foreground">sur {filteredUsers.length}</p>
+                <div className="text-2xl font-bold">{productionUsers.length}</div>
+                <p className="text-xs text-muted-foreground">Opérations quotidiennes</p>
               </CardContent>
             </Card>
 
@@ -185,30 +214,39 @@ export const PersonnelManagement = () => {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-orange-600">3</div>
+                <div className="text-2xl font-bold text-orange-600">
+                  {filteredPayments.filter(p => p.status === 'pending').length}
+                </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Permissions à réviser</CardTitle>
-                <Settings className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Accès suspendus</CardTitle>
+                <Key className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">2</div>
+                <div className="text-2xl font-bold text-red-600">0</div>
               </CardContent>
             </Card>
           </div>
 
+          {/* Personnel Administratif */}
           <Card>
             <CardHeader>
-              <CardTitle>Liste du Personnel</CardTitle>
+              <div className="flex justify-between items-center">
+                <CardTitle>Personnel Administratif</CardTitle>
+                <Button size="sm" onClick={() => setShowUserDialog(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter Profil
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {filteredUsers.map((employee) => (
+                {adminUsers.map((employee) => (
                   <div key={employee.id} className="flex justify-between items-center p-4 border rounded-lg">
-                    <div>
+                    <div className="flex-1">
                       <h3 className="font-semibold">{employee.name}</h3>
                       <p className="text-sm text-muted-foreground">{employee.email}</p>
                       <div className="flex gap-2 mt-1">
@@ -219,6 +257,42 @@ export const PersonnelManagement = () => {
                       </div>
                     </div>
                     <div className="flex gap-2">
+                      <Button variant="outline" size="sm">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Personnel de Production */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Personnel de Production</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {productionUsers.map((employee) => (
+                  <div key={employee.id} className="flex justify-between items-center p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{employee.name}</h3>
+                      <p className="text-sm text-muted-foreground">{employee.email}</p>
+                      <div className="flex gap-2 mt-1">
+                        <Badge variant="outline">{employee.role}</Badge>
+                        <Badge variant={employee.isActive ? 'default' : 'secondary'}>
+                          {employee.isActive ? 'Actif' : 'Inactif'}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">
+                        <Eye className="h-4 w-4" />
+                      </Button>
                       <Button variant="outline" size="sm">
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -233,66 +307,78 @@ export const PersonnelManagement = () => {
         <TabsContent value="permissions">
           <Card>
             <CardHeader>
-              <CardTitle>Gestion des Permissions</CardTitle>
+              <CardTitle>Gestion des Permissions par Utilisateur</CardTitle>
               <p className="text-sm text-muted-foreground">
                 Définissez qui peut lire, modifier ou supprimer chaque module
               </p>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Utilisateur</TableHead>
-                    <TableHead>Module</TableHead>
-                    <TableHead>Lecture</TableHead>
-                    <TableHead>Écriture</TableHead>
-                    <TableHead>Suppression</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredUsers.map((employee) =>
-                    availableModules.map((module) => {
-                      const userPermission = getUserPermissions(employee.id).find(p => p.module === module.id);
-                      return (
-                        <TableRow key={`${employee.id}-${module.id}`}>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">{employee.name}</p>
-                              <p className="text-sm text-muted-foreground">{employee.role}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">{module.name}</p>
-                              <Badge variant="outline" className="text-xs">{module.category}</Badge>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Switch
-                              checked={userPermission?.canRead || false}
-                              onCheckedChange={(checked) => handlePermissionChange(employee.id, module.id, 'canRead', checked)}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Switch
-                              checked={userPermission?.canWrite || false}
-                              onCheckedChange={(checked) => handlePermissionChange(employee.id, module.id, 'canWrite', checked)}
-                              disabled={!userPermission?.canRead}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Switch
-                              checked={userPermission?.canDelete || false}
-                              onCheckedChange={(checked) => handlePermissionChange(employee.id, module.id, 'canDelete', checked)}
-                              disabled={!userPermission?.canWrite}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
+              <div className="space-y-6">
+                {filteredUsers.map((employee) => (
+                  <Card key={employee.id}>
+                    <CardHeader>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h3 className="text-lg font-semibold">{employee.name}</h3>
+                          <p className="text-sm text-muted-foreground">{employee.role}</p>
+                        </div>
+                        <Badge variant="outline">
+                          {['admin', 'brand-manager', 'store-manager', 'marketing-manager', 'technical-manager'].includes(employee.role) 
+                            ? 'Administratif' 
+                            : 'Production'}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Module</TableHead>
+                            <TableHead>Lecture</TableHead>
+                            <TableHead>Écriture</TableHead>
+                            <TableHead>Suppression</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {availableModules.map((module) => {
+                            const userPermission = getUserPermissions(employee.id).find(p => p.module === module.id);
+                            return (
+                              <TableRow key={module.id}>
+                                <TableCell>
+                                  <div>
+                                    <p className="font-medium">{module.name}</p>
+                                    <Badge variant="outline" className="text-xs">{module.category}</Badge>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Switch
+                                    checked={userPermission?.canRead || false}
+                                    onCheckedChange={(checked) => handlePermissionChange(employee.id, module.id, 'canRead', checked)}
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  <Switch
+                                    checked={userPermission?.canWrite || false}
+                                    onCheckedChange={(checked) => handlePermissionChange(employee.id, module.id, 'canWrite', checked)}
+                                    disabled={!userPermission?.canRead}
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  <Switch
+                                    checked={userPermission?.canDelete || false}
+                                    onCheckedChange={(checked) => handlePermissionChange(employee.id, module.id, 'canDelete', checked)}
+                                    disabled={!userPermission?.canWrite}
+                                  />
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -350,22 +436,72 @@ export const PersonnelManagement = () => {
                   </DialogContent>
                 </Dialog>
               </div>
+              
+              {/* Filtres de paiement */}
+              <div className="flex gap-4 items-center mt-4">
+                <Select value={paymentFilters.year} onValueChange={(value) => setPaymentFilters({...paymentFilters, year: value})}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Année" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="2024">2024</SelectItem>
+                    <SelectItem value="2023">2023</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={paymentFilters.month} onValueChange={(value) => setPaymentFilters({...paymentFilters, month: value})}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Mois" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Tous</SelectItem>
+                    <SelectItem value="01">Janvier</SelectItem>
+                    <SelectItem value="02">Février</SelectItem>
+                    <SelectItem value="11">Novembre</SelectItem>
+                    <SelectItem value="12">Décembre</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={paymentFilters.status} onValueChange={(value) => setPaymentFilters({...paymentFilters, status: value})}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous</SelectItem>
+                    <SelectItem value="pending">En attente</SelectItem>
+                    <SelectItem value="paid">Payé</SelectItem>
+                    <SelectItem value="cancelled">Annulé</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={paymentFilters.type} onValueChange={(value) => setPaymentFilters({...paymentFilters, type: value})}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous</SelectItem>
+                    <SelectItem value="salary">Salaire</SelectItem>
+                    <SelectItem value="bonus">Bonus</SelectItem>
+                    <SelectItem value="overtime">Heures sup.</SelectItem>
+                    <SelectItem value="commission">Commission</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Employé</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Montant</TableHead>
-                    <TableHead>Période</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredUsers.map((employee) =>
-                    getUserPayments(employee.id).map((payment) => (
+              {/* Paiements Administratifs */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-3">Personnel Administratif</h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Employé</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Montant</TableHead>
+                      <TableHead>Période</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPayments.filter(p => p.category === 'administrative').map((payment) => (
                       <TableRow key={payment.id}>
                         <TableCell>{payment.userName}</TableCell>
                         <TableCell>
@@ -394,10 +530,59 @@ export const PersonnelManagement = () => {
                           )}
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Paiements Production */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Personnel de Production</h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Employé</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Montant</TableHead>
+                      <TableHead>Période</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPayments.filter(p => p.category === 'production').map((payment) => (
+                      <TableRow key={payment.id}>
+                        <TableCell>{payment.userName}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{payment.type}</Badge>
+                        </TableCell>
+                        <TableCell>{payment.amount}€</TableCell>
+                        <TableCell>{payment.period}</TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={
+                              payment.status === 'paid' ? 'default' : 
+                              payment.status === 'pending' ? 'secondary' : 'destructive'
+                            }
+                          >
+                            {payment.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {payment.status === 'pending' && (
+                            <Button 
+                              size="sm" 
+                              onClick={() => updatePaymentStatus(payment.id, 'paid')}
+                            >
+                              Marquer payé
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -405,37 +590,63 @@ export const PersonnelManagement = () => {
         <TabsContent value="access">
           <Card>
             <CardHeader>
-              <CardTitle>Codes d'Accès et Emails</CardTitle>
+              <CardTitle>Codes d'Accès et Gestion des Comptes</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Générez et gérez les codes d'accès pour le personnel
+                Gérez les codes d'accès POS et Web, suspendez ou réactivez les comptes
               </p>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {filteredUsers.map((employee) => (
-                  <div key={employee.id} className="flex justify-between items-center p-4 border rounded-lg">
-                    <div>
-                      <h3 className="font-semibold">{employee.name}</h3>
-                      <p className="text-sm text-muted-foreground">POS ID: {employee.posId}</p>
-                      <p className="text-sm text-muted-foreground">Web ID: {employee.webIdentifier}</p>
-                      <p className="text-sm text-muted-foreground">Email: {employee.email}</p>
+                {filteredUsers.map((employee) => {
+                  const accessCode = getUserAccessCodes(employee.id);
+                  return (
+                    <div key={employee.id} className="flex justify-between items-center p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{employee.name}</h3>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <p>POS ID: {employee.posId}</p>
+                          <p>Web ID: {employee.webIdentifier}</p>
+                          <p>Email: {employee.email}</p>
+                          {accessCode && (
+                            <div className="flex gap-2 mt-2">
+                              <Badge variant={accessCode.isActive ? 'default' : 'secondary'}>
+                                {accessCode.isActive ? 'Actif' : 'Inactif'}
+                              </Badge>
+                              {accessCode.isSuspended && (
+                                <Badge variant="destructive">Suspendu</Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => updateAccessCode(employee.id, { 
+                            posCode: Math.random().toString().substr(2, 6),
+                            webCode: `${employee.name.split(' ').map(n => n[0]).join('')}${new Date().getFullYear()}${Math.random().toString().substr(2, 3)}`
+                          })}
+                        >
+                          <Key className="h-4 w-4 mr-2" />
+                          Régénérer
+                        </Button>
+                        <Button 
+                          variant={accessCode?.isSuspended ? "default" : "destructive"} 
+                          size="sm"
+                          onClick={() => suspendUserAccess(employee.id, !accessCode?.isSuspended)}
+                        >
+                          {accessCode?.isSuspended ? <UserCheck className="h-4 w-4 mr-2" /> : <UserX className="h-4 w-4 mr-2" />}
+                          {accessCode?.isSuspended ? 'Réactiver' : 'Suspendre'}
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Mail className="h-4 w-4 mr-2" />
+                          Envoyer
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => generateAccessCode(employee.id)}
-                      >
-                        <Key className="h-4 w-4 mr-2" />
-                        Nouveau Code
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Mail className="h-4 w-4 mr-2" />
-                        Envoyer Email
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

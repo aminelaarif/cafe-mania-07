@@ -15,8 +15,16 @@ export {
   mockTimeEntries, 
   mockPersonnelPayments, 
   mockUserPermissions,
+  mockPersonalInfo,
+  mockBankInfo,
+  mockWorkSchedules,
+  mockAccessCodes,
   availableModules,
   type TimeEntry, 
   type PersonnelPayment, 
-  type UserPermission 
+  type UserPermission,
+  type PersonalInfo,
+  type BankInfo,
+  type WorkSchedule,
+  type AccessCode
 } from './personnel';

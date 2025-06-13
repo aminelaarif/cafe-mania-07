@@ -21,6 +21,7 @@ export interface PersonnelPayment {
   paidAt?: string;
   createdAt: string;
   notes?: string;
+  category: 'administrative' | 'production';
 }
 
 export interface UserPermission {
@@ -33,6 +34,147 @@ export interface UserPermission {
   grantedBy: string;
   grantedAt: string;
 }
+
+export interface WorkSchedule {
+  id: string;
+  userId: string;
+  dayOfWeek: number; // 0-6 (Sunday-Saturday)
+  startTime: string;
+  endTime: string;
+  isActive: boolean;
+}
+
+export interface BankInfo {
+  id: string;
+  userId: string;
+  bankName: string;
+  accountNumber: string;
+  routingNumber: string;
+  accountType: 'checking' | 'savings';
+}
+
+export interface PersonalInfo {
+  id: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  emergencyContact: string;
+  emergencyPhone: string;
+  birthDate: string;
+  hireDate: string;
+  socialSecurityNumber: string;
+}
+
+export interface AccessCode {
+  id: string;
+  userId: string;
+  posCode: string;
+  webCode: string;
+  isActive: boolean;
+  isSuspended: boolean;
+  lastUsed?: string;
+  expiresAt?: string;
+  createdAt: string;
+}
+
+// Données mock pour les informations personnelles
+export const mockPersonalInfo: PersonalInfo[] = [
+  {
+    id: '1',
+    userId: '6',
+    firstName: 'John',
+    lastName: 'Doe',
+    phone: '+33 1 23 45 67 89',
+    address: '123 Rue de la Paix',
+    city: 'Paris',
+    postalCode: '75001',
+    emergencyContact: 'Jane Doe',
+    emergencyPhone: '+33 1 23 45 67 90',
+    birthDate: '1995-02-14',
+    hireDate: '2023-01-15',
+    socialSecurityNumber: '1950214123456'
+  },
+  {
+    id: '2',
+    userId: '7',
+    firstName: 'Marie',
+    lastName: 'Martin',
+    phone: '+33 1 23 45 67 91',
+    address: '456 Avenue des Champs',
+    city: 'Paris',
+    postalCode: '75008',
+    emergencyContact: 'Paul Martin',
+    emergencyPhone: '+33 1 23 45 67 92',
+    birthDate: '1992-09-08',
+    hireDate: '2022-06-01',
+    socialSecurityNumber: '2920908654321'
+  }
+];
+
+// Données mock pour les informations bancaires
+export const mockBankInfo: BankInfo[] = [
+  {
+    id: '1',
+    userId: '6',
+    bankName: 'Crédit Agricole',
+    accountNumber: '12345678901',
+    routingNumber: '30002',
+    accountType: 'checking'
+  },
+  {
+    id: '2',
+    userId: '7',
+    bankName: 'BNP Paribas',
+    accountNumber: '98765432109',
+    routingNumber: '30004',
+    accountType: 'savings'
+  }
+];
+
+// Données mock pour les horaires de travail
+export const mockWorkSchedules: WorkSchedule[] = [
+  // John - Lundi à Vendredi
+  { id: '1', userId: '6', dayOfWeek: 1, startTime: '08:00', endTime: '16:00', isActive: true },
+  { id: '2', userId: '6', dayOfWeek: 2, startTime: '08:00', endTime: '16:00', isActive: true },
+  { id: '3', userId: '6', dayOfWeek: 3, startTime: '08:00', endTime: '16:00', isActive: true },
+  { id: '4', userId: '6', dayOfWeek: 4, startTime: '08:00', endTime: '16:00', isActive: true },
+  { id: '5', userId: '6', dayOfWeek: 5, startTime: '08:00', endTime: '16:00', isActive: true },
+  
+  // Marie - Mardi à Samedi
+  { id: '6', userId: '7', dayOfWeek: 2, startTime: '06:00', endTime: '14:00', isActive: true },
+  { id: '7', userId: '7', dayOfWeek: 3, startTime: '06:00', endTime: '14:00', isActive: true },
+  { id: '8', userId: '7', dayOfWeek: 4, startTime: '06:00', endTime: '14:00', isActive: true },
+  { id: '9', userId: '7', dayOfWeek: 5, startTime: '06:00', endTime: '14:00', isActive: true },
+  { id: '10', userId: '7', dayOfWeek: 6, startTime: '06:00', endTime: '14:00', isActive: true }
+];
+
+// Données mock pour les codes d'accès
+export const mockAccessCodes: AccessCode[] = [
+  {
+    id: '1',
+    userId: '6',
+    posCode: '600001',
+    webCode: 'JD2024001',
+    isActive: true,
+    isSuspended: false,
+    lastUsed: new Date().toISOString(),
+    createdAt: '2023-01-15T00:00:00Z'
+  },
+  {
+    id: '2',
+    userId: '7',
+    posCode: '700001',
+    webCode: 'MM2024002',
+    isActive: true,
+    isSuspended: false,
+    lastUsed: new Date(Date.now() - 86400000).toISOString(),
+    createdAt: '2022-06-01T00:00:00Z'
+  }
+];
 
 // Données mock pour les pointages
 export const mockTimeEntries: TimeEntry[] = [
@@ -54,7 +196,7 @@ export const mockTimeEntries: TimeEntry[] = [
   }
 ];
 
-// Données mock pour les paiements du personnel
+// Données mock pour les paiements du personnel (enrichies)
 export const mockPersonnelPayments: PersonnelPayment[] = [
   {
     id: '1',
@@ -65,7 +207,8 @@ export const mockPersonnelPayments: PersonnelPayment[] = [
     period: '2024-12',
     status: 'paid',
     paidAt: '2024-12-01T00:00:00Z',
-    createdAt: '2024-11-25T00:00:00Z'
+    createdAt: '2024-11-25T00:00:00Z',
+    category: 'production'
   },
   {
     id: '2',
@@ -75,7 +218,32 @@ export const mockPersonnelPayments: PersonnelPayment[] = [
     type: 'salary',
     period: '2024-12',
     status: 'pending',
-    createdAt: '2024-11-25T00:00:00Z'
+    createdAt: '2024-11-25T00:00:00Z',
+    category: 'production'
+  },
+  {
+    id: '3',
+    userId: '3',
+    userName: 'Store Manager',
+    amount: 3500,
+    type: 'salary',
+    period: '2024-12',
+    status: 'paid',
+    paidAt: '2024-12-01T00:00:00Z',
+    createdAt: '2024-11-25T00:00:00Z',
+    category: 'administrative'
+  },
+  {
+    id: '4',
+    userId: '6',
+    userName: 'Barista John',
+    amount: 300,
+    type: 'bonus',
+    period: '2024-11',
+    status: 'paid',
+    paidAt: '2024-11-30T00:00:00Z',
+    createdAt: '2024-11-28T00:00:00Z',
+    category: 'production'
   }
 ];
 
