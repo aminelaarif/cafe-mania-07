@@ -10,8 +10,25 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { user, isLoading } = useAuth();
   const navigate = useNavigate();
+  
+  // Utilisation d'un try-catch pour gérer les erreurs de contexte
+  let authData;
+  try {
+    authData = useAuth();
+  } catch (error) {
+    console.error('ProtectedRoute: Error accessing auth context:', error);
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Chargement de l'authentification...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const { user, isLoading } = authData;
 
   if (isLoading) {
     return (

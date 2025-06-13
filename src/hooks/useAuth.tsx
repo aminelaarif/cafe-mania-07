@@ -16,22 +16,30 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     console.log('AuthProvider: Initialization started');
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
+    
+    const initializeAuth = async () => {
       try {
-        const parsedUser = JSON.parse(savedUser);
-        console.log('AuthProvider: User loaded from localStorage:', parsedUser);
-        setUser(parsedUser);
+        const savedUser = localStorage.getItem('user');
+        if (savedUser) {
+          const parsedUser = JSON.parse(savedUser);
+          console.log('AuthProvider: User loaded from localStorage:', parsedUser);
+          setUser(parsedUser);
+        }
       } catch (error) {
         console.error('AuthProvider: Error parsing saved user:', error);
         localStorage.removeItem('user');
+      } finally {
+        setIsLoading(false);
+        setIsInitialized(true);
+        console.log('AuthProvider: Initialization completed');
       }
-    }
-    setIsLoading(false);
-    console.log('AuthProvider: Initialization completed');
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -107,6 +115,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   console.log('AuthProvider: Rendering with context value:', contextValue);
+
+  // Ne rendre les enfants que si le provider est complètement initialisé
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Initialisation...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider value={contextValue}>
