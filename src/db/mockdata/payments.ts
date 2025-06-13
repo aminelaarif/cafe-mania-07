@@ -1,4 +1,3 @@
-
 export interface Payment {
   id: string;
   orderId: string;
@@ -6,7 +5,7 @@ export interface Payment {
   method: 'cash' | 'card';
   status: 'completed' | 'pending' | 'refunded';
   timestamp: string;
-  userId: string;
+  userId: string; // ID de l'utilisateur POS (vendeur)
   storeId: string;
   currency: string;
   transactionId?: string;
@@ -30,8 +29,7 @@ export interface Sale {
   taxAmount: number;
   total: number;
   paymentMethod: 'cash' | 'card';
-  userId: string;
-  userName: string;
+  userId: string; // ID de l'utilisateur POS (vendeur)
   storeId: string;
   timestamp: string;
   tags: string[];
@@ -59,7 +57,7 @@ export const mockPayments: Payment[] = [
     method: 'cash',
     status: 'completed',
     timestamp: '2024-01-15T10:30:00Z',
-    userId: 'user_001',
+    userId: '6', // Barista John
     storeId: 'store_001',
     currency: 'EUR',
     transactionId: 'tx_001'
@@ -71,7 +69,7 @@ export const mockPayments: Payment[] = [
     method: 'card',
     status: 'completed',
     timestamp: '2024-01-15T11:15:00Z',
-    userId: 'user_002',
+    userId: '6', // Barista John
     storeId: 'store_001',
     currency: 'EUR',
     transactionId: 'tx_002'
@@ -83,7 +81,7 @@ export const mockPayments: Payment[] = [
     method: 'card',
     status: 'refunded',
     timestamp: '2024-01-15T14:20:00Z',
-    userId: 'user_001',
+    userId: '3', // Store Manager
     storeId: 'store_001',
     currency: 'EUR',
     transactionId: 'tx_003',
@@ -99,14 +97,14 @@ export const mockPayments: Payment[] = [
     method: 'cash',
     status: 'completed',
     timestamp: '2024-01-16T09:45:00Z',
-    userId: 'user_003',
+    userId: '7', // Chef Marie
     storeId: 'store_001',
     currency: 'EUR',
     transactionId: 'tx_004'
   }
 ];
 
-// Données mockées pour les ventes
+// Données mockées pour les ventes - MODIFIÉES pour utiliser les IDs utilisateurs
 export const mockSales: Sale[] = [
   {
     id: 'sale_001',
@@ -119,13 +117,12 @@ export const mockSales: Sale[] = [
     taxAmount: 4.10,
     total: 24.50,
     paymentMethod: 'cash',
-    userId: 'user_001',
-    userName: 'Marie Dubois',
+    userId: '6', // Barista John (ID utilisateur POS)
     storeId: 'store_001',
     timestamp: '2024-01-15T10:30:00Z',
     tags: ['matin', 'petit-dejeuner'],
     status: 'completed',
-    notes: 'Client régulier'
+    notes: 'Vente matinale'
   },
   {
     id: 'sale_002',
@@ -138,8 +135,7 @@ export const mockSales: Sale[] = [
     taxAmount: 3.13,
     total: 18.75,
     paymentMethod: 'card',
-    userId: 'user_002',
-    userName: 'Jean Martin',
+    userId: '6', // Barista John (ID utilisateur POS)
     storeId: 'store_001',
     timestamp: '2024-01-15T11:15:00Z',
     tags: ['pause', 'sucre'],
@@ -156,8 +152,7 @@ export const mockSales: Sale[] = [
     taxAmount: 5.33,
     total: 32.00,
     paymentMethod: 'card',
-    userId: 'user_001',
-    userName: 'Marie Dubois',
+    userId: '3', // Store Manager (ID utilisateur POS)
     storeId: 'store_001',
     timestamp: '2024-01-15T14:20:00Z',
     tags: ['dejeuner', 'sain'],

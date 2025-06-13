@@ -28,7 +28,7 @@ export const SalesHistory = ({ onBack }: SalesHistoryProps) => {
     status: statusFilter === 'all' ? undefined : statusFilter,
     paymentMethod: paymentFilter === 'all' ? undefined : paymentFilter
   }).filter(sale => 
-    sale.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sale.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
     sale.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
     sale.items.some(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
@@ -82,7 +82,7 @@ export const SalesHistory = ({ onBack }: SalesHistoryProps) => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher par client, commande ou produit..."
+                  placeholder="Rechercher par ID vendeur, commande ou produit..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -120,7 +120,7 @@ export const SalesHistory = ({ onBack }: SalesHistoryProps) => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Commande</TableHead>
-                  <TableHead>Client</TableHead>
+                  <TableHead>ID Vendeur</TableHead>
                   <TableHead>Articles</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead>Paiement</TableHead>
@@ -134,7 +134,7 @@ export const SalesHistory = ({ onBack }: SalesHistoryProps) => {
                 {filteredSales.map((sale) => (
                   <TableRow key={sale.id}>
                     <TableCell className="font-mono text-sm">{sale.orderId}</TableCell>
-                    <TableCell className="font-medium">{sale.userName}</TableCell>
+                    <TableCell className="font-medium">{sale.userId}</TableCell>
                     <TableCell>
                       <div className="text-sm">
                         {sale.items.length} article(s)
@@ -178,7 +178,7 @@ export const SalesHistory = ({ onBack }: SalesHistoryProps) => {
                                 <div>
                                   <h4 className="font-semibold">Informations générales</h4>
                                   <p className="text-sm">Commande: {sale.orderId}</p>
-                                  <p className="text-sm">Client: {sale.userName}</p>
+                                  <p className="text-sm">ID Vendeur: {sale.userId}</p>
                                   <p className="text-sm">Date: {formatDate(sale.timestamp)}</p>
                                   <p className="text-sm">Paiement: {sale.paymentMethod === 'cash' ? 'Espèces' : 'Carte'}</p>
                                 </div>

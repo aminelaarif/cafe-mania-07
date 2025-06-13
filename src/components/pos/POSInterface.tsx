@@ -46,7 +46,9 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
       config?.taxes?.includeInPrice || true
     );
     
-    // Enregistrer la vente avec tous les détails
+    console.log('Traitement du paiement par carte pour utilisateur:', user?.id);
+    
+    // Enregistrer la vente avec l'ID de l'utilisateur connecté
     addSale({
       orderId: `ord_${Date.now()}`,
       items: cart.map(item => ({
@@ -60,14 +62,13 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
       taxAmount,
       total: totalWithTax,
       paymentMethod: 'card',
-      userId: user?.id || 'unknown',
-      userName: user?.name || 'Utilisateur inconnu',
+      userId: user?.id || 'unknown', // ID utilisateur POS connecté
       storeId: 'store_001',
       tags: ['pos', 'carte'],
       status: 'completed'
     });
 
-    console.log(`Paiement de ${totalWithTax.toFixed(2)}${config?.display?.currency || '€'} par carte`);
+    console.log(`Paiement de ${totalWithTax.toFixed(2)}${config?.display?.currency || '€'} par carte validé et ajouté à l'historique`);
     clearCart();
   };
 
@@ -78,7 +79,9 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
       config?.taxes?.includeInPrice || true
     );
     
-    // Enregistrer la vente avec tous les détails
+    console.log('Traitement du paiement en espèces pour utilisateur:', user?.id);
+    
+    // Enregistrer la vente avec l'ID de l'utilisateur connecté
     addSale({
       orderId: `ord_${Date.now()}`,
       items: cart.map(item => ({
@@ -92,14 +95,13 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
       taxAmount,
       total: totalWithTax,
       paymentMethod: 'cash',
-      userId: user?.id || 'unknown',
-      userName: user?.name || 'Utilisateur inconnu',
+      userId: user?.id || 'unknown', // ID utilisateur POS connecté
       storeId: 'store_001',
       tags: ['pos', 'especes'],
       status: 'completed'
     });
 
-    console.log(`Paiement de ${totalWithTax.toFixed(2)}${config?.display?.currency || '€'} par espèces`);
+    console.log(`Paiement de ${totalWithTax.toFixed(2)}${config?.display?.currency || '€'} en espèces validé et ajouté à l'historique`);
     clearCart();
   };
 

@@ -89,14 +89,22 @@ export const usePaymentData = () => {
     }, 1000);
   };
 
+  // Fonction principale pour ajouter une vente depuis le POS
   const addSale = (newSale: Omit<Sale, 'id' | 'timestamp'>) => {
+    console.log('Ajout d\'une nouvelle vente depuis le POS:', newSale);
+    
     const sale: Sale = {
       ...newSale,
       id: `sale_${Date.now()}`,
       timestamp: new Date().toISOString()
     };
     
-    setSales(prev => [sale, ...prev]);
+    // Ajouter la vente à l'historique
+    setSales(prev => {
+      const updatedSales = [sale, ...prev];
+      console.log('Historique des ventes mis à jour:', updatedSales);
+      return updatedSales;
+    });
 
     // Ajouter le paiement correspondant
     const payment: Payment = {
@@ -112,7 +120,13 @@ export const usePaymentData = () => {
       transactionId: `tx_${Date.now()}`
     };
     
-    setPayments(prev => [payment, ...prev]);
+    setPayments(prev => {
+      const updatedPayments = [payment, ...prev];
+      console.log('Historique des paiements mis à jour:', updatedPayments);
+      return updatedPayments;
+    });
+
+    console.log('Vente et paiement ajoutés avec succès');
   };
 
   const getFilteredSales = (filters: {
