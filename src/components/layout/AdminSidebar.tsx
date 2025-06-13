@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTheme } from "@/hooks/useTheme";
+import { defaultTheme, darkTheme } from "@/lib/theme";
 
 interface NavItem {
   title: string;
@@ -35,13 +36,13 @@ interface NavItem {
 export const AdminSidebar = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
-  const { setTheme } = useTheme();
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [isDarkTheme, setIsDarkTheme] = useState(theme.mode === 'dark');
 
   const toggleTheme = () => {
-    const newTheme = isDarkTheme ? "light" : "dark";
+    const newTheme = isDarkTheme ? defaultTheme : darkTheme;
     setIsDarkTheme(!isDarkTheme);
-    setTheme(newTheme as "light" | "dark");
+    setTheme(newTheme);
   };
 
   const navigation: NavItem[] = [
