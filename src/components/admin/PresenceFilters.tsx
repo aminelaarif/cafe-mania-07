@@ -80,6 +80,14 @@ export const PresenceFilters = ({
     return count;
   };
 
+  // Ensure filter values are never empty strings
+  const safeFilters = {
+    ...filters,
+    shift: filters.shift || 'all-shifts',
+    department: filters.department || 'all-departments',
+    timeRange: filters.timeRange || 'all-times'
+  };
+
   return (
     <div className="space-y-4">
       {/* Sélection du point de vente */}
@@ -91,7 +99,7 @@ export const PresenceFilters = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Select value={selectedStore} onValueChange={onStoreChange}>
+          <Select value={selectedStore || 'all-stores'} onValueChange={onStoreChange}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Sélectionner un point de vente" />
             </SelectTrigger>
@@ -174,7 +182,7 @@ export const PresenceFilters = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/20 rounded-lg">
               <div>
                 <label className="text-sm font-medium mb-1 block">Horaire de travail</label>
-                <Select value={filters.shift} onValueChange={(value) => onFiltersChange({ ...filters, shift: value })}>
+                <Select value={safeFilters.shift} onValueChange={(value) => onFiltersChange({ ...filters, shift: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -190,7 +198,7 @@ export const PresenceFilters = ({
 
               <div>
                 <label className="text-sm font-medium mb-1 block">Département</label>
-                <Select value={filters.department} onValueChange={(value) => onFiltersChange({ ...filters, department: value })}>
+                <Select value={safeFilters.department} onValueChange={(value) => onFiltersChange({ ...filters, department: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -206,7 +214,7 @@ export const PresenceFilters = ({
 
               <div>
                 <label className="text-sm font-medium mb-1 block">Heure d'arrivée</label>
-                <Select value={filters.timeRange} onValueChange={(value) => onFiltersChange({ ...filters, timeRange: value })}>
+                <Select value={safeFilters.timeRange} onValueChange={(value) => onFiltersChange({ ...filters, timeRange: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
