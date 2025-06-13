@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,6 +26,9 @@ import {
 } from 'lucide-react';
 import { usePersonnelManagement } from '@/hooks/usePersonnelManagement';
 import { useAuth } from '@/hooks/useAuth';
+import { AddEmployeeDialog } from '@/components/admin/personnel/AddEmployeeDialog';
+import { EmployeeDetailsDialog } from '@/components/admin/personnel/EmployeeDetailsDialog';
+import { PaymentExportDialog } from '@/components/admin/personnel/PaymentExportDialog';
 
 export const PersonnelManagement = () => {
   const { user } = useAuth();
@@ -60,8 +62,11 @@ export const PersonnelManagement = () => {
   } = usePersonnelManagement();
 
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
-  const [showUserDialog, setShowUserDialog] = useState(false);
+  const [showAddEmployeeDialog, setShowAddEmployeeDialog] = useState(false);
+  const [showEmployeeDialog, setShowEmployeeDialog] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentType, setPaymentType] = useState<'salary' | 'bonus' | 'overtime' | 'commission'>('salary');
 
@@ -120,6 +125,21 @@ export const PersonnelManagement = () => {
     }
   };
 
+  const handleEmployeeAdded = (newEmployee: any) => {
+    console.log('Nouvel employé ajouté:', newEmployee);
+    // Ici vous pourriez mettre à jour votre état global ou recharger les données
+  };
+
+  const handleEmployeeUpdate = (updates: any) => {
+    console.log('Employé mis à jour:', updates);
+    // Ici vous pourriez mettre à jour votre état global
+  };
+
+  const handleViewEmployee = (employee: any) => {
+    setSelectedEmployee(employee);
+    setShowEmployeeDialog(true);
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -130,9 +150,13 @@ export const PersonnelManagement = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={exportPaymentsData}>
+          <Button variant="outline" size="sm" onClick={() => setShowExportDialog(true)}>
             <FileSpreadsheet className="h-4 w-4 mr-2" />
             Exporter Paiements
+          </Button>
+          <Button size="sm" onClick={() => setShowAddEmployeeDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Ajouter Employé
           </Button>
         </div>
       </div>
@@ -236,36 +260,43 @@ export const PersonnelManagement = () => {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>Personnel Administratif</CardTitle>
-                <Button size="sm" onClick={() => setShowUserDialog(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Ajouter Profil
-                </Button>
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {adminUsers.map((employee) => (
-                  <div key={employee.id} className="flex justify-between items-center p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{employee.name}</h3>
-                      <p className="text-sm text-muted-foreground">{employee.email}</p>
-                      <div className="flex gap-2 mt-1">
-                        <Badge variant="outline">{employee.role}</Badge>
-                        <Badge variant={employee.isActive ? 'default' : 'secondary'}>
-                          {employee.isActive ? 'Actif' : 'Inactif'}
-                        </Badge>
+                {adminUsers.map((employee) => {
+                  const personalInfo = getUserPersonalInfo(employee.id);
+                  return (
+                    <div key={employee.id} className="flex justify-between items-center p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{employee.name}</h3>
+                        <p className="text-sm text-muted-foreground">{employee.email}</p>
+                        <div className="flex gap-2 mt-1">
+                          <Badge variant="outline">{employee.role}</Badge>
+                          <Badge variant={employee.isActive ? 'default' : 'secondary'}>
+                            {employee.isActive ? 'Actif' : 'Inactif'}
+                          </Badge>
+                          {personalInfo && (
+                            <Badge variant="outline">{personalInfo.position}</Badge>
+                          )}
+                        </div>
+                        {personalInfo && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Salaire: {personalInfo.salary}€ | {personalInfo.contractType}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleViewEmployee(employee)}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -277,28 +308,39 @@ export const PersonnelManagement = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {productionUsers.map((employee) => (
-                  <div key={employee.id} className="flex justify-between items-center p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{employee.name}</h3>
-                      <p className="text-sm text-muted-foreground">{employee.email}</p>
-                      <div className="flex gap-2 mt-1">
-                        <Badge variant="outline">{employee.role}</Badge>
-                        <Badge variant={employee.isActive ? 'default' : 'secondary'}>
-                          {employee.isActive ? 'Actif' : 'Inactif'}
-                        </Badge>
+                {productionUsers.map((employee) => {
+                  const personalInfo = getUserPersonalInfo(employee.id);
+                  return (
+                    <div key={employee.id} className="flex justify-between items-center p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{employee.name}</h3>
+                        <p className="text-sm text-muted-foreground">{employee.email}</p>
+                        <div className="flex gap-2 mt-1">
+                          <Badge variant="outline">{employee.role}</Badge>
+                          <Badge variant={employee.isActive ? 'default' : 'secondary'}>
+                            {employee.isActive ? 'Actif' : 'Inactif'}
+                          </Badge>
+                          {personalInfo && (
+                            <Badge variant="outline">{personalInfo.position}</Badge>
+                          )}
+                        </div>
+                        {personalInfo && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Salaire: {personalInfo.salary}€ | {personalInfo.contractType}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleViewEmployee(employee)}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -652,6 +694,28 @@ export const PersonnelManagement = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Dialogs */}
+      <AddEmployeeDialog
+        open={showAddEmployeeDialog}
+        onOpenChange={setShowAddEmployeeDialog}
+        onEmployeeAdded={handleEmployeeAdded}
+      />
+
+      <EmployeeDetailsDialog
+        open={showEmployeeDialog}
+        onOpenChange={setShowEmployeeDialog}
+        employee={selectedEmployee}
+        personalInfo={selectedEmployee ? getUserPersonalInfo(selectedEmployee.id) : null}
+        bankInfo={selectedEmployee ? getUserBankInfo(selectedEmployee.id) : null}
+        onUpdate={handleEmployeeUpdate}
+      />
+
+      <PaymentExportDialog
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
+        payments={filteredPayments}
+      />
     </div>
   );
 };
