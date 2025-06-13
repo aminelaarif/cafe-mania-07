@@ -1,11 +1,12 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { ContentProvider } from "@/contexts/ContentContext";
+import { AuthProvider } from "@/hooks/useAuth";
 
 // Public Pages
 import { SinglePageHome } from "@/pages/public/SinglePageHome";
@@ -54,8 +55,8 @@ const App = () => (
     <TooltipProvider>
       <ThemeProvider>
         <ContentProvider>
-          <BrowserRouter>
-            <AuthProvider>
+          <AuthProvider>
+            <BrowserRouter>
               <Toaster />
               <Sonner />
               <Routes>
@@ -207,8 +208,8 @@ const App = () => (
                 {/* Catch-all route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </AuthProvider>
-          </BrowserRouter>
+            </BrowserRouter>
+          </AuthProvider>
         </ContentProvider>
       </ThemeProvider>
     </TooltipProvider>
