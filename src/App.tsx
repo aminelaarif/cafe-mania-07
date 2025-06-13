@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,7 +19,6 @@ import { Locations } from "@/pages/public/Locations";
 import { Dashboard } from "@/pages/admin/Dashboard";
 import { GlobalConfig } from "@/pages/admin/GlobalConfig";
 import { ContentManagement } from "@/pages/admin/ContentManagement";
-import { UserManagement } from "@/pages/admin/UserManagement";
 import { SalesReport } from "@/pages/admin/SalesReport";
 import { StaffManagement } from "@/pages/admin/StaffManagement";
 import { InventoryManagement } from "@/pages/admin/InventoryManagement";
@@ -27,6 +27,9 @@ import { POSManagement } from "@/pages/admin/POSManagement";
 import { FinancialAnalysis } from "@/pages/admin/FinancialAnalysis";
 import { FinancialManagement } from "@/pages/admin/FinancialManagement";
 import { LoyaltyManagement } from "@/pages/admin/LoyaltyManagement";
+import { Finances } from "@/pages/admin/Finances";
+import { Stores } from "@/pages/admin/Stores";
+import { StoreStock } from "@/pages/admin/StoreStock";
 
 // POS Pages
 import { POSApp } from "@/pages/pos/POSApp";
@@ -120,34 +123,12 @@ const App = () => (
                     </AdminLayout>
                   </ProtectedRoute>
                 } />
-                <Route path="/admin/users" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
+
+                {/* Finances Routes */}
+                <Route path="/admin/finances" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
                     <AdminLayout>
-                      <UserManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/stores" element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <AdminLayout>
-                      <div className="p-6">
-                        <h1 className="text-3xl font-bold">Gestion des Magasins</h1>
-                        <p className="text-muted-foreground mt-2">Fonctionnalité en développement</p>
-                      </div>
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/pos" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager', 'marketing-manager']}>
-                    <AdminLayout>
-                      <POSManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/sales" element={
-                  <ProtectedRoute allowedRoles={['store-manager', 'technical-manager']}>
-                    <AdminLayout>
-                      <SalesReport />
+                      <Finances />
                     </AdminLayout>
                   </ProtectedRoute>
                 } />
@@ -165,6 +146,59 @@ const App = () => (
                     </AdminLayout>
                   </ProtectedRoute>
                 } />
+
+                {/* Stores Routes */}
+                <Route path="/admin/stores" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
+                    <AdminLayout>
+                      <Stores />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/stores/:storeId/pos" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager', 'marketing-manager']}>
+                    <AdminLayout>
+                      <POSManagement />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/stores/:storeId/personnel" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
+                    <AdminLayout>
+                      <PersonnelManagement />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/stores/:storeId/loyalty" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'marketing-manager']}>
+                    <AdminLayout>
+                      <LoyaltyManagement />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/stores/:storeId/stock" element={
+                  <ProtectedRoute allowedRoles={['store-manager', 'technical-manager']}>
+                    <AdminLayout>
+                      <StoreStock />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+
+                {/* Legacy routes for backwards compatibility */}
+                <Route path="/admin/pos" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager', 'marketing-manager']}>
+                    <AdminLayout>
+                      <POSManagement />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/sales" element={
+                  <ProtectedRoute allowedRoles={['store-manager', 'technical-manager']}>
+                    <AdminLayout>
+                      <SalesReport />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
                 <Route path="/admin/staff" element={
                   <ProtectedRoute allowedRoles={['store-manager', 'technical-manager']}>
                     <AdminLayout>
@@ -179,35 +213,10 @@ const App = () => (
                     </AdminLayout>
                   </ProtectedRoute>
                 } />
-                {/* Redirection des anciennes routes vers la nouvelle page Personnel */}
-                <Route path="/admin/presence" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
-                    <AdminLayout>
-                      <PersonnelManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/personnel-history" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
-                    <AdminLayout>
-                      <PersonnelManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
                 <Route path="/admin/personnel" element={
                   <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
                     <AdminLayout>
                       <PersonnelManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/promotions" element={
-                  <ProtectedRoute allowedRoles={['marketing-manager']}>
-                    <AdminLayout>
-                      <div className="p-6">
-                        <h1 className="text-3xl font-bold">Gestion des Promotions</h1>
-                        <p className="text-muted-foreground mt-2">Fonctionnalité en développement</p>
-                      </div>
                     </AdminLayout>
                   </ProtectedRoute>
                 } />
