@@ -66,6 +66,12 @@ export const AdminSidebar = () => {
       roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager', 'marketing-manager']
     },
     {
+      title: "Analytics",
+      url: "/admin/analytics",
+      icon: BarChart,
+      roles: ['admin', 'brand-manager', 'marketing-manager']
+    },
+    {
       title: "Finances Générales",
       icon: DollarSign,
       roles: ['admin', 'brand-manager'],
@@ -210,10 +216,53 @@ export const AdminSidebar = () => {
       ]
     },
     {
-      title: "Configuration",
-      url: "/admin/config",
-      icon: Settings,
+      title: "Rapports",
+      url: "/admin/reports",
+      icon: ClipboardList,
+      roles: ['admin', 'brand-manager', 'store-manager']
+    },
+    {
+      title: "Marketing",
+      url: "/admin/marketing",
+      icon: Gift,
+      roles: ['admin', 'brand-manager', 'marketing-manager']
+    },
+    {
+      title: "Utilisateurs",
+      url: "/admin/users",
+      icon: UserPlus,
       roles: ['admin', 'brand-manager']
+    },
+    {
+      title: "Configuration",
+      icon: Settings,
+      roles: ['admin', 'brand-manager'],
+      children: [
+        {
+          title: "Paramètres Globaux",
+          url: "/admin/config",
+          icon: Settings,
+          roles: ['admin', 'brand-manager']
+        },
+        {
+          title: "Mobile",
+          url: "/admin/mobile-config",
+          icon: Settings,
+          roles: ['admin', 'brand-manager']
+        },
+        {
+          title: "Personnalisation",
+          url: "/admin/customization",
+          icon: Settings,
+          roles: ['admin', 'brand-manager']
+        }
+      ]
+    },
+    {
+      title: "Maintenance",
+      url: "/admin/maintenance",
+      icon: Settings,
+      roles: ['admin', 'technical-manager']
     },
     {
       title: "Contenu",

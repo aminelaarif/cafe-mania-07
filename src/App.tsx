@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -32,6 +31,13 @@ import { Stores } from "@/pages/admin/Stores";
 import { StoreStock } from "@/pages/admin/StoreStock";
 import { FinancesOverview } from "@/pages/admin/FinancesOverview";
 import { FinancesAnalysis } from "@/pages/admin/FinancesAnalysis";
+import { Analytics } from "@/pages/admin/Analytics";
+import { UserManagement } from "@/pages/admin/UserManagement";
+import { ReportsCenter } from "@/pages/admin/ReportsCenter";
+import { Marketing } from "@/pages/admin/Marketing";
+import { MobileConfig } from "@/pages/admin/MobileConfig";
+import { SystemMaintenance } from "@/pages/admin/SystemMaintenance";
+import { AdvancedCustomization } from "@/pages/admin/AdvancedCustomization";
 
 // POS Pages
 import { POSApp } from "@/pages/pos/POSApp";
@@ -111,6 +117,58 @@ const App = () => (
                     </AdminLayout>
                   </ProtectedRoute>
                 } />
+
+                {/* New Module Routes */}
+                <Route path="/admin/analytics" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'marketing-manager']}>
+                    <AdminLayout>
+                      <Analytics />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/users" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
+                    <AdminLayout>
+                      <UserManagement />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/reports" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager']}>
+                    <AdminLayout>
+                      <ReportsCenter />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/marketing" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'marketing-manager']}>
+                    <AdminLayout>
+                      <Marketing />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/mobile-config" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
+                    <AdminLayout>
+                      <MobileConfig />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/maintenance" element={
+                  <ProtectedRoute allowedRoles={['admin', 'technical-manager']}>
+                    <AdminLayout>
+                      <SystemMaintenance />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/customization" element={
+                  <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
+                    <AdminLayout>
+                      <AdvancedCustomization />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
+
                 <Route path="/admin/config" element={
                   <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
                     <AdminLayout>
