@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useContent } from '@/contexts/ContentContext';
@@ -41,13 +40,13 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   }, [menu, selectedCategory]);
 
   const processCardPayment = () => {
-    const { totalWithTax } = calculateTotals(
+    const { subtotal, taxAmount, totalWithTax } = calculateTotals(
       total,
       config?.taxes?.defaultTaxRate || 20,
       config?.taxes?.includeInPrice || true
     );
     
-    // Enregistrer la vente
+    // Enregistrer la vente avec tous les détails
     addSale({
       orderId: `ord_${Date.now()}`,
       items: cart.map(item => ({
@@ -55,7 +54,7 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
         name: item.name,
         price: item.price,
         quantity: item.quantity,
-        category: 'unknown'
+        category: selectedCategory || 'unknown'
       })),
       subtotal,
       taxAmount,
@@ -73,13 +72,13 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
   };
 
   const processCashPayment = () => {
-    const { totalWithTax } = calculateTotals(
+    const { subtotal, taxAmount, totalWithTax } = calculateTotals(
       total,
       config?.taxes?.defaultTaxRate || 20,
       config?.taxes?.includeInPrice || true
     );
     
-    // Enregistrer la vente
+    // Enregistrer la vente avec tous les détails
     addSale({
       orderId: `ord_${Date.now()}`,
       items: cart.map(item => ({
@@ -87,7 +86,7 @@ export const POSInterface = ({ onBack }: POSInterfaceProps) => {
         name: item.name,
         price: item.price,
         quantity: item.quantity,
-        category: 'unknown'
+        category: selectedCategory || 'unknown'
       })),
       subtotal,
       taxAmount,

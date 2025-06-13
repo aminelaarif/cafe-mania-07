@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Payment, Sale, FinancialSummary, mockPayments, mockSales, mockFinancialSummaries } from '@/db/mockdata/payments';
 
 export const usePaymentData = () => {
@@ -7,6 +7,54 @@ export const usePaymentData = () => {
   const [sales, setSales] = useState<Sale[]>(mockSales);
   const [summaries, setSummaries] = useState<FinancialSummary[]>(mockFinancialSummaries);
   const [loading, setLoading] = useState(false);
+
+  // Synchronisation automatique des résumés
+  const updateFinancialSummaries = useCallback(() => {
+    const summaryMap: { [key: string]: FinancialSummary } = {};
+
+    sales.forEach(sale => {
+      const date = sale.timestamp.split('T')[0];
+      const key = `${sale.storeId}-${date}`;
+
+      if (!summaryMap[key]) {
+        summaryMap[key] = {
+          storeId: sale.storeId,
+          date,
+          totalSales: 0,
+          totalCash: 0,
+          totalCard: 0,
+          totalRefunds: 0,
+          transactionCount: 0,
+          averageTicket: 0
+        };
+      }
+
+      const summary = summaryMap[key];
+      summary.totalSales += sale.total;
+      summary.transactionCount += 1;
+
+      if (sale.paymentMethod === 'cash') {
+        summary.totalCash += sale.total;
+      } else {
+        summary.totalCard += sale.total;
+      }
+
+      if (sale.status === 'refunded') {
+        summary.totalRefunds += sale.total;
+      }
+    });
+
+    // Calculer les tickets moyens
+    Object.values(summaryMap).forEach(summary => {
+      summary.averageTicket = summary.totalSales / summary.transactionCount;
+    });
+
+    setSummaries(Object.values(summaryMap));
+  }, [sales]);
+
+  useEffect(() => {
+    updateFinancialSummaries();
+  }, [updateFinancialSummaries]);
 
   const processRefund = (saleId: string, amount: number, reason: string) => {
     setLoading(true);
@@ -74,6 +122,7 @@ export const usePaymentData = () => {
     paymentMethod?: string;
     tags?: string[];
     status?: string;
+    storeId?: string;
   }) => {
     return sales.filter(sale => {
       if (filters.dateFrom && sale.timestamp < filters.dateFrom) return false;
@@ -81,6 +130,7 @@ export const usePaymentData = () => {
       if (filters.userId && sale.userId !== filters.userId) return false;
       if (filters.paymentMethod && sale.paymentMethod !== filters.paymentMethod) return false;
       if (filters.status && sale.status !== filters.status) return false;
+      if (filters.storeId && sale.storeId !== filters.storeId) return false;
       if (filters.tags && filters.tags.length > 0) {
         if (!filters.tags.some(tag => sale.tags.includes(tag))) return false;
       }
@@ -88,19 +138,40 @@ export const usePaymentData = () => {
     });
   };
 
-  const getSalesAnalytics = () => {
-    const totalSales = sales.reduce((sum, sale) => sum + sale.total, 0);
-    const totalCash = sales.filter(s => s.paymentMethod === 'cash').reduce((sum, sale) => sum + sale.total, 0);
-    const totalCard = sales.filter(s => s.paymentMethod === 'card').reduce((sum, sale) => sum + sale.total, 0);
-    const averageTicket = totalSales / sales.length;
+  const getSalesAnalytics = (filters?: {
+    dateFrom?: string;
+    dateTo?: string;
+    storeId?: string;
+  }) => {
+    const filteredSales = filters ? getFilteredSales(filters) : sales;
+    
+    const totalSales = filteredSales.reduce((sum, sale) => sum + sale.total, 0);
+    const totalCash = filteredSales.filter(s => s.paymentMethod === 'cash').reduce((sum, sale) => sum + sale.total, 0);
+    const totalCard = filteredSales.filter(s => s.paymentMethod === 'card').reduce((sum, sale) => sum + sale.total, 0);
+    const averageTicket = totalSales / filteredSales.length || 0;
 
     return {
       totalSales,
       totalCash,
       totalCard,
       averageTicket,
-      transactionCount: sales.length,
-      refundCount: sales.filter(s => s.status === 'refunded').length
+      transactionCount: filteredSales.length,
+      refundCount: filteredSales.filter(s => s.status === 'refunded').length
+    };
+  };
+
+  const getComparativeAnalytics = (periodA: string, periodB: string) => {
+    const analyticsA = getSalesAnalytics({ dateFrom: periodA });
+    const analyticsB = getSalesAnalytics({ dateFrom: periodB });
+
+    return {
+      periodA: analyticsA,
+      periodB: analyticsB,
+      growth: {
+        sales: ((analyticsA.totalSales - analyticsB.totalSales) / analyticsB.totalSales) * 100,
+        transactions: ((analyticsA.transactionCount - analyticsB.transactionCount) / analyticsB.transactionCount) * 100,
+        averageTicket: ((analyticsA.averageTicket - analyticsB.averageTicket) / analyticsB.averageTicket) * 100
+      }
     };
   };
 
@@ -112,6 +183,7 @@ export const usePaymentData = () => {
     processRefund,
     addSale,
     getFilteredSales,
-    getSalesAnalytics
+    getSalesAnalytics,
+    getComparativeAnalytics
   };
 };

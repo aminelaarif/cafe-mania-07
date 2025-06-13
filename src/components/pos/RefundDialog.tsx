@@ -1,61 +1,30 @@
 
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertTriangle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { usePaymentData } from '@/hooks/usePaymentData';
-import { useToast } from '@/hooks/use-toast';
+import { Sale } from '@/db/mockdata/payments';
 
 interface RefundDialogProps {
-  sale: any;
+  sale: Sale;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export const RefundDialog = ({ sale, isOpen, onClose }: RefundDialogProps) => {
-  const [refundAmount, setRefundAmount] = useState(sale.total.toString());
-  const [refundReason, setRefundReason] = useState('');
   const { processRefund, loading } = usePaymentData();
-  const { toast } = useToast();
+  const [refundAmount, setRefundAmount] = useState(sale.total);
+  const [refundReason, setRefundReason] = useState('');
+  const [refundType, setRefundType] = useState<'full' | 'partial'>('full');
 
   const handleRefund = async () => {
-    const amount = parseFloat(refundAmount);
-    
-    if (amount <= 0 || amount > sale.total) {
-      toast({
-        title: "Erreur",
-        description: "Le montant du remboursement doit être entre 0 et le total de la vente",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!refundReason.trim()) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez saisir une raison pour le remboursement",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      await processRefund(sale.id, amount, refundReason);
-      toast({
-        title: "Remboursement effectué",
-        description: `Remboursement de €${amount.toFixed(2)} traité avec succès`
-      });
-      onClose();
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Erreur lors du traitement du remboursement",
-        variant: "destructive"
-      });
-    }
+    const amount = refundType === 'full' ? sale.total : refundAmount;
+    await processRefund(sale.id, amount, refundReason);
+    onClose();
   };
 
   const formatCurrency = (amount: number) => `€${amount.toFixed(2)}`;
@@ -64,54 +33,79 @@ export const RefundDialog = ({ sale, isOpen, onClose }: RefundDialogProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-orange-500" />
-            Remboursement
-          </DialogTitle>
+          <DialogTitle>Remboursement - {sale.orderId}</DialogTitle>
         </DialogHeader>
-        
         <div className="space-y-4">
           <div className="p-4 bg-muted rounded-lg">
-            <h4 className="font-semibold mb-2">Détails de la vente</h4>
-            <p className="text-sm">Commande: {sale.orderId}</p>
-            <p className="text-sm">Client: {sale.userName}</p>
-            <p className="text-sm">Total original: {formatCurrency(sale.total)}</p>
-            <p className="text-sm">Paiement: {sale.paymentMethod === 'cash' ? 'Espèces' : 'Carte'}</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Total original:</span>
+                <span className="font-bold">{formatCurrency(sale.total)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Client:</span>
+                <span>{sale.userName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Paiement:</span>
+                <span>{sale.paymentMethod === 'cash' ? 'Espèces' : 'Carte'}</span>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="refund-amount">Montant du remboursement</Label>
-            <Input
-              id="refund-amount"
-              type="number"
-              min="0"
-              max={sale.total}
-              step="0.01"
-              value={refundAmount}
-              onChange={(e) => setRefundAmount(e.target.value)}
-            />
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="refundType">Type de remboursement</Label>
+              <Select value={refundType} onValueChange={(value: 'full' | 'partial') => setRefundType(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="full">Remboursement total</SelectItem>
+                  <SelectItem value="partial">Remboursement partiel</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {refundType === 'partial' && (
+              <div>
+                <Label htmlFor="refundAmount">Montant à rembourser</Label>
+                <Input
+                  id="refundAmount"
+                  type="number"
+                  step="0.01"
+                  max={sale.total}
+                  value={refundAmount}
+                  onChange={(e) => setRefundAmount(parseFloat(e.target.value) || 0)}
+                />
+              </div>
+            )}
+
+            <div>
+              <Label htmlFor="refundReason">Raison du remboursement</Label>
+              <Textarea
+                id="refundReason"
+                placeholder="Expliquez la raison du remboursement..."
+                value={refundReason}
+                onChange={(e) => setRefundReason(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="refund-reason">Raison du remboursement</Label>
-            <Textarea
-              id="refund-reason"
-              placeholder="Expliquez la raison du remboursement..."
-              value={refundReason}
-              onChange={(e) => setRefundReason(e.target.value)}
-              rows={3}
-            />
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onClose} className="flex-1">
+              Annuler
+            </Button>
+            <Button 
+              onClick={handleRefund}
+              disabled={loading || !refundReason.trim()}
+              className="flex-1"
+            >
+              {loading ? 'Traitement...' : `Rembourser ${formatCurrency(refundType === 'full' ? sale.total : refundAmount)}`}
+            </Button>
           </div>
         </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={loading}>
-            Annuler
-          </Button>
-          <Button onClick={handleRefund} disabled={loading}>
-            {loading ? 'Traitement...' : 'Confirmer le remboursement'}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -7,9 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { History, Search, Filter, RefreshCw, ArrowLeft } from 'lucide-react';
+import { History, Search, Filter, RefreshCw, ArrowLeft, Printer } from 'lucide-react';
 import { usePaymentData } from '@/hooks/usePaymentData';
 import { RefundDialog } from './RefundDialog';
+import { TicketPrinter } from './TicketPrinter';
 
 interface SalesHistoryProps {
   onBack: () => void;
@@ -208,6 +209,13 @@ export const SalesHistory = ({ onBack }: SalesHistoryProps) => {
                             </div>
                           </DialogContent>
                         </Dialog>
+                        
+                        <TicketPrinter sale={sale}>
+                          <Button variant="outline" size="sm">
+                            <Printer className="h-4 w-4 mr-1" />
+                            Ticket
+                          </Button>
+                        </TicketPrinter>
                         
                         {sale.status === 'completed' && (
                           <Button
