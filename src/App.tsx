@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,59 +7,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { ContentProvider } from "@/contexts/ContentContext";
 import { AuthProvider } from "@/hooks/useAuth";
-
-// Public Pages
-import { SinglePageHome } from "@/pages/public/SinglePageHome";
-import { Menu } from "@/pages/public/Menu";
-import { History } from "@/pages/public/History";
-import { Reservation } from "@/pages/public/Reservation";
-import { Locations } from "@/pages/public/Locations";
-
-// Admin Pages
-import { Dashboard } from "@/pages/admin/Dashboard";
-import { GlobalConfig } from "@/pages/admin/GlobalConfig";
-import { ContentManagement } from "@/pages/admin/ContentManagement";
-import { SalesReport } from "@/pages/admin/SalesReport";
-import { StaffManagement } from "@/pages/admin/StaffManagement";
-import { InventoryManagement } from "@/pages/admin/InventoryManagement";
-import { PersonnelManagement } from "@/pages/admin/PersonnelManagement";
-import { POSManagement } from "@/pages/admin/POSManagement";
-import { FinancialAnalysis } from "@/pages/admin/FinancialAnalysis";
-import { FinancialManagement } from "@/pages/admin/FinancialManagement";
-import { LoyaltyManagement } from "@/pages/admin/LoyaltyManagement";
-import { Finances } from "@/pages/admin/Finances";
-import { Stores } from "@/pages/admin/Stores";
-import { StoreStock } from "@/pages/admin/StoreStock";
-import { FinancesOverview } from "@/pages/admin/FinancesOverview";
-import { FinancesAnalysis } from "@/pages/admin/FinancesAnalysis";
-import { Analytics } from "@/pages/admin/Analytics";
-import { UserManagement } from "@/pages/admin/UserManagement";
-import { ReportsCenter } from "@/pages/admin/ReportsCenter";
-import { Marketing } from "@/pages/admin/Marketing";
-import { MobileConfig } from "@/pages/admin/MobileConfig";
-import { SystemMaintenance } from "@/pages/admin/SystemMaintenance";
-import { AdvancedCustomization } from "@/pages/admin/AdvancedCustomization";
-
-// POS Pages
 import { POSApp } from "@/pages/pos/POSApp";
-
-// Layout Components
-import { PublicLayout } from "@/components/layout/PublicLayout";
-import { AdminSidebar } from "@/components/layout/AdminSidebar";
-import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
+import { PublicRoutes } from "@/routes/PublicRoutes";
+import { AdminRoutes } from "@/routes/AdminRoutes";
+import { StoreRoutes } from "@/routes/StoreRoutes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
-
-// Admin Layout Component
-const AdminLayout = ({ children }: { children: React.ReactNode }) => (
-  <div className="min-h-screen flex bg-background">
-    <AdminSidebar />
-    <main className="flex-1 overflow-auto">
-      {children}
-    </main>
-  </div>
-);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -73,259 +28,14 @@ const App = () => (
                 {/* POS Route */}
                 <Route path="/pos" element={<POSApp />} />
 
-                {/* Main Single Page Route */}
-                <Route path="/" element={
-                  <PublicLayout>
-                    <SinglePageHome />
-                  </PublicLayout>
-                } />
-
-                {/* Legacy Public Routes (for compatibility) */}
-                <Route path="/menu" element={
-                  <PublicLayout>
-                    <Menu />
-                  </PublicLayout>
-                } />
-                <Route path="/histoire" element={
-                  <PublicLayout>
-                    <History />
-                  </PublicLayout>
-                } />
-                <Route path="/reservation" element={
-                  <PublicLayout>
-                    <Reservation />
-                  </PublicLayout>
-                } />
-                <Route path="/magasins" element={
-                  <PublicLayout>
-                    <Locations />
-                  </PublicLayout>
-                } />
+                {/* Public Routes */}
+                {PublicRoutes()}
 
                 {/* Admin Routes */}
-                <Route path="/admin" element={
-                  <ProtectedRoute>
-                    <AdminLayout>
-                      <Dashboard />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/dashboard" element={
-                  <ProtectedRoute>
-                    <AdminLayout>
-                      <Dashboard />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
+                {AdminRoutes()}
 
-                {/* New Module Routes */}
-                <Route path="/admin/analytics" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'marketing-manager']}>
-                    <AdminLayout>
-                      <Analytics />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/users" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
-                    <AdminLayout>
-                      <UserManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/reports" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager']}>
-                    <AdminLayout>
-                      <ReportsCenter />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/marketing" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'marketing-manager']}>
-                    <AdminLayout>
-                      <Marketing />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/mobile-config" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
-                    <AdminLayout>
-                      <MobileConfig />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/maintenance" element={
-                  <ProtectedRoute allowedRoles={['admin', 'technical-manager']}>
-                    <AdminLayout>
-                      <SystemMaintenance />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/customization" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
-                    <AdminLayout>
-                      <AdvancedCustomization />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-
-                <Route path="/admin/config" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
-                    <AdminLayout>
-                      <GlobalConfig />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/content" element={
-                  <ProtectedRoute allowedRoles={['marketing-manager']}>
-                    <AdminLayout>
-                      <ContentManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-
-                {/* Finances Générales Routes */}
-                <Route path="/admin/finances-overview" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
-                    <AdminLayout>
-                      <FinancesOverview />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/finances-analysis" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
-                    <AdminLayout>
-                      <FinancesAnalysis />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-
-                {/* Legacy Finances Routes (for backwards compatibility) */}
-                <Route path="/admin/finances" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
-                    <AdminLayout>
-                      <Finances />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/financial-analysis" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
-                    <AdminLayout>
-                      <FinancialAnalysis />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/financial-management" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
-                    <AdminLayout>
-                      <FinancialManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-
-                {/* Stores Routes */}
-                <Route path="/admin/stores" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager']}>
-                    <AdminLayout>
-                      <Stores />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/stores/:storeId/pos" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager', 'marketing-manager']}>
-                    <AdminLayout>
-                      <POSManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/stores/:storeId/personnel" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
-                    <AdminLayout>
-                      <PersonnelManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/stores/:storeId/loyalty" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'marketing-manager']}>
-                    <AdminLayout>
-                      <LoyaltyManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/stores/:storeId/stock" element={
-                  <ProtectedRoute allowedRoles={['store-manager', 'technical-manager']}>
-                    <AdminLayout>
-                      <StoreStock />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-
-                {/* Store-specific Finance Routes */}
-                <Route path="/admin/stores/:storeId/finances" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
-                    <AdminLayout>
-                      <Finances />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/stores/:storeId/financial-analysis" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
-                    <AdminLayout>
-                      <FinancialAnalysis />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/stores/:storeId/financial-management" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
-                    <AdminLayout>
-                      <FinancialManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-
-                {/* Legacy routes for backwards compatibility */}
-                <Route path="/admin/pos" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager', 'marketing-manager']}>
-                    <AdminLayout>
-                      <POSManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/sales" element={
-                  <ProtectedRoute allowedRoles={['store-manager', 'technical-manager']}>
-                    <AdminLayout>
-                      <SalesReport />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/staff" element={
-                  <ProtectedRoute allowedRoles={['store-manager', 'technical-manager']}>
-                    <AdminLayout>
-                      <StaffManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/inventory" element={
-                  <ProtectedRoute allowedRoles={['store-manager', 'technical-manager']}>
-                    <AdminLayout>
-                      <InventoryManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/personnel" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'technical-manager']}>
-                    <AdminLayout>
-                      <PersonnelManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/loyalty" element={
-                  <ProtectedRoute allowedRoles={['admin', 'brand-manager', 'store-manager', 'marketing-manager']}>
-                    <AdminLayout>
-                      <LoyaltyManagement />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                } />
+                {/* Store Routes */}
+                {StoreRoutes()}
 
                 {/* Catch-all route */}
                 <Route path="*" element={<NotFound />} />

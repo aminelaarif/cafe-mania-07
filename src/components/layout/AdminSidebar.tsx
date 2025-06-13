@@ -1,45 +1,17 @@
 
 import { useState } from "react";
-import {
-  Home,
-  Settings,
-  ShoppingBag,
-  TrendingUp,
-  BarChart,
-  ClipboardList,
-  UserPlus,
-  Gift,
-  LayoutDashboard,
-  DollarSign,
-  Store,
-  ChevronDown,
-  ChevronRight
-} from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTheme } from "@/hooks/useTheme";
 import { defaultTheme, darkTheme } from "@/lib/theme";
-
-interface NavItem {
-  title: string;
-  url?: string;
-  icon: any;
-  roles?: string[];
-  children?: NavItem[];
-}
+import { baseNavigation, NavItem } from "@/config/navigationConfig";
+import { generateStoreNavigation } from "@/utils/navigationGenerator";
+import { useNavigationFilter } from "@/hooks/useNavigationFilter";
 
 export const AdminSidebar = () => {
   const { user, logout } = useAuth();
-  const location = useLocation();
   const { theme, setTheme } = useTheme();
   const [isDarkTheme, setIsDarkTheme] = useState(theme.mode === 'dark');
   const [expandedItems, setExpandedItems] = useState<string[]>(['finances-generales', 'stores']);
@@ -58,242 +30,15 @@ export const AdminSidebar = () => {
     );
   };
 
-  const navigation: NavItem[] = [
-    {
-      title: "Dashboard",
-      url: "/admin/dashboard",
-      icon: LayoutDashboard,
-      roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager', 'marketing-manager']
-    },
-    {
-      title: "Analytics",
-      url: "/admin/analytics",
-      icon: BarChart,
-      roles: ['admin', 'brand-manager', 'marketing-manager']
-    },
-    {
-      title: "Finances Générales",
-      icon: DollarSign,
-      roles: ['admin', 'brand-manager'],
-      children: [
-        {
-          title: "Vue d'ensemble",
-          url: "/admin/finances-overview",
-          icon: BarChart,
-          roles: ['admin', 'brand-manager']
-        },
-        {
-          title: "Analyse Générale",
-          url: "/admin/finances-analysis",
-          icon: TrendingUp,
-          roles: ['admin', 'brand-manager']
-        }
-      ]
-    },
-    {
-      title: "Magasins",
-      icon: Store,
-      roles: ['admin', 'brand-manager'],
-      children: [
-        {
-          title: "Vue d'ensemble",
-          url: "/admin/stores",
-          icon: Store,
-          roles: ['admin', 'brand-manager']
-        },
-        {
-          title: "Coffee Shop 1",
-          icon: ShoppingBag,
-          roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager'],
-          children: [
-            {
-              title: "POS",
-              url: "/admin/stores/store-1/pos",
-              icon: ShoppingBag,
-              roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
-            },
-            {
-              title: "Personnel",
-              url: "/admin/stores/store-1/personnel",
-              icon: UserPlus,
-              roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
-            },
-            {
-              title: "Fidélité",
-              url: "/admin/stores/store-1/loyalty",
-              icon: Gift,
-              roles: ['admin', 'brand-manager', 'store-manager', 'marketing-manager']
-            },
-            {
-              title: "Stock",
-              url: "/admin/stores/store-1/stock",
-              icon: ClipboardList,
-              roles: ['store-manager', 'technical-manager']
-            },
-            {
-              title: "Finances",
-              icon: DollarSign,
-              roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager'],
-              children: [
-                {
-                  title: "Vue d'ensemble",
-                  url: "/admin/stores/store-1/finances",
-                  icon: BarChart,
-                  roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
-                },
-                {
-                  title: "Analyse Financière",
-                  url: "/admin/stores/store-1/financial-analysis",
-                  icon: BarChart,
-                  roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
-                },
-                {
-                  title: "Gestion Financière",
-                  url: "/admin/stores/store-1/financial-management",
-                  icon: BarChart,
-                  roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
-                }
-              ]
-            }
-          ]
-        },
-        {
-          title: "Coffee Shop 2",
-          icon: ShoppingBag,
-          roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager'],
-          children: [
-            {
-              title: "POS",
-              url: "/admin/stores/store-2/pos",
-              icon: ShoppingBag,
-              roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
-            },
-            {
-              title: "Personnel",
-              url: "/admin/stores/store-2/personnel",
-              icon: UserPlus,
-              roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
-            },
-            {
-              title: "Fidélité",
-              url: "/admin/stores/store-2/loyalty",
-              icon: Gift,
-              roles: ['admin', 'brand-manager', 'store-manager', 'marketing-manager']
-            },
-            {
-              title: "Stock",
-              url: "/admin/stores/store-2/stock",
-              icon: ClipboardList,
-              roles: ['store-manager', 'technical-manager']
-            },
-            {
-              title: "Finances",
-              icon: DollarSign,
-              roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager'],
-              children: [
-                {
-                  title: "Vue d'ensemble",
-                  url: "/admin/stores/store-2/finances",
-                  icon: BarChart,
-                  roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
-                },
-                {
-                  title: "Analyse Financière",
-                  url: "/admin/stores/store-2/financial-analysis",
-                  icon: BarChart,
-                  roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
-                },
-                {
-                  title: "Gestion Financière",
-                  url: "/admin/stores/store-2/financial-management",
-                  icon: BarChart,
-                  roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      title: "Rapports",
-      url: "/admin/reports",
-      icon: ClipboardList,
-      roles: ['admin', 'brand-manager', 'store-manager']
-    },
-    {
-      title: "Marketing",
-      url: "/admin/marketing",
-      icon: Gift,
-      roles: ['admin', 'brand-manager', 'marketing-manager']
-    },
-    {
-      title: "Utilisateurs",
-      url: "/admin/users",
-      icon: UserPlus,
-      roles: ['admin', 'brand-manager']
-    },
-    {
-      title: "Configuration",
-      icon: Settings,
-      roles: ['admin', 'brand-manager'],
-      children: [
-        {
-          title: "Paramètres Globaux",
-          url: "/admin/config",
-          icon: Settings,
-          roles: ['admin', 'brand-manager']
-        },
-        {
-          title: "Mobile",
-          url: "/admin/mobile-config",
-          icon: Settings,
-          roles: ['admin', 'brand-manager']
-        },
-        {
-          title: "Personnalisation",
-          url: "/admin/customization",
-          icon: Settings,
-          roles: ['admin', 'brand-manager']
-        }
-      ]
-    },
-    {
-      title: "Maintenance",
-      url: "/admin/maintenance",
-      icon: Settings,
-      roles: ['admin', 'technical-manager']
-    },
-    {
-      title: "Contenu",
-      url: "/admin/content",
-      icon: ClipboardList,
-      roles: ['marketing-manager']
-    }
+  // Generate complete navigation with stores
+  const completeNavigation = [
+    ...baseNavigation.slice(0, 2), // Dashboard and Analytics
+    baseNavigation[2], // Finances Générales
+    generateStoreNavigation(), // Dynamic stores navigation
+    ...baseNavigation.slice(3) // Rest of the navigation
   ];
 
-  const filteredNavigation = navigation.filter(item => {
-    if (!item.roles) return true;
-    return item.roles.includes(user?.role || '');
-  }).map(item => ({
-    ...item,
-    children: item.children?.filter(child => {
-      if (!child.roles) return true;
-      return child.roles.includes(user?.role || '');
-    }).map(child => ({
-      ...child,
-      children: child.children?.filter(grandChild => {
-        if (!grandChild.roles) return true;
-        return grandChild.roles.includes(user?.role || '');
-      }).map(grandChild => ({
-        ...grandChild,
-        children: grandChild.children?.filter(greatGrandChild => {
-          if (!greatGrandChild.roles) return true;
-          return greatGrandChild.roles.includes(user?.role || '');
-        })
-      }))
-    }))
-  }));
+  const filteredNavigation = useNavigationFilter(completeNavigation, user?.role);
 
   const renderNavItem = (item: NavItem, level: number = 0) => {
     const hasChildren = item.children && item.children.length > 0;
