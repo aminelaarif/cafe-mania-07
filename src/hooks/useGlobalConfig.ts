@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { GlobalConfiguration } from '@/types/globalConfig';
 import { mockGlobalConfiguration } from '@/db/mockdata/globalConfig';
-import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
 const STORAGE_KEY = 'global-configuration';
@@ -37,10 +36,21 @@ const saveConfigurationToStorage = (configuration: GlobalConfiguration) => {
 let globalConfiguration: GlobalConfiguration = loadConfigurationFromStorage();
 
 export const useGlobalConfig = () => {
-  const { user } = useAuth();
   const { toast } = useToast();
   const [configuration, setConfiguration] = useState<GlobalConfiguration>(globalConfiguration);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Essayer d'obtenir l'utilisateur de façon sécurisée
+  let user = null;
+  try {
+    // Import dynamique pour éviter l'erreur si AuthProvider n'est pas disponible
+    const { useAuth } = require('@/hooks/useAuth');
+    const authContext = useAuth();
+    user = authContext.user;
+  } catch (error) {
+    // AuthProvider n'est pas disponible - mode public
+    console.log('useGlobalConfig: Running in public mode without auth');
+  }
 
   // Synchroniser avec le stockage global au montage
   useEffect(() => {
