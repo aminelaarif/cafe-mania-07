@@ -42,14 +42,14 @@ export const PresenceFilters = ({
   ];
 
   const shiftOptions = [
-    { value: 'all', label: 'Tous les horaires' },
+    { value: 'all-shifts', label: 'Tous les horaires' },
     { value: 'morning', label: 'Matin (06h-14h)' },
     { value: 'afternoon', label: 'Après-midi (14h-22h)' },
     { value: 'night', label: 'Nuit (22h-06h)' }
   ];
 
   const departmentOptions = [
-    { value: 'all', label: 'Tous les départements' },
+    { value: 'all-departments', label: 'Tous les départements' },
     { value: 'service', label: 'Service' },
     { value: 'kitchen', label: 'Cuisine' },
     { value: 'management', label: 'Direction' },
@@ -57,7 +57,7 @@ export const PresenceFilters = ({
   ];
 
   const timeRangeOptions = [
-    { value: 'all', label: 'Toute la journée' },
+    { value: 'all-times', label: 'Toute la journée' },
     { value: 'early', label: 'Arrivée précoce (< 8h)' },
     { value: 'ontime', label: 'À l\'heure (8h-9h)' },
     { value: 'late', label: 'En retard (> 9h)' }
@@ -74,9 +74,9 @@ export const PresenceFilters = ({
   const getActiveFiltersCount = () => {
     let count = 0;
     if (filters.status.length > 0) count++;
-    if (filters.shift !== 'all') count++;
-    if (filters.department !== 'all') count++;
-    if (filters.timeRange !== 'all') count++;
+    if (filters.shift !== 'all-shifts') count++;
+    if (filters.department !== 'all-departments') count++;
+    if (filters.timeRange !== 'all-times') count++;
     return count;
   };
 
@@ -96,7 +96,7 @@ export const PresenceFilters = ({
               <SelectValue placeholder="Sélectionner un point de vente" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les points de vente</SelectItem>
+              <SelectItem value="all-stores">Tous les points de vente</SelectItem>
               {mockStores.map((store) => (
                 <SelectItem key={store.id} value={store.id}>
                   {store.name}
