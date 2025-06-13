@@ -29,6 +29,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { AddEmployeeDialog } from '@/components/admin/personnel/AddEmployeeDialog';
 import { EmployeeDetailsDialog } from '@/components/admin/personnel/EmployeeDetailsDialog';
 import { PaymentExportDialog } from '@/components/admin/personnel/PaymentExportDialog';
+import { EmployeeExportDialog } from '@/components/admin/personnel/EmployeeExportDialog';
 
 export const PersonnelManagement = () => {
   const { user } = useAuth();
@@ -69,6 +70,7 @@ export const PersonnelManagement = () => {
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentType, setPaymentType] = useState<'salary' | 'bonus' | 'overtime' | 'commission'>('salary');
+  const [showEmployeeExportDialog, setShowEmployeeExportDialog] = useState(false);
 
   if (!canManage) {
     return (
@@ -150,6 +152,10 @@ export const PersonnelManagement = () => {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowEmployeeExportDialog(true)}>
+            <FileSpreadsheet className="h-4 w-4 mr-2" />
+            Exporter Employés
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setShowExportDialog(true)}>
             <FileSpreadsheet className="h-4 w-4 mr-2" />
             Exporter Paiements
@@ -716,6 +722,14 @@ export const PersonnelManagement = () => {
         open={showExportDialog}
         onOpenChange={setShowExportDialog}
         payments={filteredPayments}
+      />
+
+      <EmployeeExportDialog
+        open={showEmployeeExportDialog}
+        onOpenChange={setShowEmployeeExportDialog}
+        employees={filteredUsers}
+        personalInfos={personalInfo}
+        bankInfos={bankInfo}
       />
     </div>
   );

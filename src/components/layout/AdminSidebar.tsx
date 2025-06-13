@@ -1,120 +1,168 @@
-import { Link, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { 
-  Settings, 
-  Users, 
-  BarChart3, 
-  Store, 
-  Package, 
-  Calendar,
-  LogOut,
+import { useState } from "react";
+import {
   Home,
-  Clock,
-  History,
-  Monitor,
-  DollarSign,
-  CreditCard
-} from 'lucide-react';
+  Settings,
+  Users,
+  ShoppingBag,
+  TrendingUp,
+  BarChart,
+  ClipboardList,
+  UserPlus,
+  Gift,
+  LayoutDashboard
+} from "lucide-react";
+import { NavLink, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useTheme } from "@/hooks/useTheme";
+import { ModeToggle } from "@/components/ui/mode-toggle";
+
+interface NavItem {
+  title: string;
+  url: string;
+  icon: any;
+  roles?: string[];
+}
 
 export const AdminSidebar = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const { setTheme } = useTheme();
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
 
-  const getMenuItems = () => {
-    switch (user?.role) {
-      case 'admin':
-        return [
-          { href: '/admin/dashboard', icon: BarChart3, label: 'Dashboard' },
-          { href: '/admin/users', icon: Users, label: 'Utilisateurs' },
-          { href: '/admin/stores', icon: Store, label: 'Magasins' },
-          { href: '/admin/pos', icon: Monitor, label: 'Gestion POS' },
-          { href: '/admin/financial-analysis', icon: DollarSign, label: 'Analyse Financière' },
-          { href: '/admin/financial-management', icon: CreditCard, label: 'Gestion Financière' },
-          { href: '/admin/personnel', icon: Clock, label: 'Gestion Personnel' },
-          { href: '/admin/config', icon: Settings, label: 'Configuration' },
-        ];
-      case 'brand-manager':
-        return [
-          { href: '/admin/dashboard', icon: BarChart3, label: 'Dashboard' },
-          { href: '/admin/users', icon: Users, label: 'Utilisateurs' },
-          { href: '/admin/pos', icon: Monitor, label: 'Gestion POS' },
-          { href: '/admin/financial-analysis', icon: DollarSign, label: 'Analyse Financière' },
-          { href: '/admin/financial-management', icon: CreditCard, label: 'Gestion Financière' },
-          { href: '/admin/personnel', icon: Clock, label: 'Gestion Personnel' },
-          { href: '/admin/config', icon: Settings, label: 'Configuration Globale' },
-        ];
-      case 'store-manager':
-      case 'technical-manager':
-        return [
-          { href: '/admin/dashboard', icon: BarChart3, label: 'Dashboard' },
-          { href: '/admin/sales', icon: BarChart3, label: 'Ventes' },
-          { href: '/admin/staff', icon: Users, label: 'Personnel' },
-          { href: '/admin/pos', icon: Monitor, label: 'Gestion POS' },
-          { href: '/admin/financial-analysis', icon: DollarSign, label: 'Analyse Financière' },
-          { href: '/admin/financial-management', icon: CreditCard, label: 'Gestion Financière' },
-          { href: '/admin/personnel', icon: Clock, label: 'Gestion Personnel' },
-          { href: '/admin/inventory', icon: Package, label: 'Inventaire' },
-        ];
-      case 'marketing-manager':
-        return [
-          { href: '/admin/dashboard', icon: BarChart3, label: 'Dashboard' },
-          { href: '/admin/content', icon: Calendar, label: 'Contenu' },
-          { href: '/admin/pos', icon: Monitor, label: 'Gestion POS' },
-          { href: '/admin/promotions', icon: Calendar, label: 'Promotions' },
-        ];
-      default:
-        return [];
-    }
+  const toggleTheme = () => {
+    const newTheme = isDarkTheme ? "light" : "dark";
+    setIsDarkTheme(!isDarkTheme);
+    setTheme(newTheme);
   };
 
-  const menuItems = getMenuItems();
+  const navigation: NavItem[] = [
+    {
+      title: "Dashboard",
+      url: "/admin/dashboard",
+      icon: LayoutDashboard,
+      roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager', 'marketing-manager']
+    },
+    {
+      title: "Configuration",
+      url: "/admin/config",
+      icon: Settings,
+      roles: ['admin', 'brand-manager']
+    },
+    {
+      title: "Contenu",
+      url: "/admin/content",
+      icon: ClipboardList,
+      roles: ['marketing-manager']
+    },
+    {
+      title: "Utilisateurs",
+      url: "/admin/users",
+      icon: Users,
+      roles: ['admin', 'brand-manager']
+    },
+    {
+      title: "Magasins",
+      url: "/admin/stores",
+      icon: ShoppingBag,
+      roles: ['admin']
+    },
+    {
+      title: "POS",
+      url: "/admin/pos",
+      icon: ShoppingBag,
+      roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager', 'marketing-manager']
+    },
+    {
+      title: "Ventes",
+      url: "/admin/sales",
+      icon: TrendingUp,
+      roles: ['store-manager', 'technical-manager']
+    },
+    {
+      title: "Analyse Financière",
+      url: "/admin/financial-analysis",
+      icon: BarChart,
+      roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
+    },
+    {
+      title: "Gestion Financière",
+      url: "/admin/financial-management",
+      icon: BarChart,
+      roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
+    },
+    {
+      title: "Personnel",
+      url: "/admin/personnel",
+      icon: UserPlus,
+      roles: ['admin', 'brand-manager', 'store-manager', 'technical-manager']
+    },
+    {
+      title: "Fidélité",
+      url: "/admin/loyalty",
+      icon: Gift,
+      roles: ['admin', 'brand-manager', 'store-manager', 'marketing-manager']
+    },
+    {
+      title: "Inventaire",
+      url: "/admin/inventory",
+      icon: ClipboardList,
+      roles: ['store-manager', 'technical-manager']
+    },
+    {
+      title: "Staff",
+      url: "/admin/staff",
+      icon: Users,
+      roles: ['store-manager', 'technical-manager']
+    },
+  ];
+
+  const filteredNavigation = navigation.filter(item => {
+    if (!item.roles) return true;
+    return item.roles.includes(user?.role || '');
+  });
 
   return (
-    <div className="w-64 bg-card border-r border-border min-h-screen p-4">
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold text-foreground">Admin Panel</h2>
-        <p className="text-sm text-muted-foreground">{user?.name}</p>
-        <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
+    <aside className="hidden md:flex flex-col w-64 border-r bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
+      <div className="flex items-center justify-center h-16 border-b dark:border-gray-700">
+        <NavLink to="/" className="text-2xl font-bold text-gray-800 dark:text-white">
+          Admin Panel
+        </NavLink>
       </div>
-
-      <nav className="space-y-2">
-        <Link to="/">
-          <Button
-            variant="ghost"
-            className="w-full justify-start"
-          >
-            <Home className="mr-2 h-4 w-4" />
-            Retour au site
-          </Button>
-        </Link>
-        
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.href;
-          
-          return (
-            <Link key={item.href} to={item.href}>
-              <Button
-                variant={isActive ? "secondary" : "ghost"}
-                className="w-full justify-start"
+      <nav className="flex-1 p-4">
+        <ul className="space-y-2">
+          {filteredNavigation.map((item) => (
+            <li key={item.title}>
+              <NavLink
+                to={item.url}
+                className={({ isActive }) =>
+                  `flex items-center space-x-3 p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+                    isActive
+                      ? "bg-gray-200 dark:bg-gray-700 font-semibold"
+                      : "text-gray-700 dark:text-gray-300"
+                  }`
+                }
               >
-                <Icon className="mr-2 h-4 w-4" />
-                {item.label}
-              </Button>
-            </Link>
-          );
-        })}
-        
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-destructive hover:text-destructive"
-          onClick={logout}
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          Déconnexion
-        </Button>
+                <item.icon className="w-5 h-5" />
+                <span>{item.title}</span>
+              </NavLink>
+            </li>
+          ))}
+        </ul>
       </nav>
-    </div>
+      <div className="p-4 border-t dark:border-gray-700">
+        <Button variant="outline" className="w-full" onClick={logout}>
+          Logout
+        </Button>
+      </div>
+    </aside>
   );
 };
